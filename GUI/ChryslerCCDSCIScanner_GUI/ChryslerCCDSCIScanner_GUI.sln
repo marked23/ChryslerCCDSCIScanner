@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChryslerCCDSCIScanner", "ChryslerCCDSCIScanner\ChryslerCCDSCIScanner.csproj", "{5B767EB4-619E-452C-ABF2-A893953AD869}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChryslerCCDSCIScanner_GUI", "ChryslerCCDSCIScanner_GUI\ChryslerCCDSCIScanner_GUI.csproj", "{5B767EB4-619E-452C-ABF2-A893953AD869}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SerialPortStream", "..\SerialPortStream-2.x\code\SerialPortStream.csproj", "{CEA01148-CD2E-4F29-B455-B557B9B4C6D4}"
 EndProject

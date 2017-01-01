@@ -7,8 +7,8 @@
     <ProjectGuid>{5B767EB4-619E-452C-ABF2-A893953AD869}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ChryslerCCDSCIScanner</RootNamespace>
-    <AssemblyName>ChryslerCCDSCIScanner</AssemblyName>
+    <RootNamespace>ChryslerCCDSCIScanner_GUI</RootNamespace>
+    <AssemblyName>ChryslerCCDSCIScanner_GUI</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <IsWebBootstrapper>false</IsWebBootstrapper>

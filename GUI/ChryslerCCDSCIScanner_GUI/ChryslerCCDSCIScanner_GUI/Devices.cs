@@ -2,7 +2,7 @@
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
 
-namespace ChryslerCCDSCIScanner
+namespace ChryslerCCDSCIScanner_GUI
 {
     public partial class MainForm : Form
     {

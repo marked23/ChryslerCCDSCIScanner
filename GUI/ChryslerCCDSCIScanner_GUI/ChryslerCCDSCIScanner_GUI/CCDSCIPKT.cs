@@ -2,11 +2,61 @@
 using System;
 using System.Collections.Generic;
 
-namespace ChryslerCCDSCIScanner
+namespace ChryslerCCDSCIScanner_GUI
 {
     public class CCDSCIPKT
     {
-        public const byte SYNC_BYTE = 0x33;
+        public const byte SYNC_BYTE         = 0x33;
+        public const int MAX_PAYLOAD_LENGTH = 2042;
+
+        // DATA CODE byte building blocks
+        // Source and Target masks (high nibble (4 bits))
+        public const byte from_laptop       = 0x00;
+        public const byte from_scanner      = 0x01;
+        public const byte from_ccd_bus      = 0x02;
+        public const byte from_sci_bus      = 0x03;
+        public const byte to_laptop         = 0x00;
+        public const byte to_scanner        = 0x01;
+        public const byte to_ccd_bus        = 0x02;
+        public const byte to_sci_bus        = 0x03;
+        // DC commands (low nibble (4 bits))
+        public const byte reboot            = 0x00;
+        public const byte handshake         = 0x01;
+        public const byte status            = 0x02;
+        public const byte settings          = 0x03;
+        public const byte request           = 0x04;
+        public const byte response          = 0x05;
+        public const byte send_msg          = 0x06;
+        public const byte send_rep_msg      = 0x07;
+        public const byte stop_msg_flow     = 0x08;
+        public const byte receive_msg       = 0x09;
+        public const byte self_diag         = 0x0A;
+        public const byte make_backup       = 0x0B;
+        public const byte restore_backup    = 0x0C;
+        public const byte restore_default   = 0x0D;
+        public const byte debug             = 0x0E;
+        public const byte ok_error          = 0x0F;
+
+        // SUB-DATA CODE bytes
+        // DC command 0x0F (OK/ERROR)
+        public const byte ok                                    = 0x00;
+        public const byte error_sync_invalid_value              = 0x01;
+        public const byte error_length_invalid_value            = 0x02;
+        public const byte error_datacode_same_source_target     = 0x03;
+        public const byte error_datacode_source_target_conflict = 0x04;
+        public const byte error_datacode_invalid_target         = 0x05;
+        public const byte error_datacode_invalid_dc_command     = 0x06;
+        public const byte error_subdatacode_invalid_value       = 0x07;
+        public const byte error_subdatacode_not_enough_info     = 0x08;
+        public const byte error_payload_missing_values          = 0x09;
+        public const byte error_payload_invalid_values          = 0x0A;
+        public const byte error_checksum_invalid_value          = 0x0B;
+        public const byte error_packet_invalid_frame_format     = 0x0C;
+        public const byte error_packet_timeout_occured          = 0x0D;
+        public const byte error_packet_unknown_source           = 0x0E;
+        public const byte error_scanner_internal_error          = 0x0F;
+        public const byte error_general_invalid_address         = 0x10;
+        public const byte error_general_invalid_address_range   = 0x11;
 
         // CCDSCI Packet structure
         public struct CCDSCI_PACKET
@@ -22,6 +72,7 @@ namespace ChryslerCCDSCIScanner
 
             // Create a byte-array for serial transmission or other purposes
             // Note: it tolerates length and checksum byte errors so they can be zeros if you manually send packets
+            // Another note: it takes the structure variables and transforms them into a byte-array, so they need to be previously filled with data
             public byte[] ToBytes()
             {
                 // Instantiate a new MemoryStream object called "stream", it gets automatically disposed (using...)
@@ -30,16 +81,19 @@ namespace ChryslerCCDSCIScanner
                     // Some variables that we need along the way
                     int calculated_checksum = 0;
                     int calculated_length = 0;
-                    bool payload_bytes = true;
+                    bool payload_bytes = false;
 
                     // Decide if there are PAYLOAD bytes present
                     if (payload == null) calculated_length = 2;
-                    else calculated_length = 2 + payload.Length;
+                    else
+                    {
+                        calculated_length = 2 + payload.Length;
+                        payload_bytes = true;
+                    }
 
+                    length = new byte[2];
                     length[0] = (byte)((calculated_length >> 8) & 0xFF);
                     length[1] = (byte)(calculated_length & 0xFF);
-                    if ((length[0] == 0x00) && (length[1] == 0x02)) payload_bytes = false;
-                    else payload_bytes = true;
 
                     // Start writing to the MemoryStream
                     // Write two SYNC bytes (they are constant)
@@ -60,10 +114,7 @@ namespace ChryslerCCDSCIScanner
 
                     // Calculate CHECKSUM-16 value from the LENGTH, DATA CODE, SUB-DATA CODE and PAYLOAD bytes
                     // Add the DATA CODE byte and SUB-DATA CODE byte to the temporary CHECKSUM-16 variable
-                    calculated_checksum += length[0];
-                    calculated_checksum += length[1];
-                    calculated_checksum += datacode[0];
-                    calculated_checksum += subdatacode[0];
+                    calculated_checksum += length[0] + length[1] + datacode[0] + subdatacode[0];
 
                     // Continue adding bytes to it if there are PAYLOAD bytes
                     if (payload_bytes)
@@ -75,6 +126,7 @@ namespace ChryslerCCDSCIScanner
                     }
 
                     // CHECKSUM: LSB byte of the sum of the previous bytes (except SYNC byte)
+                    checksum = new byte[1];
                     checksum[0] = (byte)(calculated_checksum & 0xFF);
 
                     // Write final CHECKSUM byte to the MemoryStream
@@ -87,7 +139,6 @@ namespace ChryslerCCDSCIScanner
 
             // Create CCDSCI Packet from byte-array and error-check the packet
             // The method returns true if the byte array contains a valid CCDSCI Packet
-            // Note: it tolerates length and checksum byte errors so they can be zeros if you manually send packets
             public bool FromBytes(byte[] bytes)
             {
                 int payload_length = 0;
@@ -109,10 +160,6 @@ namespace ChryslerCCDSCIScanner
                     length = new byte[2];
                     length = reader.ReadBytes(2);
 
-                    //calculated_length = bytes.Length - 4;
-                    //length[0] = (byte)((calculated_length >> 8) & 0xFF);
-                    //length[1] = (byte)(calculated_length & 0xFF);
-
                     // Let the DATA CODE byte equal to the next byte
                     datacode = new byte[1];
                     datacode = reader.ReadBytes(1);
@@ -128,10 +175,7 @@ namespace ChryslerCCDSCIScanner
                         if (payload_length > 2) payload_bytes = true;
                         else payload_bytes = true;
                     }
-                    catch
-                    {
-                        return false;
-                    }
+                    catch { return false; }
 
                     // Continue adding PAYLOAD bytes to the packet if the length is greater than 1
                     if (payload_bytes)
@@ -143,11 +187,11 @@ namespace ChryslerCCDSCIScanner
                             payload = new byte[payload_length];
                             payload = reader.ReadBytes(payload_length);
                         }
-                        catch
-                        {
-                            return false;
-                        }
-
+                        catch { return false; }
+                    }
+                    else
+                    {
+                        payload = null;
                     }
 
                     // Let the CHECKSUM byte equal to the last byte of the MemoryStream
@@ -157,15 +201,9 @@ namespace ChryslerCCDSCIScanner
                     // Calculate checksum
                     try
                     {
-                        calculated_checksum += length[0];
-                        calculated_checksum += length[1];
-                        calculated_checksum += datacode[0];
-                        calculated_checksum += subdatacode[0];
+                        calculated_checksum = length[0] + length[1] + datacode[0] + subdatacode[0];
                     }
-                    catch
-                    {
-                        return false;
-                    }
+                    catch { return false; }
 
                     if (payload_bytes)
                     {
@@ -180,28 +218,51 @@ namespace ChryslerCCDSCIScanner
 
                     try
                     {
-                        if ((calculated_checksum & 0xFF) == checksum[0])
-                        {
-                            return true;
-                        }
-                        else
-                        {
-                            return false;
-                        }
+                        if ((calculated_checksum & 0xFF) == checksum[0]) { return true; }
+                        else { return false; }
                     }
-                    catch
-                    {
-                        return false;
-                    }
+                    catch { return false; }
                 }
             }
+
+            // This function takes the input values and fills the structure variables with the appropriate values
+            // Note: practically this function needs to be used with the ToBytes() function after the packet has been "generated"
+            // Side note: packets are easier to be generated with the help of this function than with the ToBytes() function alone
+            public void GeneratePacket(byte source, byte target, byte dc_command, byte subdatacode_value, byte[] payloadbuff)
+            {
+                sync = new byte[1] { SYNC_BYTE };
+
+                if (payloadbuff != null)
+                {
+                    length = new byte[2] { (byte)(((payloadbuff.Length + 2) >> 8) & 0xFF), (byte)((payloadbuff.Length + 2) & 0xFF) };
+                }
+                else { length = new byte[2] { 0x00, 0x02 }; }
+
+                datacode = new byte[1] { (byte)((source << 6) | (target << 4) | dc_command) };
+                subdatacode = new byte[1] { subdatacode_value };
+
+                if (payloadbuff != null)
+                {
+                    payload = new byte[payloadbuff.Length];
+                    for (int i = 0; i < payloadbuff.Length; i++)
+                    {
+                        payload[i] = payloadbuff[i];
+                    }
+                }
+                else { payload = null; }
+
+                int calculated_checksum = length[0] + length[1] + datacode[0] + subdatacode[0];
+                if (payloadbuff != null)
+                {
+                    for (int i = 0; i < payloadbuff.Length; i++)
+                    {
+                        calculated_checksum += payloadbuff[i];
+                    }
+                }
+
+                checksum = new byte[1] { (byte)(calculated_checksum & 0xFF) };
+            }
         }
-
-        public struct CCDSCI_HEADER
-        {
-
-        }
-
     }
 
     class CCDSCIPKT_Commands

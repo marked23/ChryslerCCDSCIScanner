@@ -8,11 +8,11 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace ChryslerCCDSCIScanner
+namespace ChryslerCCDSCIScanner_GUI
 {
-    public partial class DiagnosticsForm : Form
+    public partial class PacketGenerator : Form
     {
-        public DiagnosticsForm()
+        public PacketGenerator()
         {
             InitializeComponent();
             Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);

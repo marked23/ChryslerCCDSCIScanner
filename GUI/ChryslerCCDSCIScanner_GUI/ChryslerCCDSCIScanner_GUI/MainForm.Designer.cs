@@ -1,4 +1,4 @@
-﻿namespace ChryslerCCDSCIScanner
+﻿namespace ChryslerCCDSCIScanner_GUI
 {
     partial class MainForm
     {
@@ -59,10 +59,11 @@
             this.packet_send_textbox = new System.Windows.Forms.TextBox();
             this.packet_send_button = new System.Windows.Forms.Button();
             this.packet_log_clear_button = new System.Windows.Forms.Button();
-            this.packet_log_save_button = new System.Windows.Forms.Button();
             this.communication_packet_log_enabled_checkbox = new System.Windows.Forms.CheckBox();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.packetGeneratorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -77,7 +78,6 @@
             this.ccd_bus_send_msg_button = new System.Windows.Forms.Button();
             this.ccd_bus_listen_checkbox = new System.Windows.Forms.CheckBox();
             this.ccd_bus_log_clear_button = new System.Windows.Forms.Button();
-            this.ccd_bus_log_save_button = new System.Windows.Forms.Button();
             this.sci_bus_messages_groupbox = new System.Windows.Forms.GroupBox();
             this.sci_filtering_clear_button = new System.Windows.Forms.Button();
             this.sci_bus_msg_richtextbox = new System.Windows.Forms.RichTextBox();
@@ -86,7 +86,6 @@
             this.sci_message_filtering_textbox = new System.Windows.Forms.TextBox();
             this.sci_filtering_checkbox = new System.Windows.Forms.CheckBox();
             this.sci_bus_log_clear_button = new System.Windows.Forms.Button();
-            this.sci_bus_log_save_button = new System.Windows.Forms.Button();
             this.command_history_groupbox = new System.Windows.Forms.GroupBox();
             this.command_history_textbox = new System.Windows.Forms.TextBox();
             this.misc_groupbox = new System.Windows.Forms.GroupBox();
@@ -128,8 +127,6 @@
             this.button1 = new System.Windows.Forms.Button();
             this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
             this.flush_memory_button = new System.Windows.Forms.Button();
-            this.toolsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.packetGeneratorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.log_groupbox.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.ccd_bus_messages_groupbox.SuspendLayout();
@@ -381,7 +378,6 @@
             this.log_groupbox.Controls.Add(this.packet_send_textbox);
             this.log_groupbox.Controls.Add(this.packet_send_button);
             this.log_groupbox.Controls.Add(this.packet_log_clear_button);
-            this.log_groupbox.Controls.Add(this.packet_log_save_button);
             this.log_groupbox.Controls.Add(this.communication_packet_log_enabled_checkbox);
             this.log_groupbox.Location = new System.Drawing.Point(12, 27);
             this.log_groupbox.Name = "log_groupbox";
@@ -406,7 +402,7 @@
             // 
             this.label9.AutoSize = true;
             this.label9.ForeColor = System.Drawing.SystemColors.AppWorkspace;
-            this.label9.Location = new System.Drawing.Point(249, 295);
+            this.label9.Location = new System.Drawing.Point(209, 294);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(78, 13);
             this.label9.TabIndex = 56;
@@ -416,7 +412,7 @@
             // 
             this.label8.AutoSize = true;
             this.label8.ForeColor = System.Drawing.SystemColors.AppWorkspace;
-            this.label8.Location = new System.Drawing.Point(248, 281);
+            this.label8.Location = new System.Drawing.Point(208, 280);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(69, 13);
             this.label8.TabIndex = 52;
@@ -446,7 +442,7 @@
             // packet_log_clear_button
             // 
             this.packet_log_clear_button.Enabled = false;
-            this.packet_log_clear_button.Location = new System.Drawing.Point(153, 284);
+            this.packet_log_clear_button.Location = new System.Drawing.Point(298, 283);
             this.packet_log_clear_button.Name = "packet_log_clear_button";
             this.packet_log_clear_button.Size = new System.Drawing.Size(60, 23);
             this.packet_log_clear_button.TabIndex = 46;
@@ -454,25 +450,15 @@
             this.packet_log_clear_button.UseVisualStyleBackColor = true;
             this.packet_log_clear_button.Click += new System.EventHandler(this.communication_log_clear_button_Click);
             // 
-            // packet_log_save_button
-            // 
-            this.packet_log_save_button.Enabled = false;
-            this.packet_log_save_button.Location = new System.Drawing.Point(87, 284);
-            this.packet_log_save_button.Name = "packet_log_save_button";
-            this.packet_log_save_button.Size = new System.Drawing.Size(60, 23);
-            this.packet_log_save_button.TabIndex = 45;
-            this.packet_log_save_button.Text = "Save";
-            this.packet_log_save_button.UseVisualStyleBackColor = true;
-            // 
             // communication_packet_log_enabled_checkbox
             // 
             this.communication_packet_log_enabled_checkbox.AutoSize = true;
             this.communication_packet_log_enabled_checkbox.Enabled = false;
             this.communication_packet_log_enabled_checkbox.Location = new System.Drawing.Point(6, 288);
             this.communication_packet_log_enabled_checkbox.Name = "communication_packet_log_enabled_checkbox";
-            this.communication_packet_log_enabled_checkbox.Size = new System.Drawing.Size(77, 17);
+            this.communication_packet_log_enabled_checkbox.Size = new System.Drawing.Size(119, 17);
             this.communication_packet_log_enabled_checkbox.TabIndex = 1;
-            this.communication_packet_log_enabled_checkbox.Text = "Packet log";
+            this.communication_packet_log_enabled_checkbox.Text = "Packet log disabled";
             this.communication_packet_log_enabled_checkbox.UseVisualStyleBackColor = true;
             this.communication_packet_log_enabled_checkbox.Click += new System.EventHandler(this.communication_log_enabled_checkbox_Click);
             // 
@@ -494,6 +480,21 @@
             this.fileToolStripMenuItem1.Name = "fileToolStripMenuItem1";
             this.fileToolStripMenuItem1.Size = new System.Drawing.Size(37, 20);
             this.fileToolStripMenuItem1.Text = "File";
+            // 
+            // toolsToolStripMenuItem
+            // 
+            this.toolsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.packetGeneratorToolStripMenuItem});
+            this.toolsToolStripMenuItem.Name = "toolsToolStripMenuItem";
+            this.toolsToolStripMenuItem.Size = new System.Drawing.Size(48, 20);
+            this.toolsToolStripMenuItem.Text = "Tools";
+            // 
+            // packetGeneratorToolStripMenuItem
+            // 
+            this.packetGeneratorToolStripMenuItem.Name = "packetGeneratorToolStripMenuItem";
+            this.packetGeneratorToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
+            this.packetGeneratorToolStripMenuItem.Text = "Packet Generator";
+            this.packetGeneratorToolStripMenuItem.Click += new System.EventHandler(this.packetGeneratorToolStripMenuItem_Click);
             // 
             // aboutToolStripMenuItem1
             // 
@@ -530,7 +531,6 @@
             this.ccd_bus_messages_groupbox.Controls.Add(this.ccd_bus_send_msg_button);
             this.ccd_bus_messages_groupbox.Controls.Add(this.ccd_bus_listen_checkbox);
             this.ccd_bus_messages_groupbox.Controls.Add(this.ccd_bus_log_clear_button);
-            this.ccd_bus_messages_groupbox.Controls.Add(this.ccd_bus_log_save_button);
             this.ccd_bus_messages_groupbox.Location = new System.Drawing.Point(383, 27);
             this.ccd_bus_messages_groupbox.Name = "ccd_bus_messages_groupbox";
             this.ccd_bus_messages_groupbox.Size = new System.Drawing.Size(220, 431);
@@ -619,32 +619,22 @@
             this.ccd_bus_listen_checkbox.Enabled = false;
             this.ccd_bus_listen_checkbox.Location = new System.Drawing.Point(6, 288);
             this.ccd_bus_listen_checkbox.Name = "ccd_bus_listen_checkbox";
-            this.ccd_bus_listen_checkbox.Size = new System.Drawing.Size(67, 17);
+            this.ccd_bus_listen_checkbox.Size = new System.Drawing.Size(110, 17);
             this.ccd_bus_listen_checkbox.TabIndex = 47;
-            this.ccd_bus_listen_checkbox.Text = "Disabled";
+            this.ccd_bus_listen_checkbox.Text = "CCD-bus disabled";
             this.ccd_bus_listen_checkbox.UseVisualStyleBackColor = true;
             this.ccd_bus_listen_checkbox.Click += new System.EventHandler(this.ccd_bus_enabled_checkbox_Click);
             // 
             // ccd_bus_log_clear_button
             // 
             this.ccd_bus_log_clear_button.Enabled = false;
-            this.ccd_bus_log_clear_button.Location = new System.Drawing.Point(153, 284);
+            this.ccd_bus_log_clear_button.Location = new System.Drawing.Point(153, 283);
             this.ccd_bus_log_clear_button.Name = "ccd_bus_log_clear_button";
             this.ccd_bus_log_clear_button.Size = new System.Drawing.Size(60, 23);
             this.ccd_bus_log_clear_button.TabIndex = 48;
             this.ccd_bus_log_clear_button.Text = "Clear";
             this.ccd_bus_log_clear_button.UseVisualStyleBackColor = true;
             this.ccd_bus_log_clear_button.Click += new System.EventHandler(this.ccd_bus_log_clear_button_Click);
-            // 
-            // ccd_bus_log_save_button
-            // 
-            this.ccd_bus_log_save_button.Enabled = false;
-            this.ccd_bus_log_save_button.Location = new System.Drawing.Point(87, 284);
-            this.ccd_bus_log_save_button.Name = "ccd_bus_log_save_button";
-            this.ccd_bus_log_save_button.Size = new System.Drawing.Size(60, 23);
-            this.ccd_bus_log_save_button.TabIndex = 47;
-            this.ccd_bus_log_save_button.Text = "Save";
-            this.ccd_bus_log_save_button.UseVisualStyleBackColor = true;
             // 
             // sci_bus_messages_groupbox
             // 
@@ -655,7 +645,6 @@
             this.sci_bus_messages_groupbox.Controls.Add(this.sci_message_filtering_textbox);
             this.sci_bus_messages_groupbox.Controls.Add(this.sci_filtering_checkbox);
             this.sci_bus_messages_groupbox.Controls.Add(this.sci_bus_log_clear_button);
-            this.sci_bus_messages_groupbox.Controls.Add(this.sci_bus_log_save_button);
             this.sci_bus_messages_groupbox.Controls.Add(this.sci_bus_send_msg_textbox);
             this.sci_bus_messages_groupbox.Controls.Add(this.sci_bus_send_msg_button);
             this.sci_bus_messages_groupbox.Location = new System.Drawing.Point(609, 27);
@@ -704,9 +693,9 @@
             this.sci_bus_listen_checkbox.Enabled = false;
             this.sci_bus_listen_checkbox.Location = new System.Drawing.Point(6, 288);
             this.sci_bus_listen_checkbox.Name = "sci_bus_listen_checkbox";
-            this.sci_bus_listen_checkbox.Size = new System.Drawing.Size(67, 17);
+            this.sci_bus_listen_checkbox.Size = new System.Drawing.Size(105, 17);
             this.sci_bus_listen_checkbox.TabIndex = 49;
-            this.sci_bus_listen_checkbox.Text = "Disabled";
+            this.sci_bus_listen_checkbox.Text = "SCI-bus disabled";
             this.sci_bus_listen_checkbox.UseVisualStyleBackColor = true;
             this.sci_bus_listen_checkbox.Click += new System.EventHandler(this.sci_bus_enabled_checkbox_Click);
             // 
@@ -735,23 +724,13 @@
             // sci_bus_log_clear_button
             // 
             this.sci_bus_log_clear_button.Enabled = false;
-            this.sci_bus_log_clear_button.Location = new System.Drawing.Point(153, 284);
+            this.sci_bus_log_clear_button.Location = new System.Drawing.Point(153, 283);
             this.sci_bus_log_clear_button.Name = "sci_bus_log_clear_button";
             this.sci_bus_log_clear_button.Size = new System.Drawing.Size(60, 23);
             this.sci_bus_log_clear_button.TabIndex = 51;
             this.sci_bus_log_clear_button.Text = "Clear";
             this.sci_bus_log_clear_button.UseVisualStyleBackColor = true;
             this.sci_bus_log_clear_button.Click += new System.EventHandler(this.sci_bus_log_clear_button_Click);
-            // 
-            // sci_bus_log_save_button
-            // 
-            this.sci_bus_log_save_button.Enabled = false;
-            this.sci_bus_log_save_button.Location = new System.Drawing.Point(87, 284);
-            this.sci_bus_log_save_button.Name = "sci_bus_log_save_button";
-            this.sci_bus_log_save_button.Size = new System.Drawing.Size(60, 23);
-            this.sci_bus_log_save_button.TabIndex = 50;
-            this.sci_bus_log_save_button.Text = "Save";
-            this.sci_bus_log_save_button.UseVisualStyleBackColor = true;
             // 
             // command_history_groupbox
             // 
@@ -803,7 +782,7 @@
             // 
             this.reboot_scanner_button.Location = new System.Drawing.Point(6, 106);
             this.reboot_scanner_button.Name = "reboot_scanner_button";
-            this.reboot_scanner_button.Size = new System.Drawing.Size(132, 23);
+            this.reboot_scanner_button.Size = new System.Drawing.Size(107, 23);
             this.reboot_scanner_button.TabIndex = 23;
             this.reboot_scanner_button.Text = "Reboot scanner";
             this.reboot_scanner_button.UseVisualStyleBackColor = true;
@@ -1175,21 +1154,6 @@
             this.flush_memory_button.UseVisualStyleBackColor = true;
             this.flush_memory_button.Click += new System.EventHandler(this.flush_memory_button_Click);
             // 
-            // toolsToolStripMenuItem
-            // 
-            this.toolsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.packetGeneratorToolStripMenuItem});
-            this.toolsToolStripMenuItem.Name = "toolsToolStripMenuItem";
-            this.toolsToolStripMenuItem.Size = new System.Drawing.Size(48, 20);
-            this.toolsToolStripMenuItem.Text = "Tools";
-            // 
-            // packetGeneratorToolStripMenuItem
-            // 
-            this.packetGeneratorToolStripMenuItem.Name = "packetGeneratorToolStripMenuItem";
-            this.packetGeneratorToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
-            this.packetGeneratorToolStripMenuItem.Text = "Packet Generator";
-            this.packetGeneratorToolStripMenuItem.Click += new System.EventHandler(this.packetGeneratorToolStripMenuItem_Click);
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1222,7 +1186,7 @@
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Chrysler CCD/SCI Scanner";
+            this.Text = "Chrysler CCD/SCI Scanner GUI";
             this.log_groupbox.ResumeLayout(false);
             this.log_groupbox.PerformLayout();
             this.menuStrip1.ResumeLayout(false);
@@ -1280,14 +1244,11 @@
         private System.Windows.Forms.GroupBox ccd_bus_messages_groupbox;
         private System.Windows.Forms.GroupBox sci_bus_messages_groupbox;
         private System.Windows.Forms.Button packet_log_clear_button;
-        private System.Windows.Forms.Button packet_log_save_button;
         private System.Windows.Forms.GroupBox command_history_groupbox;
         private System.Windows.Forms.CheckBox ccd_bus_listen_checkbox;
         private System.Windows.Forms.Button ccd_bus_log_clear_button;
-        private System.Windows.Forms.Button ccd_bus_log_save_button;
         private System.Windows.Forms.CheckBox sci_bus_listen_checkbox;
         private System.Windows.Forms.Button sci_bus_log_clear_button;
-        private System.Windows.Forms.Button sci_bus_log_save_button;
         private System.Windows.Forms.GroupBox misc_groupbox;
         private System.Windows.Forms.GroupBox scanner_connection_groupbox;
         private System.Windows.Forms.Button disconnect_button;

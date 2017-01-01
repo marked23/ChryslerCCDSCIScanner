@@ -1,4 +1,4 @@
-﻿namespace ChryslerCCDSCIScanner
+﻿namespace ChryslerCCDSCIScanner_GUI
 {
     partial class AboutForm
     {

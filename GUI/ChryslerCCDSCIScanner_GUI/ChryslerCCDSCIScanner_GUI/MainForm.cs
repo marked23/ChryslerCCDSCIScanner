@@ -11,7 +11,7 @@ using System.Globalization;
 using RJCP.IO.Ports;
 using RJCP.Datastructures;
 
-namespace ChryslerCCDSCIScanner
+namespace ChryslerCCDSCIScanner_GUI
 {
     public partial class MainForm : Form
     {
@@ -83,6 +83,9 @@ namespace ChryslerCCDSCIScanner
 
         public DateTime uc_time;
 
+        public string textlogfilename;
+        public string binarylogfilename;
+
         public MainForm()
         {
             InitializeComponent();
@@ -96,6 +99,11 @@ namespace ChryslerCCDSCIScanner
             timeout_timer.Elapsed += new ElapsedEventHandler(timeout_reached);
             timeout_timer.Interval = 200;
             timeout_timer.Enabled = false;
+
+            // Create logfile names
+            textlogfilename = @"LOG/textlog_" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".txt";
+            binarylogfilename = @"LOG/binarylog_" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".bin";
+
         }
 
         public void default_button_states()
@@ -105,19 +113,16 @@ namespace ChryslerCCDSCIScanner
             status_button.Enabled = false;
             exit_button.Enabled = true;
 
-            packet_log_save_button.Enabled = false;
             packet_log_clear_button.Enabled = false;
             packet_send_button.Enabled = false;
             packet_send_textbox.Enabled = false;
             packet_log_textbox.Enabled = true;
 
-            ccd_bus_log_save_button.Enabled = false;
             ccd_bus_log_clear_button.Enabled = false;
             ccd_bus_send_msg_button.Enabled = false;
             ccd_bus_send_msg_textbox.Enabled = false;
             ccd_bus_msg_richtextbox.Enabled = true;
 
-            sci_bus_log_save_button.Enabled = false;
             sci_bus_log_clear_button.Enabled = false;
             sci_bus_send_msg_button.Enabled = false;
             sci_bus_send_msg_textbox.Enabled = false;
@@ -241,7 +246,7 @@ namespace ChryslerCCDSCIScanner
                         }
                         else
                         {
-                            current_pointer++; // pop this false sync byte out of existence!
+                            current_pointer++;
                             last_packet_found = false;
                         }
                     }
@@ -357,12 +362,8 @@ namespace ChryslerCCDSCIScanner
                     if (scanner_found) break;
                 }
 
-                //serial = new SerialPortStream("COM11", 250000, 8, Parity.None, StopBits.One);
-                //get_scanner_handshake();
-
                 if (ports.Length == 0)
                 {
-                    //write_packet_textbox(new byte[1] { 0xFF }, 2, "NO COM PORTS AVAILABLE!");
                     write_command_history("Error: no COM ports are available!");
                     connect_button.Enabled = true;
                 }
@@ -495,9 +496,6 @@ namespace ChryslerCCDSCIScanner
             // Add the built string to the textbox in one go
             packet_log_textbox.AppendText(newstuff.ToString());
 
-            // Discard the temporary string builder
-            newstuff = null;
-
             // Scroll down to the end of the textbox
             packet_log_textbox.SelectionStart = packet_log_textbox.TextLength;
             packet_log_textbox.ScrollToCaret();
@@ -516,6 +514,17 @@ namespace ChryslerCCDSCIScanner
             if (rxtx == "TX") packet_count_tx++;
             packet_count_rx_label.Text = "Packets received: " + packet_count_rx;
             packet_count_tx_label.Text = "Packets sent: " + packet_count_tx;
+
+            // Save data to log files
+            if (!Directory.Exists("LOG")) Directory.CreateDirectory("LOG");
+            File.AppendAllText(textlogfilename, newstuff.ToString());
+            using (BinaryWriter writer = new BinaryWriter(File.Open(binarylogfilename, FileMode.Append)))
+            {
+                writer.Write(message);
+            }
+
+            // Discard the temporary string builder
+            newstuff = null;
 
         }
 
@@ -773,7 +782,7 @@ namespace ChryslerCCDSCIScanner
 
         private void status_button_Click(object sender, EventArgs e)
         {
-            ccdscipkt_tx.FromBytes(ccdscipkt_commands.request_status);
+            ccdscipkt_tx.GeneratePacket(CCDSCIPKT.from_laptop, CCDSCIPKT.to_scanner, CCDSCIPKT.status, CCDSCIPKT.ok, null);
             write_serial_data(ccdscipkt_tx.ToBytes());
             write_packet_textbox("TX", "REQUEST STATUS PACKET", ccdscipkt_tx.ToBytes());
         }
@@ -1042,12 +1051,10 @@ namespace ChryslerCCDSCIScanner
         {
             if (packet_log_textbox.Text != "")
             {
-                packet_log_save_button.Enabled = true;
                 packet_log_clear_button.Enabled = true;
             }
             else
             {
-                packet_log_save_button.Enabled = false;
                 packet_log_clear_button.Enabled = false;
             }
         }
@@ -1056,12 +1063,10 @@ namespace ChryslerCCDSCIScanner
         {
             if (ccd_bus_msg_richtextbox.Text != "")
             {
-                ccd_bus_log_save_button.Enabled = true;
                 ccd_bus_log_clear_button.Enabled = true;
             }
             else
             {
-                ccd_bus_log_save_button.Enabled = false;
                 ccd_bus_log_clear_button.Enabled = false;
             }
         }
@@ -1070,12 +1075,10 @@ namespace ChryslerCCDSCIScanner
         {
             if (sci_bus_msg_richtextbox.Text != "")
             {
-                sci_bus_log_save_button.Enabled = true;
                 sci_bus_log_clear_button.Enabled = true;
             }
             else
             {
-                sci_bus_log_save_button.Enabled = false;
                 sci_bus_log_clear_button.Enabled = false;
             }
         }
@@ -1428,12 +1431,10 @@ namespace ChryslerCCDSCIScanner
         {
             if (packet_log_textbox.Text != "")
             {
-                packet_log_save_button.Enabled = true;
                 packet_log_clear_button.Enabled = true;
             }
             else
             {
-                packet_log_save_button.Enabled = false;
                 packet_log_clear_button.Enabled = false;
             }
         }

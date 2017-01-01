@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace ChryslerCCDSCIScanner.Properties {
+namespace ChryslerCCDSCIScanner_GUI.Properties {
     using System;
     
     
