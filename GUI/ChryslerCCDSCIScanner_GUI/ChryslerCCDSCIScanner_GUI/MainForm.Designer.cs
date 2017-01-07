@@ -69,18 +69,20 @@
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ccd_bus_messages_groupbox = new System.Windows.Forms.GroupBox();
+            this.ccd_msg_stacking_checkbox = new System.Windows.Forms.CheckBox();
+            this.ccd_bus_msg_textbox = new System.Windows.Forms.TextBox();
             this.ccd_filter_clear_button = new System.Windows.Forms.Button();
             this.ccd_filtering_apply_button = new System.Windows.Forms.Button();
             this.ccd_message_filtering_textbox = new System.Windows.Forms.TextBox();
             this.ccd_filtering_checkbox = new System.Windows.Forms.CheckBox();
-            this.ccd_bus_msg_richtextbox = new System.Windows.Forms.RichTextBox();
             this.ccd_bus_send_msg_textbox = new System.Windows.Forms.TextBox();
             this.ccd_bus_send_msg_button = new System.Windows.Forms.Button();
             this.ccd_bus_listen_checkbox = new System.Windows.Forms.CheckBox();
             this.ccd_bus_log_clear_button = new System.Windows.Forms.Button();
             this.sci_bus_messages_groupbox = new System.Windows.Forms.GroupBox();
+            this.sci_msg_stacking_checkbox = new System.Windows.Forms.CheckBox();
+            this.sci_bus_msg_textbox = new System.Windows.Forms.TextBox();
             this.sci_filtering_clear_button = new System.Windows.Forms.Button();
-            this.sci_bus_msg_richtextbox = new System.Windows.Forms.RichTextBox();
             this.sci_filtering_apply_button = new System.Windows.Forms.Button();
             this.sci_bus_listen_checkbox = new System.Windows.Forms.CheckBox();
             this.sci_message_filtering_textbox = new System.Windows.Forms.TextBox();
@@ -122,8 +124,8 @@
             this.label12 = new System.Windows.Forms.Label();
             this.textBox4 = new System.Windows.Forms.TextBox();
             this.pcm_read_all = new System.Windows.Forms.Button();
-            this.pcm_parameters_richtextbox = new System.Windows.Forms.RichTextBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.sensor_data_textbox = new System.Windows.Forms.TextBox();
             this.button1 = new System.Windows.Forms.Button();
             this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
             this.flush_memory_button = new System.Windows.Forms.Button();
@@ -394,7 +396,7 @@
             this.packet_log_textbox.Multiline = true;
             this.packet_log_textbox.Name = "packet_log_textbox";
             this.packet_log_textbox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.packet_log_textbox.Size = new System.Drawing.Size(358, 234);
+            this.packet_log_textbox.Size = new System.Drawing.Size(359, 234);
             this.packet_log_textbox.TabIndex = 65;
             this.packet_log_textbox.TextChanged += new System.EventHandler(this.packet_log_textbox_TextChanged);
             // 
@@ -453,14 +455,16 @@
             // communication_packet_log_enabled_checkbox
             // 
             this.communication_packet_log_enabled_checkbox.AutoSize = true;
+            this.communication_packet_log_enabled_checkbox.Checked = true;
+            this.communication_packet_log_enabled_checkbox.CheckState = System.Windows.Forms.CheckState.Checked;
             this.communication_packet_log_enabled_checkbox.Enabled = false;
             this.communication_packet_log_enabled_checkbox.Location = new System.Drawing.Point(6, 288);
             this.communication_packet_log_enabled_checkbox.Name = "communication_packet_log_enabled_checkbox";
-            this.communication_packet_log_enabled_checkbox.Size = new System.Drawing.Size(119, 17);
+            this.communication_packet_log_enabled_checkbox.Size = new System.Drawing.Size(118, 17);
             this.communication_packet_log_enabled_checkbox.TabIndex = 1;
-            this.communication_packet_log_enabled_checkbox.Text = "Packet log disabled";
+            this.communication_packet_log_enabled_checkbox.Text = "Packet log enabled";
             this.communication_packet_log_enabled_checkbox.UseVisualStyleBackColor = true;
-            this.communication_packet_log_enabled_checkbox.Click += new System.EventHandler(this.communication_log_enabled_checkbox_Click);
+            this.communication_packet_log_enabled_checkbox.CheckedChanged += new System.EventHandler(this.communication_packet_log_enabled_checkbox_CheckedChanged);
             // 
             // menuStrip1
             // 
@@ -522,11 +526,12 @@
             // 
             // ccd_bus_messages_groupbox
             // 
+            this.ccd_bus_messages_groupbox.Controls.Add(this.ccd_msg_stacking_checkbox);
+            this.ccd_bus_messages_groupbox.Controls.Add(this.ccd_bus_msg_textbox);
             this.ccd_bus_messages_groupbox.Controls.Add(this.ccd_filter_clear_button);
             this.ccd_bus_messages_groupbox.Controls.Add(this.ccd_filtering_apply_button);
             this.ccd_bus_messages_groupbox.Controls.Add(this.ccd_message_filtering_textbox);
             this.ccd_bus_messages_groupbox.Controls.Add(this.ccd_filtering_checkbox);
-            this.ccd_bus_messages_groupbox.Controls.Add(this.ccd_bus_msg_richtextbox);
             this.ccd_bus_messages_groupbox.Controls.Add(this.ccd_bus_send_msg_textbox);
             this.ccd_bus_messages_groupbox.Controls.Add(this.ccd_bus_send_msg_button);
             this.ccd_bus_messages_groupbox.Controls.Add(this.ccd_bus_listen_checkbox);
@@ -537,6 +542,28 @@
             this.ccd_bus_messages_groupbox.TabIndex = 43;
             this.ccd_bus_messages_groupbox.TabStop = false;
             this.ccd_bus_messages_groupbox.Text = "CCD-bus Messages";
+            // 
+            // ccd_msg_stacking_checkbox
+            // 
+            this.ccd_msg_stacking_checkbox.AutoSize = true;
+            this.ccd_msg_stacking_checkbox.Enabled = false;
+            this.ccd_msg_stacking_checkbox.Location = new System.Drawing.Point(146, 406);
+            this.ccd_msg_stacking_checkbox.Name = "ccd_msg_stacking_checkbox";
+            this.ccd_msg_stacking_checkbox.Size = new System.Drawing.Size(68, 17);
+            this.ccd_msg_stacking_checkbox.TabIndex = 69;
+            this.ccd_msg_stacking_checkbox.Text = "Stacking";
+            this.ccd_msg_stacking_checkbox.UseVisualStyleBackColor = true;
+            // 
+            // ccd_bus_msg_textbox
+            // 
+            this.ccd_bus_msg_textbox.Font = new System.Drawing.Font("Courier New", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.ccd_bus_msg_textbox.Location = new System.Drawing.Point(3, 16);
+            this.ccd_bus_msg_textbox.MaxLength = 0;
+            this.ccd_bus_msg_textbox.Multiline = true;
+            this.ccd_bus_msg_textbox.Name = "ccd_bus_msg_textbox";
+            this.ccd_bus_msg_textbox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.ccd_bus_msg_textbox.Size = new System.Drawing.Size(214, 234);
+            this.ccd_bus_msg_textbox.TabIndex = 66;
             // 
             // ccd_filter_clear_button
             // 
@@ -561,12 +588,12 @@
             // ccd_message_filtering_textbox
             // 
             this.ccd_message_filtering_textbox.Font = new System.Drawing.Font("Courier New", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.ccd_message_filtering_textbox.Location = new System.Drawing.Point(3, 334);
+            this.ccd_message_filtering_textbox.Location = new System.Drawing.Point(3, 338);
             this.ccd_message_filtering_textbox.MaxLength = 0;
             this.ccd_message_filtering_textbox.Multiline = true;
             this.ccd_message_filtering_textbox.Name = "ccd_message_filtering_textbox";
             this.ccd_message_filtering_textbox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.ccd_message_filtering_textbox.Size = new System.Drawing.Size(213, 63);
+            this.ccd_message_filtering_textbox.Size = new System.Drawing.Size(213, 59);
             this.ccd_message_filtering_textbox.TabIndex = 66;
             // 
             // ccd_filtering_checkbox
@@ -579,19 +606,6 @@
             this.ccd_filtering_checkbox.TabIndex = 54;
             this.ccd_filtering_checkbox.Text = "CCD-bus message filtering";
             this.ccd_filtering_checkbox.UseVisualStyleBackColor = true;
-            // 
-            // ccd_bus_msg_richtextbox
-            // 
-            this.ccd_bus_msg_richtextbox.BackColor = System.Drawing.SystemColors.Window;
-            this.ccd_bus_msg_richtextbox.Dock = System.Windows.Forms.DockStyle.Top;
-            this.ccd_bus_msg_richtextbox.Font = new System.Drawing.Font("Courier New", 9F);
-            this.ccd_bus_msg_richtextbox.Location = new System.Drawing.Point(3, 16);
-            this.ccd_bus_msg_richtextbox.Name = "ccd_bus_msg_richtextbox";
-            this.ccd_bus_msg_richtextbox.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.ForcedVertical;
-            this.ccd_bus_msg_richtextbox.Size = new System.Drawing.Size(214, 234);
-            this.ccd_bus_msg_richtextbox.TabIndex = 47;
-            this.ccd_bus_msg_richtextbox.Text = "";
-            this.ccd_bus_msg_richtextbox.TextChanged += new System.EventHandler(this.ccd_bus_messages_richtextbox_TextChanged);
             // 
             // ccd_bus_send_msg_textbox
             // 
@@ -638,8 +652,9 @@
             // 
             // sci_bus_messages_groupbox
             // 
+            this.sci_bus_messages_groupbox.Controls.Add(this.sci_msg_stacking_checkbox);
+            this.sci_bus_messages_groupbox.Controls.Add(this.sci_bus_msg_textbox);
             this.sci_bus_messages_groupbox.Controls.Add(this.sci_filtering_clear_button);
-            this.sci_bus_messages_groupbox.Controls.Add(this.sci_bus_msg_richtextbox);
             this.sci_bus_messages_groupbox.Controls.Add(this.sci_filtering_apply_button);
             this.sci_bus_messages_groupbox.Controls.Add(this.sci_bus_listen_checkbox);
             this.sci_bus_messages_groupbox.Controls.Add(this.sci_message_filtering_textbox);
@@ -654,6 +669,28 @@
             this.sci_bus_messages_groupbox.TabStop = false;
             this.sci_bus_messages_groupbox.Text = "SCI-bus Messages";
             // 
+            // sci_msg_stacking_checkbox
+            // 
+            this.sci_msg_stacking_checkbox.AutoSize = true;
+            this.sci_msg_stacking_checkbox.Enabled = false;
+            this.sci_msg_stacking_checkbox.Location = new System.Drawing.Point(146, 406);
+            this.sci_msg_stacking_checkbox.Name = "sci_msg_stacking_checkbox";
+            this.sci_msg_stacking_checkbox.Size = new System.Drawing.Size(68, 17);
+            this.sci_msg_stacking_checkbox.TabIndex = 70;
+            this.sci_msg_stacking_checkbox.Text = "Stacking";
+            this.sci_msg_stacking_checkbox.UseVisualStyleBackColor = true;
+            // 
+            // sci_bus_msg_textbox
+            // 
+            this.sci_bus_msg_textbox.Font = new System.Drawing.Font("Courier New", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.sci_bus_msg_textbox.Location = new System.Drawing.Point(3, 16);
+            this.sci_bus_msg_textbox.MaxLength = 0;
+            this.sci_bus_msg_textbox.Multiline = true;
+            this.sci_bus_msg_textbox.Name = "sci_bus_msg_textbox";
+            this.sci_bus_msg_textbox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.sci_bus_msg_textbox.Size = new System.Drawing.Size(214, 234);
+            this.sci_bus_msg_textbox.TabIndex = 69;
+            // 
             // sci_filtering_clear_button
             // 
             this.sci_filtering_clear_button.Enabled = false;
@@ -663,19 +700,6 @@
             this.sci_filtering_clear_button.TabIndex = 72;
             this.sci_filtering_clear_button.Text = "Clear";
             this.sci_filtering_clear_button.UseVisualStyleBackColor = true;
-            // 
-            // sci_bus_msg_richtextbox
-            // 
-            this.sci_bus_msg_richtextbox.BackColor = System.Drawing.SystemColors.Window;
-            this.sci_bus_msg_richtextbox.Dock = System.Windows.Forms.DockStyle.Top;
-            this.sci_bus_msg_richtextbox.Font = new System.Drawing.Font("Courier New", 9F);
-            this.sci_bus_msg_richtextbox.Location = new System.Drawing.Point(3, 16);
-            this.sci_bus_msg_richtextbox.Name = "sci_bus_msg_richtextbox";
-            this.sci_bus_msg_richtextbox.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.ForcedVertical;
-            this.sci_bus_msg_richtextbox.Size = new System.Drawing.Size(214, 234);
-            this.sci_bus_msg_richtextbox.TabIndex = 54;
-            this.sci_bus_msg_richtextbox.Text = "";
-            this.sci_bus_msg_richtextbox.TextChanged += new System.EventHandler(this.sci_bus_messages_richtextbox_TextChanged);
             // 
             // sci_filtering_apply_button
             // 
@@ -702,12 +726,12 @@
             // sci_message_filtering_textbox
             // 
             this.sci_message_filtering_textbox.Font = new System.Drawing.Font("Courier New", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.sci_message_filtering_textbox.Location = new System.Drawing.Point(3, 334);
+            this.sci_message_filtering_textbox.Location = new System.Drawing.Point(3, 338);
             this.sci_message_filtering_textbox.MaxLength = 0;
             this.sci_message_filtering_textbox.Multiline = true;
             this.sci_message_filtering_textbox.Name = "sci_message_filtering_textbox";
             this.sci_message_filtering_textbox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.sci_message_filtering_textbox.Size = new System.Drawing.Size(213, 63);
+            this.sci_message_filtering_textbox.Size = new System.Drawing.Size(213, 59);
             this.sci_message_filtering_textbox.TabIndex = 70;
             // 
             // sci_filtering_checkbox
@@ -1095,21 +1119,9 @@
             this.pcm_read_all.UseVisualStyleBackColor = true;
             this.pcm_read_all.Click += new System.EventHandler(this.pcm_read_all_Click);
             // 
-            // pcm_parameters_richtextbox
-            // 
-            this.pcm_parameters_richtextbox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.pcm_parameters_richtextbox.Cursor = System.Windows.Forms.Cursors.IBeam;
-            this.pcm_parameters_richtextbox.Font = new System.Drawing.Font("Courier New", 9F);
-            this.pcm_parameters_richtextbox.Location = new System.Drawing.Point(6, 16);
-            this.pcm_parameters_richtextbox.Name = "pcm_parameters_richtextbox";
-            this.pcm_parameters_richtextbox.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.None;
-            this.pcm_parameters_richtextbox.Size = new System.Drawing.Size(329, 585);
-            this.pcm_parameters_richtextbox.TabIndex = 35;
-            this.pcm_parameters_richtextbox.Text = "";
-            // 
             // groupBox1
             // 
-            this.groupBox1.Controls.Add(this.pcm_parameters_richtextbox);
+            this.groupBox1.Controls.Add(this.sensor_data_textbox);
             this.groupBox1.Controls.Add(this.o2_sensor_button);
             this.groupBox1.Controls.Add(this.label10);
             this.groupBox1.Controls.Add(this.textBox1);
@@ -1125,6 +1137,17 @@
             this.groupBox1.TabIndex = 52;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Sensor Data";
+            // 
+            // sensor_data_textbox
+            // 
+            this.sensor_data_textbox.Font = new System.Drawing.Font("Courier New", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.sensor_data_textbox.Location = new System.Drawing.Point(6, 16);
+            this.sensor_data_textbox.MaxLength = 0;
+            this.sensor_data_textbox.Multiline = true;
+            this.sensor_data_textbox.Name = "sensor_data_textbox";
+            this.sensor_data_textbox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.sensor_data_textbox.Size = new System.Drawing.Size(329, 585);
+            this.sensor_data_textbox.TabIndex = 73;
             // 
             // button1
             // 
@@ -1265,8 +1288,6 @@
         private System.Windows.Forms.Button save_exteeprom_button;
         private System.Windows.Forms.Label label17;
         private System.Windows.Forms.GroupBox pcm_ram_map_groupbox;
-        private System.Windows.Forms.RichTextBox ccd_bus_msg_richtextbox;
-        private System.Windows.Forms.RichTextBox sci_bus_msg_richtextbox;
         private System.Windows.Forms.GroupBox real_time_diagnostics_groupbox;
         private System.Windows.Forms.Button real_time_diagnostics_button;
         private System.Windows.Forms.TextBox packet_send_textbox;
@@ -1293,7 +1314,6 @@
         private System.Windows.Forms.Label label12;
         private System.Windows.Forms.TextBox textBox4;
         private System.Windows.Forms.Button pcm_read_all;
-        private System.Windows.Forms.RichTextBox pcm_parameters_richtextbox;
         private System.Windows.Forms.Button read_dtc_tcm_button;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.Button button1;
@@ -1313,6 +1333,11 @@
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem toolsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem packetGeneratorToolStripMenuItem;
+        private System.Windows.Forms.TextBox ccd_bus_msg_textbox;
+        private System.Windows.Forms.TextBox sci_bus_msg_textbox;
+        private System.Windows.Forms.TextBox sensor_data_textbox;
+        private System.Windows.Forms.CheckBox ccd_msg_stacking_checkbox;
+        private System.Windows.Forms.CheckBox sci_msg_stacking_checkbox;
     }
 }
 

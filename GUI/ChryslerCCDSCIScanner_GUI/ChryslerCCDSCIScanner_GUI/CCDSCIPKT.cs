@@ -132,6 +132,9 @@ namespace ChryslerCCDSCIScanner_GUI
                     // Write final CHECKSUM byte to the MemoryStream
                     stream.Write(checksum, 0, checksum.Length);
 
+                    // Reset payload
+                    payload = null;
+
                     // Return the whole MemoryStream as a byte-array
                     return stream.ToArray();
                 }
@@ -232,10 +235,7 @@ namespace ChryslerCCDSCIScanner_GUI
             {
                 sync = new byte[1] { SYNC_BYTE };
 
-                if (payloadbuff != null)
-                {
-                    length = new byte[2] { (byte)(((payloadbuff.Length + 2) >> 8) & 0xFF), (byte)((payloadbuff.Length + 2) & 0xFF) };
-                }
+                if (payloadbuff != null) { length = new byte[2] { (byte)(((payloadbuff.Length + 2) >> 8) & 0xFF), (byte)((payloadbuff.Length + 2) & 0xFF) }; }
                 else { length = new byte[2] { 0x00, 0x02 }; }
 
                 datacode = new byte[1] { (byte)((source << 6) | (target << 4) | dc_command) };

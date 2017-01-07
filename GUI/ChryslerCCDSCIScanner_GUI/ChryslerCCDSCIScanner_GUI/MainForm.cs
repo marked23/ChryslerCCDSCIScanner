@@ -20,7 +20,6 @@ namespace ChryslerCCDSCIScanner_GUI
 
         // SerialPortStream object to transmit and receive byte-based messages
         SerialPortStream serial = new SerialPortStream();
-        //SerialPort serial = new SerialPort();
 
         DataReception dr = new DataReception();
 
@@ -121,12 +120,12 @@ namespace ChryslerCCDSCIScanner_GUI
             ccd_bus_log_clear_button.Enabled = false;
             ccd_bus_send_msg_button.Enabled = false;
             ccd_bus_send_msg_textbox.Enabled = false;
-            ccd_bus_msg_richtextbox.Enabled = true;
+            ccd_bus_msg_textbox.Enabled = true;
 
             sci_bus_log_clear_button.Enabled = false;
             sci_bus_send_msg_button.Enabled = false;
             sci_bus_send_msg_textbox.Enabled = false;
-            sci_bus_msg_richtextbox.Enabled = true;
+            sci_bus_msg_textbox.Enabled = true;
 
             read_inteeprom_button.Enabled = false;
             write_inteeprom_button.Enabled = false;
@@ -333,7 +332,6 @@ namespace ChryslerCCDSCIScanner_GUI
             {
                 // Get available COM ports
                 string[] ports = SerialPortStream.GetPortNames();
-                //string[] ports = SerialPort.GetPortNames();
 
                 // Cycle through all of them and try to get a handshake (don't be shy!)
                 foreach (string port in ports)
@@ -342,7 +340,6 @@ namespace ChryslerCCDSCIScanner_GUI
                     for (int i = 0; i < 5; i++)
                     {
                         serial = new SerialPortStream(port, 250000, 8, Parity.None, StopBits.One);
-                        //serial = new SerialPort(port, 250000, Parity.None, 8, StopBits.One);
                         if (get_scanner_handshake())
                         {
                             scanner_found = true;
@@ -356,6 +353,7 @@ namespace ChryslerCCDSCIScanner_GUI
                         {
                             scanner_found = false;
                             connect_button.Enabled = true;
+                            serial.Close();
                         }
                     }
 
@@ -364,15 +362,16 @@ namespace ChryslerCCDSCIScanner_GUI
 
                 if (ports.Length == 0)
                 {
-                    write_command_history("Error: no COM ports are available!");
+                    write_command_history("Error: no COM ports available!");
                     connect_button.Enabled = true;
                 }
 
                 textBox3.Text = ccdscipkt_lookuptable.lookup_pcm_dtc(0x08).ToString();
             }
-            catch (Exception ex)
+            catch
             {
                 connect_button.Enabled = true;
+                write_command_history("Error!");
             }
 
             if (backgroundWorker1.IsBusy != true)
@@ -385,10 +384,10 @@ namespace ChryslerCCDSCIScanner_GUI
         {
             try
             {
-                // Manually save the received bytes from the scanner
                 serial.Open();
-                write_serial_data(ccdscipkt_commands.request_scanner_handshake);
-                write_packet_textbox("TX", "REQUEST HANDSHAKE (" + serial.PortName + ")", ccdscipkt_commands.request_scanner_handshake);
+                ccdscipkt_tx.GeneratePacket(CCDSCIPKT.from_laptop, CCDSCIPKT.to_scanner, CCDSCIPKT.handshake, CCDSCIPKT.ok, null);
+                write_serial_data(ccdscipkt_tx.ToBytes());
+                write_packet_textbox("TX", "REQUEST HANDSHAKE FROM " + serial.PortName + " PORT", ccdscipkt_commands.request_scanner_handshake);
 
                 timeout = false;
                 timeout_timer.Enabled = true;
@@ -400,15 +399,18 @@ namespace ChryslerCCDSCIScanner_GUI
                 if (timeout)
                 {
                     timeout = false;
+
+                    // Manually save the received bytes from the scanner
                     int bytes = serial.BytesToRead;
                     byte[] data = new byte[bytes];
                     serial.Read(data, 0, bytes);
-                    write_packet_textbox("RX", "ERROR (" + serial.PortName + ")", data);
+                    write_packet_textbox("RX", "TIMEOUT OCCURED (" + serial.PortName + ")", data);
                     serial.Close();
                     return false;
                 }
                 else
                 {
+                    // Manually save the received bytes from the scanner
                     byte[] data = new byte[27];
                     serial.Read(data, 0, serial.BytesToRead);
 
@@ -434,19 +436,22 @@ namespace ChryslerCCDSCIScanner_GUI
                         data[24] == 0x45 &&   // E
                         data[25] == 0x52)     // R
                     {
-                        write_packet_textbox("RX", "HANDSHAKE RECEIVED (" + serial.PortName + ")", data);
+                        write_packet_textbox("RX", "VALID HANDSHAKE RECEIVED FROM " + serial.PortName + " PORT", data);
+                        //log_groupbox.Text = "Communication Packets " + serial.PortName;
+                        disconnect_button.Text = "Disconnect (" + serial.PortName + ")";
                         return true;
                     }
                     else
                     {
-                        write_packet_textbox("RX", "NO VALID HANDSHAKE RECEIVED (" + serial.PortName + ")", data);
+                        write_packet_textbox("RX", "INVALID HANDSHAKE RECEIVED FROM " + serial.PortName + " PORT", data);
                         serial.Close();
                         return false;
                     }
                 }
             }
-            catch (Exception e)
+            catch
             {
+                write_command_history("Error: can't open " + serial.PortName + " port!");
                 serial.Close();
                 return false;
             }
@@ -525,9 +530,7 @@ namespace ChryslerCCDSCIScanner_GUI
 
             // Discard the temporary string builder
             newstuff = null;
-
         }
-
 
         /// <summary>
         /// A simple async serial transmitter.
@@ -538,11 +541,10 @@ namespace ChryslerCCDSCIScanner_GUI
             try
             {
                 await serial.WriteAsync(message, 0, message.Length);
-                //await serial.BaseStream.WriteAsync(message, 0, message.Length);
             }
-            catch (Exception ex)
+            catch
             {
-                write_command_history("Error: " + ex.ToString() + "\n");
+                write_command_history("Error: can't write to serial port!");
             }
         }
 
@@ -560,7 +562,7 @@ namespace ChryslerCCDSCIScanner_GUI
                 {
                     serial_rx_buffer.Append(buffer, 0, actual_length);
                     Array.Clear(buffer, 0, buffer.Length);
-                    actual_length = 0;
+                    //actual_length = 0;
                     dr.DataReceived = true; // let the program know that we have something
 
                     buffer_start_label.Text = "Buffer Start: " + serial_rx_buffer.Start;
@@ -625,11 +627,11 @@ namespace ChryslerCCDSCIScanner_GUI
                                     ccdscipkt_rx.payload[19] == 0x45 &&   // E
                                     ccdscipkt_rx.payload[20] == 0x52)     // R
                                 {
-                                    write_packet_textbox("RX", "HANDSHAKE RECEIVED (" + serial.PortName + ")", data);
+                                    write_packet_textbox("RX", "VALID HANDSHAKE RECEIVED FROM " + serial.PortName + " PORT", data);
                                 }
                                 else
                                 {
-                                    write_packet_textbox("RX", "NO VALID HANDSHAKE RECEIVED (" + serial.PortName + ")", data);
+                                    write_packet_textbox("RX", "INVALID HANDSHAKE RECEIVED FROM " + serial.PortName + " PORT", data);
                                 }
                                 break;
                             }
@@ -645,7 +647,7 @@ namespace ChryslerCCDSCIScanner_GUI
                                     disconnect_button.Enabled = true;
                                     status_button.Enabled = true;
 
-                                    write_command_history("Scanner connected" + Environment.NewLine);
+                                    write_command_history("Scanner connected");
 
                                     if (sci_enabled)
                                     {
@@ -917,8 +919,9 @@ namespace ChryslerCCDSCIScanner_GUI
         public bool get_bit(byte b, int bitNumber)
         {
             bool bit = (b & (1 << bitNumber)) != 0;
-            if (bit) return true;
-            else return false;
+            return bit;
+            //if (bit) return true;
+            //else return false;
         }
 
         static byte[] GetBytes(string str)
@@ -1061,7 +1064,7 @@ namespace ChryslerCCDSCIScanner_GUI
 
         private void ccd_bus_messages_richtextbox_TextChanged(object sender, EventArgs e)
         {
-            if (ccd_bus_msg_richtextbox.Text != "")
+            if (ccd_bus_msg_textbox.Text != "")
             {
                 ccd_bus_log_clear_button.Enabled = true;
             }
@@ -1073,7 +1076,7 @@ namespace ChryslerCCDSCIScanner_GUI
 
         private void sci_bus_messages_richtextbox_TextChanged(object sender, EventArgs e)
         {
-            if (sci_bus_msg_richtextbox.Text != "")
+            if (sci_bus_msg_textbox.Text != "")
             {
                 sci_bus_log_clear_button.Enabled = true;
             }
@@ -1090,36 +1093,12 @@ namespace ChryslerCCDSCIScanner_GUI
 
         private void ccd_bus_log_clear_button_Click(object sender, EventArgs e)
         {
-            ccd_bus_msg_richtextbox.Clear();
+            ccd_bus_msg_textbox.Clear();
         }
 
         private void sci_bus_log_clear_button_Click(object sender, EventArgs e)
         {
-            sci_bus_msg_richtextbox.Clear();
-        }
-
-        private void communication_log_enabled_checkbox_Click(object sender, EventArgs e)
-        {
-            if (log_enabled)
-            {
-                log_enabled = false;
-                communication_packet_log_enabled_checkbox.Checked = false;
-                //packet_send_button.Enabled = false;
-                //packet_send_textbox.Clear();
-                //packet_send_textbox.Enabled = false;
-                ccdscipkt_tx.FromBytes(ccdscipkt_commands.log_off);
-                write_serial_data(ccdscipkt_tx.ToBytes());
-            }
-            else
-            {
-                log_enabled = true;
-                communication_packet_log_enabled_checkbox.Checked = true;
-                communication_packet_log_enabled_checkbox.Enabled = true;
-                //packet_send_button.Enabled = true;
-                //packet_send_textbox.Enabled = true;
-                ccdscipkt_tx.FromBytes(ccdscipkt_commands.log_on);
-                write_serial_data(ccdscipkt_tx.ToBytes());
-            }
+            sci_bus_msg_textbox.Clear();
         }
 
         private void sci_bus_enabled_checkbox_Click(object sender, EventArgs e)
@@ -1317,6 +1296,7 @@ namespace ChryslerCCDSCIScanner_GUI
             if (serial.IsOpen)
             {
                 serial.Close();
+                disconnect_button.Text = "Disconnect";
 
                 write_command_history("Scanner disconnected");
 
@@ -1416,8 +1396,8 @@ namespace ChryslerCCDSCIScanner_GUI
             }
 
             string temp_string_final = temp_string.ToString().ToUpper();
-            pcm_parameters_richtextbox.AppendText(temp_string_final + "\n\n");
-            pcm_parameters_richtextbox.ScrollToCaret();
+            sensor_data_textbox.AppendText(temp_string_final + "\n\n");
+            sensor_data_textbox.ScrollToCaret();
         }
 
         private void reboot_scanner_button_Click(object sender, EventArgs e)
@@ -1448,6 +1428,20 @@ namespace ChryslerCCDSCIScanner_GUI
         {
             PacketGenerator packetgenerator = new PacketGenerator();
             packetgenerator.Show();
+        }
+
+        private void communication_packet_log_enabled_checkbox_CheckedChanged(object sender, EventArgs e)
+        {
+            if (communication_packet_log_enabled_checkbox.Checked)
+            {
+                communication_packet_log_enabled_checkbox.Text = "Packet log enabled";
+                log_enabled = true;
+            }
+            else
+            {
+                communication_packet_log_enabled_checkbox.Text = "Packet log disabled";
+                log_enabled = false;
+            }
         }
     }
 
