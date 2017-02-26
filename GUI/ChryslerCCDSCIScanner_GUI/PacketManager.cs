@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace ChryslerCCDSCIScanner_GUI
 {
-    public class CCDSCIPKT
+    public class PacketManager
     {
         public const byte SYNC_BYTE         = 0x33;
         public const int MAX_PAYLOAD_LENGTH = 2042;
@@ -58,17 +58,15 @@ namespace ChryslerCCDSCIScanner_GUI
         public const byte error_general_invalid_address         = 0x10;
         public const byte error_general_invalid_address_range   = 0x11;
 
-        // CCDSCI Packet structure
-        public struct CCDSCI_PACKET
+        // CCD/SCI Packet structure
+        public struct PacketStructure
         {
-            // Basic CCDSCI Packet Structure variables
             public byte[] sync;         // SYNC bytes         [1]     { 0x33 }
             public byte[] length;       // LENGTH bytes       [2]     { 0x__, 0x__ } (number of PAYLOAD bytes)
             public byte[] datacode;     // DATA CODE byte     [1]     { 0x__ }
             public byte[] subdatacode;  // SUB-DATA CODE byte [1]     { 0x__ }
             public byte[] payload;      // PAYLOAD bytes      [VAR]   { 0x__, 0x__, 0x__, ..., 0x__ }
             public byte[] checksum;     // CHECKSUM bytes     [1]     { 0x__ } (LENGTH + DATA CODE + SUB-DATA CODE + PAYLOAD bytes summed and LSB byte taken)
-            // Note: if the LENGTH is 2 then there's only 1 DATA CODE byte, 1 SUB-DATACODE byte and no PAYLOAD bytes!
 
             // Create a byte-array for serial transmission or other purposes
             // Note: it tolerates length and checksum byte errors so they can be zeros if you manually send packets
@@ -96,7 +94,7 @@ namespace ChryslerCCDSCIScanner_GUI
                     length[1] = (byte)(calculated_length & 0xFF);
 
                     // Start writing to the MemoryStream
-                    // Write two SYNC bytes (they are constant)
+                    // Write one SYNC byte
                     sync = new byte[1] { SYNC_BYTE };
                     stream.Write(sync, 0, sync.Length);
 
@@ -235,8 +233,18 @@ namespace ChryslerCCDSCIScanner_GUI
             {
                 sync = new byte[1] { SYNC_BYTE };
 
-                if (payloadbuff != null) { length = new byte[2] { (byte)(((payloadbuff.Length + 2) >> 8) & 0xFF), (byte)((payloadbuff.Length + 2) & 0xFF) }; }
-                else { length = new byte[2] { 0x00, 0x02 }; }
+                if (payloadbuff != null)
+                {
+                    length = new byte[2]
+                    {
+                        (byte)(((payloadbuff.Length + 2) >> 8) & 0xFF),
+                        (byte)((payloadbuff.Length + 2) & 0xFF)
+                    };
+                }
+                else
+                {
+                    length = new byte[2] { 0x00, 0x02 };
+                }
 
                 datacode = new byte[1] { (byte)((source << 6) | (target << 4) | dc_command) };
                 subdatacode = new byte[1] { subdatacode_value };
@@ -265,49 +273,12 @@ namespace ChryslerCCDSCIScanner_GUI
         }
     }
 
-    class CCDSCIPKT_Commands
-    {
-        public byte[] ccd_bus_on = new byte[6]                      { 0x33, 0x00, 0x02, 0x8C, 0x04, 0x92 };
-        public byte[] ccd_bus_off = new byte[6]                     { 0x33, 0x00, 0x02, 0x8C, 0x05, 0x93 };
-        public byte[] sci_bus_on = new byte[6]                      { 0x33, 0x00, 0x02, 0x8C, 0x06, 0x94 };
-        public byte[] sci_bus_off = new byte[6]                     { 0x33, 0x00, 0x02, 0x8C, 0x07, 0x95 };
-        public byte[] request_bcm_memory_read_on = new byte[6]      { 0x33, 0x00, 0x02, 0x94, 0x08, 0x9E };
-        public byte[] request_bcm_memory_read_off = new byte[6]     { 0x33, 0x00, 0x02, 0x94, 0x09, 0x9F };
-        public byte[] request_exteeprom_content = new byte[6]       { 0x33, 0x00, 0x02, 0x8C, 0x15, 0xA3 };
-        public byte[] request_inteeprom_content = new byte[6]       { 0x33, 0x00, 0x02, 0x8C, 0x16, 0xA4 };
-        public byte[] request_status = new byte[6]                  { 0x33, 0x00, 0x02, 0x12, 0x00, 0x14 };
-        public byte[] request_dummy_packets = new byte[6]           { 0x33, 0x00, 0x02, 0x8C, 0x20, 0xAE };
-        public byte[] request_pcm_memory_26_read_on = new byte[6]   { 0x33, 0x00, 0x02, 0x8C, 0x21, 0xAF };
-        public byte[] request_pcm_memory_26_read_off = new byte[6]  { 0x33, 0x00, 0x02, 0x8C, 0x22, 0xB0 };
-        public byte[] sci_bus_high_speed_on = new byte[6]           { 0x33, 0x00, 0x02, 0x8C, 0x30, 0xBE };
-        public byte[] sci_bus_high_speed_off = new byte[6]          { 0x33, 0x00, 0x02, 0x8C, 0x31, 0xBF };
-        public byte[] erase_exteeprom_content = new byte[6]         { 0x33, 0x00, 0x02, 0x8C, 0x32, 0xC0 };
-        public byte[] log_on = new byte[6]                          { 0x33, 0x00, 0x02, 0x8C, 0x33, 0xC1 };
-        public byte[] log_off = new byte[6]                         { 0x33, 0x00, 0x02, 0x8C, 0x34, 0xC2 };
-        public byte[] request_pcm_memory_28_read_on = new byte[6]   { 0x33, 0x00, 0x02, 0x8C, 0x35, 0xC3 };
-        public byte[] request_pcm_memory_28_read_off = new byte[6]  { 0x33, 0x00, 0x02, 0x8C, 0x36, 0xC4 };
-        public byte[] request_pcm_ram_F2_on = new byte[7]           { 0x33, 0x00, 0x03, 0x8C, 0x37, 0xF2, 0xB8 };
-        public byte[] request_pcm_ram_F2_off = new byte[7]          { 0x33, 0x00, 0x03, 0x8C, 0x38, 0xF2, 0xB9 };
-        public byte[] request_pcm_ram_F4_on = new byte[7]           { 0x33, 0x00, 0x03, 0x8C, 0x37, 0xF4, 0xBA };
-        public byte[] request_pcm_ram_F4_off = new byte[7]          { 0x33, 0x00, 0x03, 0x8C, 0x38, 0xF4, 0xBB };
-        public byte[] request_pcm_ram_F6_on = new byte[7]           { 0x33, 0x00, 0x03, 0x8C, 0x37, 0xF6, 0xBC };
-        public byte[] request_pcm_ram_F6_off = new byte[7]          { 0x33, 0x00, 0x03, 0x8C, 0x38, 0xF6, 0xBD };
-        public byte[] request_o2_sensor_on = new byte[6]            { 0x33, 0x00, 0x02, 0x8C, 0x39, 0xC7 };
-        public byte[] request_o2_sensor_off = new byte[6]           { 0x33, 0x00, 0x02, 0x8C, 0x3A, 0xC8 };
-        public byte[] request_map_sensor_on = new byte[6]           { 0x33, 0x00, 0x02, 0x8C, 0x3B, 0xC9 };
-        public byte[] request_map_sensor_off = new byte[6]          { 0x33, 0x00, 0x02, 0x8C, 0x3C, 0xCA };
-        public byte[] request_pcm_read_all_on = new byte[6]         { 0x33, 0x00, 0x02, 0x8C, 0x3D, 0xCB };
-        public byte[] request_pcm_read_all_off = new byte[6]        { 0x33, 0x00, 0x02, 0x8C, 0x3E, 0xCC };
-        public byte[] request_scanner_handshake = new byte[6]       { 0x33, 0x00, 0x02, 0x11, 0x00, 0x13 };
-        public byte[] reboot_scanner = new byte[6]                  { 0x33, 0x00, 0x02, 0x10, 0x00, 0x12 };
-    }
-
-    class CCDSCIPKT_LookupTable
+    class DTC_LookupTable
     {
         public Dictionary<byte, string> PCM_DTC_Table { get; }
         public HashSet<byte> ReservedKeys { get; }
 
-        public CCDSCIPKT_LookupTable()
+        public DTC_LookupTable()
         {
             PCM_DTC_Table = new Dictionary<byte, string>();
             ReservedKeys = new HashSet<byte>();

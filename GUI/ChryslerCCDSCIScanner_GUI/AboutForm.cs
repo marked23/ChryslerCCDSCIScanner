@@ -10,10 +10,15 @@ using System.Windows.Forms;
 
 namespace ChryslerCCDSCIScanner_GUI
 {
-    public partial class PacketGenerator : Form
+    public partial class AboutForm : Form
     {
-        public PacketGenerator()
+        MainForm originalForm;
+
+        public AboutForm(MainForm incomingForm)
         {
+            this.CenterToParent();
+            originalForm = incomingForm;
+
             InitializeComponent();
             Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
         }
