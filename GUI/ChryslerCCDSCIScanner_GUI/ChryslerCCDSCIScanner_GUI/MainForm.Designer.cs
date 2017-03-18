@@ -44,7 +44,6 @@
             this.sci_bus_speed_label = new System.Windows.Forms.Label();
             this.erase_exteeprom_button = new System.Windows.Forms.Button();
             this.PacketLogGroupbox = new System.Windows.Forms.GroupBox();
-            this.PacketGeneratorButton = new System.Windows.Forms.Button();
             this.PacketTextbox = new System.Windows.Forms.TextBox();
             this.TXLabel = new System.Windows.Forms.Label();
             this.RXLabel = new System.Windows.Forms.Label();
@@ -52,6 +51,7 @@
             this.PacketSendButton = new System.Windows.Forms.Button();
             this.PacketClearButton = new System.Windows.Forms.Button();
             this.PacketLogEnabledCheckbox = new System.Windows.Forms.CheckBox();
+            this.PacketGeneratorButton = new System.Windows.Forms.Button();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -70,7 +70,7 @@
             this.CCDBusSendMsgTextbox = new System.Windows.Forms.TextBox();
             this.CCDBusSendMsgButton = new System.Windows.Forms.Button();
             this.CCDBusEnabledCheckbox = new System.Windows.Forms.CheckBox();
-            this.CCDBusClearButton = new System.Windows.Forms.Button();
+            this.CCDBusClearMsgButton = new System.Windows.Forms.Button();
             this.SCIBusMessagesGroupbox = new System.Windows.Forms.GroupBox();
             this.SCIBusMsgStackingCheckbox = new System.Windows.Forms.CheckBox();
             this.SCIBusMsgTextbox = new System.Windows.Forms.TextBox();
@@ -79,7 +79,7 @@
             this.SCIBusEnabledCheckbox = new System.Windows.Forms.CheckBox();
             this.SCIBusMsgFilterTextbox = new System.Windows.Forms.TextBox();
             this.SCIBusMsgFilterCheckbox = new System.Windows.Forms.CheckBox();
-            this.SCIBusClearButton = new System.Windows.Forms.Button();
+            this.SCIBusClearMsgButton = new System.Windows.Forms.Button();
             this.command_history_groupbox = new System.Windows.Forms.GroupBox();
             this.command_history_textbox = new System.Windows.Forms.TextBox();
             this.MiscGroupbox = new System.Windows.Forms.GroupBox();
@@ -99,17 +99,18 @@
             this.RealTimeDiagnosticsGroupbox = new System.Windows.Forms.GroupBox();
             this.real_time_diagnostics_button = new System.Windows.Forms.Button();
             this.ReadDTCsGroupbox = new System.Windows.Forms.GroupBox();
-            this.read_dtc_tcm_button = new System.Windows.Forms.Button();
-            this.read_dtc_mic_button = new System.Windows.Forms.Button();
-            this.read_dtc_abs_button = new System.Windows.Forms.Button();
-            this.read_dtc_acm_button = new System.Windows.Forms.Button();
-            this.read_dtc_bcm_button = new System.Windows.Forms.Button();
-            this.read_dtc_pcm_button = new System.Windows.Forms.Button();
+            this.ReadDTCTCMButton = new System.Windows.Forms.Button();
+            this.ReadDTCMICButton = new System.Windows.Forms.Button();
+            this.ReadDTCABSButton = new System.Windows.Forms.Button();
+            this.ReadDTCACMButton = new System.Windows.Forms.Button();
+            this.ReadDTCBCMButton = new System.Windows.Forms.Button();
+            this.ReadDTCPCMButton = new System.Windows.Forms.Button();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.SCIBusSpeedGroupbox = new System.Windows.Forms.GroupBox();
             this.SensorDataGroupbox = new System.Windows.Forms.GroupBox();
             this.SensorDataTextbox = new System.Windows.Forms.TextBox();
             this.ETCGroupbox = new System.Windows.Forms.GroupBox();
+            this.SuperCardButton = new System.Windows.Forms.Button();
             this.PacketLogGroupbox.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.CCDBusMessagesGroupbox.SuspendLayout();
@@ -188,7 +189,6 @@
             this.read_exteeprom_button.TabIndex = 18;
             this.read_exteeprom_button.Text = "Read";
             this.read_exteeprom_button.UseVisualStyleBackColor = true;
-            this.read_exteeprom_button.Click += new System.EventHandler(this.read_exteeprom_button_Click);
             // 
             // read_inteeprom_button
             // 
@@ -199,7 +199,6 @@
             this.read_inteeprom_button.TabIndex = 20;
             this.read_inteeprom_button.Text = "Read";
             this.read_inteeprom_button.UseVisualStyleBackColor = true;
-            this.read_inteeprom_button.Click += new System.EventHandler(this.read_inteeprom_button_Click);
             // 
             // StatusButton
             // 
@@ -221,7 +220,7 @@
             this.SCIBusSendMsgButton.TabIndex = 26;
             this.SCIBusSendMsgButton.Text = "Send";
             this.SCIBusSendMsgButton.UseVisualStyleBackColor = true;
-            this.SCIBusSendMsgButton.Click += new System.EventHandler(this.send_sci_msg_button_Click);
+            this.SCIBusSendMsgButton.Click += new System.EventHandler(this.SCIBusSendMsgButton_Click);
             // 
             // SCIBusSendMsgTextbox
             // 
@@ -231,7 +230,8 @@
             this.SCIBusSendMsgTextbox.Name = "SCIBusSendMsgTextbox";
             this.SCIBusSendMsgTextbox.Size = new System.Drawing.Size(143, 21);
             this.SCIBusSendMsgTextbox.TabIndex = 27;
-            this.SCIBusSendMsgTextbox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.sci_bus_send_msg_textbox_KeyPress);
+            this.SCIBusSendMsgTextbox.TextChanged += new System.EventHandler(this.SCIBusSendMsgTextbox_TextChanged);
+            this.SCIBusSendMsgTextbox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.SCIBusSendMsgTextbox_KeyPress);
             // 
             // sci_bus_hs_button
             // 
@@ -242,7 +242,7 @@
             this.sci_bus_hs_button.TabIndex = 28;
             this.sci_bus_hs_button.Text = "Switch";
             this.sci_bus_hs_button.UseVisualStyleBackColor = true;
-            this.sci_bus_hs_button.Click += new System.EventHandler(this.sci_bus_hs_button_Click);
+            this.sci_bus_hs_button.Click += new System.EventHandler(this.SCIBusHsButton_Click);
             // 
             // sci_bus_speed_label
             // 
@@ -262,7 +262,6 @@
             this.erase_exteeprom_button.TabIndex = 30;
             this.erase_exteeprom_button.Text = "Erase";
             this.erase_exteeprom_button.UseVisualStyleBackColor = true;
-            this.erase_exteeprom_button.Click += new System.EventHandler(this.erase_exteeprom_button_Click);
             // 
             // PacketLogGroupbox
             // 
@@ -279,16 +278,6 @@
             this.PacketLogGroupbox.TabIndex = 41;
             this.PacketLogGroupbox.TabStop = false;
             this.PacketLogGroupbox.Text = "COM packets";
-            // 
-            // PacketGeneratorButton
-            // 
-            this.PacketGeneratorButton.Location = new System.Drawing.Point(536, 476);
-            this.PacketGeneratorButton.Name = "PacketGeneratorButton";
-            this.PacketGeneratorButton.Size = new System.Drawing.Size(79, 23);
-            this.PacketGeneratorButton.TabIndex = 66;
-            this.PacketGeneratorButton.Text = "Generator";
-            this.PacketGeneratorButton.UseVisualStyleBackColor = true;
-            this.PacketGeneratorButton.Click += new System.EventHandler(this.PacketGeneratorButton_Click);
             // 
             // PacketTextbox
             // 
@@ -330,6 +319,7 @@
             this.PacketSendTextbox.Name = "PacketSendTextbox";
             this.PacketSendTextbox.Size = new System.Drawing.Size(289, 21);
             this.PacketSendTextbox.TabIndex = 55;
+            this.PacketSendTextbox.TextChanged += new System.EventHandler(this.PacketSendTextbox_TextChanged);
             this.PacketSendTextbox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.PacketSendTextbox_KeyPress);
             // 
             // PacketSendButton
@@ -357,6 +347,8 @@
             // PacketLogEnabledCheckbox
             // 
             this.PacketLogEnabledCheckbox.AutoSize = true;
+            this.PacketLogEnabledCheckbox.Checked = true;
+            this.PacketLogEnabledCheckbox.CheckState = System.Windows.Forms.CheckState.Checked;
             this.PacketLogEnabledCheckbox.Enabled = false;
             this.PacketLogEnabledCheckbox.Location = new System.Drawing.Point(6, 288);
             this.PacketLogEnabledCheckbox.Name = "PacketLogEnabledCheckbox";
@@ -365,6 +357,16 @@
             this.PacketLogEnabledCheckbox.Text = "Packet log enabled";
             this.PacketLogEnabledCheckbox.UseVisualStyleBackColor = true;
             this.PacketLogEnabledCheckbox.CheckedChanged += new System.EventHandler(this.PacketLogEnabledCheckbox_CheckedChanged);
+            // 
+            // PacketGeneratorButton
+            // 
+            this.PacketGeneratorButton.Location = new System.Drawing.Point(536, 476);
+            this.PacketGeneratorButton.Name = "PacketGeneratorButton";
+            this.PacketGeneratorButton.Size = new System.Drawing.Size(79, 23);
+            this.PacketGeneratorButton.TabIndex = 66;
+            this.PacketGeneratorButton.Text = "Generator";
+            this.PacketGeneratorButton.UseVisualStyleBackColor = true;
+            this.PacketGeneratorButton.Click += new System.EventHandler(this.PacketGeneratorButton_Click);
             // 
             // menuStrip1
             // 
@@ -434,7 +436,7 @@
             this.CCDBusMessagesGroupbox.Controls.Add(this.CCDBusSendMsgTextbox);
             this.CCDBusMessagesGroupbox.Controls.Add(this.CCDBusSendMsgButton);
             this.CCDBusMessagesGroupbox.Controls.Add(this.CCDBusEnabledCheckbox);
-            this.CCDBusMessagesGroupbox.Controls.Add(this.CCDBusClearButton);
+            this.CCDBusMessagesGroupbox.Controls.Add(this.CCDBusClearMsgButton);
             this.CCDBusMessagesGroupbox.Location = new System.Drawing.Point(383, 27);
             this.CCDBusMessagesGroupbox.Name = "CCDBusMessagesGroupbox";
             this.CCDBusMessagesGroupbox.Size = new System.Drawing.Size(220, 431);
@@ -455,6 +457,7 @@
             // 
             // CCDBusMsgTextbox
             // 
+            this.CCDBusMsgTextbox.Enabled = false;
             this.CCDBusMsgTextbox.Font = new System.Drawing.Font("Courier New", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.CCDBusMsgTextbox.Location = new System.Drawing.Point(3, 16);
             this.CCDBusMsgTextbox.MaxLength = 0;
@@ -489,6 +492,7 @@
             // 
             // CCDBusMsgFilterTextbox
             // 
+            this.CCDBusMsgFilterTextbox.Enabled = false;
             this.CCDBusMsgFilterTextbox.Font = new System.Drawing.Font("Courier New", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.CCDBusMsgFilterTextbox.Location = new System.Drawing.Point(3, 338);
             this.CCDBusMsgFilterTextbox.MaxLength = 0;
@@ -502,13 +506,13 @@
             // CCDBusMsgFilterCheckbox
             // 
             this.CCDBusMsgFilterCheckbox.AutoSize = true;
-            this.CCDBusMsgFilterCheckbox.Enabled = false;
             this.CCDBusMsgFilterCheckbox.Location = new System.Drawing.Point(6, 311);
             this.CCDBusMsgFilterCheckbox.Name = "CCDBusMsgFilterCheckbox";
             this.CCDBusMsgFilterCheckbox.Size = new System.Drawing.Size(149, 17);
             this.CCDBusMsgFilterCheckbox.TabIndex = 54;
             this.CCDBusMsgFilterCheckbox.Text = "CCD-bus message filtering";
             this.CCDBusMsgFilterCheckbox.UseVisualStyleBackColor = true;
+            this.CCDBusMsgFilterCheckbox.CheckedChanged += new System.EventHandler(this.CCDBusMsgFilterCheckbox_CheckedChanged);
             // 
             // CCDBusSendMsgTextbox
             // 
@@ -518,7 +522,8 @@
             this.CCDBusSendMsgTextbox.Name = "CCDBusSendMsgTextbox";
             this.CCDBusSendMsgTextbox.Size = new System.Drawing.Size(143, 21);
             this.CCDBusSendMsgTextbox.TabIndex = 53;
-            this.CCDBusSendMsgTextbox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.ccd_bus_send_msg_textbox_KeyPress);
+            this.CCDBusSendMsgTextbox.TextChanged += new System.EventHandler(this.CCDBusSendMsgTextbox_TextChanged);
+            this.CCDBusSendMsgTextbox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.CCDBusSendMsgTextbox_KeyPress);
             // 
             // CCDBusSendMsgButton
             // 
@@ -534,25 +539,24 @@
             // CCDBusEnabledCheckbox
             // 
             this.CCDBusEnabledCheckbox.AutoSize = true;
-            this.CCDBusEnabledCheckbox.Enabled = false;
             this.CCDBusEnabledCheckbox.Location = new System.Drawing.Point(6, 288);
             this.CCDBusEnabledCheckbox.Name = "CCDBusEnabledCheckbox";
             this.CCDBusEnabledCheckbox.Size = new System.Drawing.Size(110, 17);
             this.CCDBusEnabledCheckbox.TabIndex = 47;
             this.CCDBusEnabledCheckbox.Text = "CCD-bus disabled";
             this.CCDBusEnabledCheckbox.UseVisualStyleBackColor = true;
-            this.CCDBusEnabledCheckbox.Click += new System.EventHandler(this.ccd_bus_enabled_checkbox_Click);
+            this.CCDBusEnabledCheckbox.CheckedChanged += new System.EventHandler(this.CCDBusEnabledCheckbox_CheckedChanged);
             // 
-            // CCDBusClearButton
+            // CCDBusClearMsgButton
             // 
-            this.CCDBusClearButton.Enabled = false;
-            this.CCDBusClearButton.Location = new System.Drawing.Point(153, 283);
-            this.CCDBusClearButton.Name = "CCDBusClearButton";
-            this.CCDBusClearButton.Size = new System.Drawing.Size(60, 23);
-            this.CCDBusClearButton.TabIndex = 48;
-            this.CCDBusClearButton.Text = "Clear";
-            this.CCDBusClearButton.UseVisualStyleBackColor = true;
-            this.CCDBusClearButton.Click += new System.EventHandler(this.ccd_bus_log_clear_button_Click);
+            this.CCDBusClearMsgButton.Enabled = false;
+            this.CCDBusClearMsgButton.Location = new System.Drawing.Point(153, 283);
+            this.CCDBusClearMsgButton.Name = "CCDBusClearMsgButton";
+            this.CCDBusClearMsgButton.Size = new System.Drawing.Size(60, 23);
+            this.CCDBusClearMsgButton.TabIndex = 48;
+            this.CCDBusClearMsgButton.Text = "Clear";
+            this.CCDBusClearMsgButton.UseVisualStyleBackColor = true;
+            this.CCDBusClearMsgButton.Click += new System.EventHandler(this.CCDBusLogClearButton_Click);
             // 
             // SCIBusMessagesGroupbox
             // 
@@ -563,7 +567,7 @@
             this.SCIBusMessagesGroupbox.Controls.Add(this.SCIBusEnabledCheckbox);
             this.SCIBusMessagesGroupbox.Controls.Add(this.SCIBusMsgFilterTextbox);
             this.SCIBusMessagesGroupbox.Controls.Add(this.SCIBusMsgFilterCheckbox);
-            this.SCIBusMessagesGroupbox.Controls.Add(this.SCIBusClearButton);
+            this.SCIBusMessagesGroupbox.Controls.Add(this.SCIBusClearMsgButton);
             this.SCIBusMessagesGroupbox.Controls.Add(this.SCIBusSendMsgTextbox);
             this.SCIBusMessagesGroupbox.Controls.Add(this.SCIBusSendMsgButton);
             this.SCIBusMessagesGroupbox.Location = new System.Drawing.Point(609, 27);
@@ -586,6 +590,7 @@
             // 
             // SCIBusMsgTextbox
             // 
+            this.SCIBusMsgTextbox.Enabled = false;
             this.SCIBusMsgTextbox.Font = new System.Drawing.Font("Courier New", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.SCIBusMsgTextbox.Location = new System.Drawing.Point(3, 16);
             this.SCIBusMsgTextbox.MaxLength = 0;
@@ -605,6 +610,7 @@
             this.SCIBusMsgFilterClearButton.TabIndex = 72;
             this.SCIBusMsgFilterClearButton.Text = "Clear";
             this.SCIBusMsgFilterClearButton.UseVisualStyleBackColor = true;
+            this.SCIBusMsgFilterClearButton.Click += new System.EventHandler(this.SCIBusMsgFilterClearButton_Click);
             // 
             // SCIBusMsgFilterApplyButton
             // 
@@ -615,21 +621,22 @@
             this.SCIBusMsgFilterApplyButton.TabIndex = 71;
             this.SCIBusMsgFilterApplyButton.Text = "Apply";
             this.SCIBusMsgFilterApplyButton.UseVisualStyleBackColor = true;
+            this.SCIBusMsgFilterApplyButton.Click += new System.EventHandler(this.SCIBusMsgFilterApplyButton_Click);
             // 
             // SCIBusEnabledCheckbox
             // 
             this.SCIBusEnabledCheckbox.AutoSize = true;
-            this.SCIBusEnabledCheckbox.Enabled = false;
             this.SCIBusEnabledCheckbox.Location = new System.Drawing.Point(6, 288);
             this.SCIBusEnabledCheckbox.Name = "SCIBusEnabledCheckbox";
             this.SCIBusEnabledCheckbox.Size = new System.Drawing.Size(105, 17);
             this.SCIBusEnabledCheckbox.TabIndex = 49;
             this.SCIBusEnabledCheckbox.Text = "SCI-bus disabled";
             this.SCIBusEnabledCheckbox.UseVisualStyleBackColor = true;
-            this.SCIBusEnabledCheckbox.Click += new System.EventHandler(this.sci_bus_enabled_checkbox_Click);
+            this.SCIBusEnabledCheckbox.CheckedChanged += new System.EventHandler(this.SCIBusEnabledCheckbox_CheckedChanged);
             // 
             // SCIBusMsgFilterTextbox
             // 
+            this.SCIBusMsgFilterTextbox.Enabled = false;
             this.SCIBusMsgFilterTextbox.Font = new System.Drawing.Font("Courier New", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.SCIBusMsgFilterTextbox.Location = new System.Drawing.Point(3, 338);
             this.SCIBusMsgFilterTextbox.MaxLength = 0;
@@ -643,24 +650,24 @@
             // SCIBusMsgFilterCheckbox
             // 
             this.SCIBusMsgFilterCheckbox.AutoSize = true;
-            this.SCIBusMsgFilterCheckbox.Enabled = false;
             this.SCIBusMsgFilterCheckbox.Location = new System.Drawing.Point(6, 311);
             this.SCIBusMsgFilterCheckbox.Name = "SCIBusMsgFilterCheckbox";
             this.SCIBusMsgFilterCheckbox.Size = new System.Drawing.Size(144, 17);
             this.SCIBusMsgFilterCheckbox.TabIndex = 69;
             this.SCIBusMsgFilterCheckbox.Text = "SCI-bus message filtering";
             this.SCIBusMsgFilterCheckbox.UseVisualStyleBackColor = true;
+            this.SCIBusMsgFilterCheckbox.CheckedChanged += new System.EventHandler(this.SCIBusMsgFilterCheckbox_CheckedChanged);
             // 
-            // SCIBusClearButton
+            // SCIBusClearMsgButton
             // 
-            this.SCIBusClearButton.Enabled = false;
-            this.SCIBusClearButton.Location = new System.Drawing.Point(153, 283);
-            this.SCIBusClearButton.Name = "SCIBusClearButton";
-            this.SCIBusClearButton.Size = new System.Drawing.Size(60, 23);
-            this.SCIBusClearButton.TabIndex = 51;
-            this.SCIBusClearButton.Text = "Clear";
-            this.SCIBusClearButton.UseVisualStyleBackColor = true;
-            this.SCIBusClearButton.Click += new System.EventHandler(this.sci_bus_log_clear_button_Click);
+            this.SCIBusClearMsgButton.Enabled = false;
+            this.SCIBusClearMsgButton.Location = new System.Drawing.Point(153, 283);
+            this.SCIBusClearMsgButton.Name = "SCIBusClearMsgButton";
+            this.SCIBusClearMsgButton.Size = new System.Drawing.Size(60, 23);
+            this.SCIBusClearMsgButton.TabIndex = 51;
+            this.SCIBusClearMsgButton.Text = "Clear";
+            this.SCIBusClearMsgButton.UseVisualStyleBackColor = true;
+            this.SCIBusClearMsgButton.Click += new System.EventHandler(this.SCIBusLogClearButton_Click);
             // 
             // command_history_groupbox
             // 
@@ -858,16 +865,16 @@
             this.real_time_diagnostics_button.TabIndex = 51;
             this.real_time_diagnostics_button.Text = "Open";
             this.real_time_diagnostics_button.UseVisualStyleBackColor = true;
-            this.real_time_diagnostics_button.Click += new System.EventHandler(this.real_time_diagnostics_button_Click);
+            this.real_time_diagnostics_button.Click += new System.EventHandler(this.RealTimeDiagnosticsButton_Click);
             // 
             // ReadDTCsGroupbox
             // 
-            this.ReadDTCsGroupbox.Controls.Add(this.read_dtc_tcm_button);
-            this.ReadDTCsGroupbox.Controls.Add(this.read_dtc_mic_button);
-            this.ReadDTCsGroupbox.Controls.Add(this.read_dtc_abs_button);
-            this.ReadDTCsGroupbox.Controls.Add(this.read_dtc_acm_button);
-            this.ReadDTCsGroupbox.Controls.Add(this.read_dtc_bcm_button);
-            this.ReadDTCsGroupbox.Controls.Add(this.read_dtc_pcm_button);
+            this.ReadDTCsGroupbox.Controls.Add(this.ReadDTCTCMButton);
+            this.ReadDTCsGroupbox.Controls.Add(this.ReadDTCMICButton);
+            this.ReadDTCsGroupbox.Controls.Add(this.ReadDTCABSButton);
+            this.ReadDTCsGroupbox.Controls.Add(this.ReadDTCACMButton);
+            this.ReadDTCsGroupbox.Controls.Add(this.ReadDTCBCMButton);
+            this.ReadDTCsGroupbox.Controls.Add(this.ReadDTCPCMButton);
             this.ReadDTCsGroupbox.Location = new System.Drawing.Point(383, 534);
             this.ReadDTCsGroupbox.Name = "ReadDTCsGroupbox";
             this.ReadDTCsGroupbox.Size = new System.Drawing.Size(140, 106);
@@ -875,67 +882,71 @@
             this.ReadDTCsGroupbox.TabStop = false;
             this.ReadDTCsGroupbox.Text = "Read DTCs";
             // 
-            // read_dtc_tcm_button
+            // ReadDTCTCMButton
             // 
-            this.read_dtc_tcm_button.Location = new System.Drawing.Point(6, 77);
-            this.read_dtc_tcm_button.Name = "read_dtc_tcm_button";
-            this.read_dtc_tcm_button.Size = new System.Drawing.Size(61, 23);
-            this.read_dtc_tcm_button.TabIndex = 57;
-            this.read_dtc_tcm_button.Text = "TCM";
-            this.toolTip1.SetToolTip(this.read_dtc_tcm_button, "Transmission Control Module");
-            this.read_dtc_tcm_button.UseVisualStyleBackColor = true;
+            this.ReadDTCTCMButton.Location = new System.Drawing.Point(6, 77);
+            this.ReadDTCTCMButton.Name = "ReadDTCTCMButton";
+            this.ReadDTCTCMButton.Size = new System.Drawing.Size(61, 23);
+            this.ReadDTCTCMButton.TabIndex = 57;
+            this.ReadDTCTCMButton.Text = "TCM";
+            this.toolTip1.SetToolTip(this.ReadDTCTCMButton, "Transmission Control Module");
+            this.ReadDTCTCMButton.UseVisualStyleBackColor = true;
+            this.ReadDTCTCMButton.Click += new System.EventHandler(this.ReadDTCTCMButton_Click);
             // 
-            // read_dtc_mic_button
+            // ReadDTCMICButton
             // 
-            this.read_dtc_mic_button.Location = new System.Drawing.Point(73, 77);
-            this.read_dtc_mic_button.Name = "read_dtc_mic_button";
-            this.read_dtc_mic_button.Size = new System.Drawing.Size(61, 23);
-            this.read_dtc_mic_button.TabIndex = 56;
-            this.read_dtc_mic_button.Text = "MIC";
-            this.toolTip1.SetToolTip(this.read_dtc_mic_button, "Mechanical Instrument Cluster");
-            this.read_dtc_mic_button.UseVisualStyleBackColor = true;
-            this.read_dtc_mic_button.Click += new System.EventHandler(this.read_dtc_mic_button_Click);
+            this.ReadDTCMICButton.Location = new System.Drawing.Point(73, 77);
+            this.ReadDTCMICButton.Name = "ReadDTCMICButton";
+            this.ReadDTCMICButton.Size = new System.Drawing.Size(61, 23);
+            this.ReadDTCMICButton.TabIndex = 56;
+            this.ReadDTCMICButton.Text = "MIC";
+            this.toolTip1.SetToolTip(this.ReadDTCMICButton, "Mechanical Instrument Cluster");
+            this.ReadDTCMICButton.UseVisualStyleBackColor = true;
+            this.ReadDTCMICButton.Click += new System.EventHandler(this.ReadDTCMICButton_Click);
             // 
-            // read_dtc_abs_button
+            // ReadDTCABSButton
             // 
-            this.read_dtc_abs_button.Location = new System.Drawing.Point(73, 48);
-            this.read_dtc_abs_button.Name = "read_dtc_abs_button";
-            this.read_dtc_abs_button.Size = new System.Drawing.Size(61, 23);
-            this.read_dtc_abs_button.TabIndex = 55;
-            this.read_dtc_abs_button.Text = "ABS";
-            this.toolTip1.SetToolTip(this.read_dtc_abs_button, "Antilock Brake System");
-            this.read_dtc_abs_button.UseVisualStyleBackColor = true;
+            this.ReadDTCABSButton.Location = new System.Drawing.Point(73, 48);
+            this.ReadDTCABSButton.Name = "ReadDTCABSButton";
+            this.ReadDTCABSButton.Size = new System.Drawing.Size(61, 23);
+            this.ReadDTCABSButton.TabIndex = 55;
+            this.ReadDTCABSButton.Text = "ABS";
+            this.toolTip1.SetToolTip(this.ReadDTCABSButton, "Antilock Brake System");
+            this.ReadDTCABSButton.UseVisualStyleBackColor = true;
+            this.ReadDTCABSButton.Click += new System.EventHandler(this.ReadDTCABSButton_Click);
             // 
-            // read_dtc_acm_button
+            // ReadDTCACMButton
             // 
-            this.read_dtc_acm_button.Location = new System.Drawing.Point(6, 48);
-            this.read_dtc_acm_button.Name = "read_dtc_acm_button";
-            this.read_dtc_acm_button.Size = new System.Drawing.Size(61, 23);
-            this.read_dtc_acm_button.TabIndex = 54;
-            this.read_dtc_acm_button.Text = "ACM";
-            this.toolTip1.SetToolTip(this.read_dtc_acm_button, "Airbag Control Module");
-            this.read_dtc_acm_button.UseVisualStyleBackColor = true;
+            this.ReadDTCACMButton.Location = new System.Drawing.Point(6, 48);
+            this.ReadDTCACMButton.Name = "ReadDTCACMButton";
+            this.ReadDTCACMButton.Size = new System.Drawing.Size(61, 23);
+            this.ReadDTCACMButton.TabIndex = 54;
+            this.ReadDTCACMButton.Text = "ACM";
+            this.toolTip1.SetToolTip(this.ReadDTCACMButton, "Airbag Control Module");
+            this.ReadDTCACMButton.UseVisualStyleBackColor = true;
+            this.ReadDTCACMButton.Click += new System.EventHandler(this.ReadDTCACMButton_Click);
             // 
-            // read_dtc_bcm_button
+            // ReadDTCBCMButton
             // 
-            this.read_dtc_bcm_button.Location = new System.Drawing.Point(73, 19);
-            this.read_dtc_bcm_button.Name = "read_dtc_bcm_button";
-            this.read_dtc_bcm_button.Size = new System.Drawing.Size(61, 23);
-            this.read_dtc_bcm_button.TabIndex = 53;
-            this.read_dtc_bcm_button.Text = "BCM";
-            this.toolTip1.SetToolTip(this.read_dtc_bcm_button, "Body Control Module");
-            this.read_dtc_bcm_button.UseVisualStyleBackColor = true;
+            this.ReadDTCBCMButton.Location = new System.Drawing.Point(73, 19);
+            this.ReadDTCBCMButton.Name = "ReadDTCBCMButton";
+            this.ReadDTCBCMButton.Size = new System.Drawing.Size(61, 23);
+            this.ReadDTCBCMButton.TabIndex = 53;
+            this.ReadDTCBCMButton.Text = "BCM";
+            this.toolTip1.SetToolTip(this.ReadDTCBCMButton, "Body Control Module");
+            this.ReadDTCBCMButton.UseVisualStyleBackColor = true;
+            this.ReadDTCBCMButton.Click += new System.EventHandler(this.ReadDTCBCMButton_Click);
             // 
-            // read_dtc_pcm_button
+            // ReadDTCPCMButton
             // 
-            this.read_dtc_pcm_button.Location = new System.Drawing.Point(6, 19);
-            this.read_dtc_pcm_button.Name = "read_dtc_pcm_button";
-            this.read_dtc_pcm_button.Size = new System.Drawing.Size(61, 23);
-            this.read_dtc_pcm_button.TabIndex = 52;
-            this.read_dtc_pcm_button.Text = "PCM";
-            this.toolTip1.SetToolTip(this.read_dtc_pcm_button, "Powertrain Control Module");
-            this.read_dtc_pcm_button.UseVisualStyleBackColor = true;
-            this.read_dtc_pcm_button.Click += new System.EventHandler(this.read_dtc_pcm_button_Click);
+            this.ReadDTCPCMButton.Location = new System.Drawing.Point(6, 19);
+            this.ReadDTCPCMButton.Name = "ReadDTCPCMButton";
+            this.ReadDTCPCMButton.Size = new System.Drawing.Size(61, 23);
+            this.ReadDTCPCMButton.TabIndex = 52;
+            this.ReadDTCPCMButton.Text = "PCM";
+            this.toolTip1.SetToolTip(this.ReadDTCPCMButton, "Powertrain Control Module");
+            this.ReadDTCPCMButton.UseVisualStyleBackColor = true;
+            this.ReadDTCPCMButton.Click += new System.EventHandler(this.ReadDTCPCMButton_Click);
             // 
             // SCIBusSpeedGroupbox
             // 
@@ -971,18 +982,29 @@
             // 
             // ETCGroupbox
             // 
-            this.ETCGroupbox.Location = new System.Drawing.Point(529, 525);
+            this.ETCGroupbox.Location = new System.Drawing.Point(529, 534);
             this.ETCGroupbox.Name = "ETCGroupbox";
-            this.ETCGroupbox.Size = new System.Drawing.Size(300, 163);
+            this.ETCGroupbox.Size = new System.Drawing.Size(300, 154);
             this.ETCGroupbox.TabIndex = 52;
             this.ETCGroupbox.TabStop = false;
             this.ETCGroupbox.Text = "etc...";
+            // 
+            // SuperCardButton
+            // 
+            this.SuperCardButton.Location = new System.Drawing.Point(621, 476);
+            this.SuperCardButton.Name = "SuperCardButton";
+            this.SuperCardButton.Size = new System.Drawing.Size(108, 23);
+            this.SuperCardButton.TabIndex = 67;
+            this.SuperCardButton.Text = "SuperCard reader";
+            this.SuperCardButton.UseVisualStyleBackColor = true;
+            this.SuperCardButton.Click += new System.EventHandler(this.SuperCardButton_Click);
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1184, 692);
+            this.Controls.Add(this.SuperCardButton);
             this.Controls.Add(this.PacketGeneratorButton);
             this.Controls.Add(this.ETCGroupbox);
             this.Controls.Add(this.SensorDataGroupbox);
@@ -1053,9 +1075,9 @@
         private System.Windows.Forms.Button PacketClearButton;
         private System.Windows.Forms.GroupBox command_history_groupbox;
         private System.Windows.Forms.CheckBox CCDBusEnabledCheckbox;
-        private System.Windows.Forms.Button CCDBusClearButton;
+        private System.Windows.Forms.Button CCDBusClearMsgButton;
         private System.Windows.Forms.CheckBox SCIBusEnabledCheckbox;
-        private System.Windows.Forms.Button SCIBusClearButton;
+        private System.Windows.Forms.Button SCIBusClearMsgButton;
         private System.Windows.Forms.GroupBox MiscGroupbox;
         private System.Windows.Forms.GroupBox ControlPanelGroupbox;
         private System.Windows.Forms.Button DisconnectButton;
@@ -1077,18 +1099,18 @@
         private System.Windows.Forms.Button PacketSendButton;
         private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
         private System.Windows.Forms.GroupBox ReadDTCsGroupbox;
-        private System.Windows.Forms.Button read_dtc_abs_button;
-        private System.Windows.Forms.Button read_dtc_acm_button;
-        private System.Windows.Forms.Button read_dtc_bcm_button;
-        private System.Windows.Forms.Button read_dtc_pcm_button;
+        private System.Windows.Forms.Button ReadDTCABSButton;
+        private System.Windows.Forms.Button ReadDTCACMButton;
+        private System.Windows.Forms.Button ReadDTCBCMButton;
+        private System.Windows.Forms.Button ReadDTCPCMButton;
         private System.Windows.Forms.ToolTip toolTip1;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem1;
         private System.Windows.Forms.Label RXLabel;
         private System.Windows.Forms.Label TXLabel;
         private System.Windows.Forms.GroupBox SCIBusSpeedGroupbox;
-        private System.Windows.Forms.Button read_dtc_mic_button;
-        private System.Windows.Forms.Button read_dtc_tcm_button;
+        private System.Windows.Forms.Button ReadDTCMICButton;
+        private System.Windows.Forms.Button ReadDTCTCMButton;
         private System.Windows.Forms.GroupBox SensorDataGroupbox;
         private System.Windows.Forms.Button RebootScannerButton;
         private System.Windows.Forms.TextBox PacketTextbox;
@@ -1112,6 +1134,7 @@
         private System.Windows.Forms.CheckBox SCIBusMsgStackingCheckbox;
         private System.Windows.Forms.GroupBox ETCGroupbox;
         private System.Windows.Forms.Button PacketGeneratorButton;
+        private System.Windows.Forms.Button SuperCardButton;
     }
 }
 

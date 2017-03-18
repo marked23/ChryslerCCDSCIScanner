@@ -69,7 +69,7 @@ namespace ChryslerCCDSCIScanner_GUI
             public byte[] checksum;     // CHECKSUM bytes     [1]     { 0x__ } (LENGTH + DATA CODE + SUB-DATA CODE + PAYLOAD bytes summed and LSB byte taken)
 
             // Create a byte-array for serial transmission or other purposes
-            // Note: it tolerates length and checksum byte errors so they can be zeros if you manually send packets
+            // Note: this method tolerates length and checksum byte errors so they can be zeros if you manually send packets
             // Another note: it takes the structure variables and transforms them into a byte-array, so they need to be previously filled with data
             public byte[] ToBytes()
             {
@@ -226,7 +226,7 @@ namespace ChryslerCCDSCIScanner_GUI
                 }
             }
 
-            // This function takes the input values and fills the structure variables with the appropriate values
+            // This method takes the input values and fills the structure variables with the appropriate values
             // Note: practically this function needs to be used with the ToBytes() function after the packet has been "generated"
             // Side note: packets are easier to be generated with the help of this function than with the ToBytes() function alone
             public void GeneratePacket(byte source, byte target, byte dc_command, byte subdatacode_value, byte[] payloadbuff)

@@ -24,6 +24,7 @@ namespace ChryslerCCDSCIScanner_GUI
         byte[] PacketPreview;
         bool SendPacket;
 
+        // Class constructor
         public PacketGenerator(MainForm incomingForm)
         {
             this.CenterToParent();
