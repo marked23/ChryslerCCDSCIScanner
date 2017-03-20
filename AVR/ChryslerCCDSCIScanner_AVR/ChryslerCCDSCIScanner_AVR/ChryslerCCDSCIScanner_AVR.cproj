@@ -195,10 +195,10 @@
     <Compile Include="includes\GLCD\lcd_graphics.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="includes\I2Cmaster\i2c_master.h">
+    <Compile Include="includes\I2Cmaster\i2cmaster.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="includes\I2Cmaster\i2c_master.S">
+    <Compile Include="includes\I2Cmaster\twimaster.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="includes\MCP23017\mcp23017.c">

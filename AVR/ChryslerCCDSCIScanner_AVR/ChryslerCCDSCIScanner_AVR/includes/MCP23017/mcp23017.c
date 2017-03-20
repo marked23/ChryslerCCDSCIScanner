@@ -6,7 +6,7 @@
  */ 
 
 #include "mcp23017.h"
-#include "i2c_master.h"
+#include "i2cmaster.h"
 #include <util/delay.h>
 
 #define MCP23017_BASE_ADDRESS 0x20 // default address when all three address pins are grounded on the chip

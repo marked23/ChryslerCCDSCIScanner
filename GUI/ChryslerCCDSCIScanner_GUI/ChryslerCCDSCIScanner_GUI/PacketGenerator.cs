@@ -52,12 +52,12 @@ namespace ChryslerCCDSCIScanner_GUI
         {
             if (SendPacket)
             {
-                originalForm.WritePacketTextbox("TX", "CUSTOM PACKET", PacketPreview);
+                originalForm.WritePacketTextBox("TX", "CUSTOM PACKET", PacketPreview);
                 originalForm.WriteSerialData(PacketPreview);
             }
             else
             {
-                originalForm.WriteSendPacketTextbox(PacketPreview);
+                originalForm.WriteSendPacketTextBox(PacketPreview);
             }
         }
 

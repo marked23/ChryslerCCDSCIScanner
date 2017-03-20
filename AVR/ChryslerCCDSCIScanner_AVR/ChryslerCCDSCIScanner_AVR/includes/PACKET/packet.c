@@ -24,7 +24,9 @@ Inputs:   - one source byte,
           - PAYLOAD length
 Returns:  0 if OK
           1 if ERROR
-Note:     SYNC, LENGTH and CHECKSUM bytes are calculated automatically
+Note:     SYNC, LENGTH and CHECKSUM bytes are calculated automatically;
+          Payload can be omitted if a (uint8_t*)0x00 value is used in conjunction with 0 length,
+		  see examples throughout the code.
 **************************************************************************/
 uint8_t send_packet(uint8_t source, uint8_t target, uint8_t dc_command, uint8_t subdatacode, uint8_t *payloadbuff, uint16_t payloadbufflen)
 {
@@ -36,7 +38,7 @@ uint8_t send_packet(uint8_t source, uint8_t target, uint8_t dc_command, uint8_t 
 	bool payload_bytes = false;
 	uint8_t calculated_checksum = 0;
 
-	if (payloadbufflen == 0) payload_bytes = false;
+	if (payloadbufflen <= 0) payload_bytes = false;
 	else payload_bytes = true;
 
 	uint8_t datacode = 0;

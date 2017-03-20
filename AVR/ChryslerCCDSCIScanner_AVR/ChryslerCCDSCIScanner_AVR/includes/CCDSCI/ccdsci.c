@@ -62,7 +62,6 @@ volatile uint16_t sci_checksum_check;             // Adding CCD messages bytes t
 volatile uint8_t  calculated_sci_checksum;        // The lower byte of the "ccd_checksum_check" is stored here
 volatile bool  sci_err;                        // True when the calculated CRC byte is not equal to the last byte of the CCD-message
 
-bool  sci_enabled = false;
 uint8_t  sci_timeout = 50; // ms
 uint32_t sci_timeout_start = 0;
 bool  sci_timeout_reached = false;
@@ -92,7 +91,6 @@ volatile uint8_t  calculated_ccd_checksum;		// The lower byte of the "ccd_checks
 volatile bool  ccd_err;							// True when the calculated CRC byte is not equal to the last byte of the CCD-message
 volatile bool  ccd_rx_message_processed = false;
 
-bool		ccd_enabled = false;
 uint8_t		ccd_id_byte           = 0;		// Message Identification (ID) byte
 uint32_t	ccd_rx_message_starttime = 0;	// Message start time (us) since last restart
 uint32_t	ccd_rx_message_endtime   = 0;	// Message end time (us) since last restart

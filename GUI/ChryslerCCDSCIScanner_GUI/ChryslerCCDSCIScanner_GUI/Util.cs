@@ -16,7 +16,15 @@ namespace ChryslerCCDSCIScanner_GUI
         public static byte[] GetBytes(string str)
         {
             string ret = str.Trim().Replace(" ", string.Empty).Replace(",", string.Empty).Replace(";", string.Empty); // remove spaces, commas, semi-colons
-            return Enumerable.Range(0, ret.Length).Where(x => x % 2 == 0).Select(x => Convert.ToByte(ret.Substring(x, 2), 16)).ToArray();
+
+            try
+            {
+                return Enumerable.Range(0, ret.Length).Where(x => x % 2 == 0).Select(x => Convert.ToByte(ret.Substring(x, 2), 16)).ToArray();
+            }
+            catch
+            {
+                return new byte[] { 0x00 }; // return an array with a single zero byte as an error
+            }
         }
 
         /// <summary>Looks for the next occurrence of a sequence in a byte array</summary>
@@ -56,5 +64,4 @@ namespace ChryslerCCDSCIScanner_GUI
             return -1;
         }
     }
-
 }

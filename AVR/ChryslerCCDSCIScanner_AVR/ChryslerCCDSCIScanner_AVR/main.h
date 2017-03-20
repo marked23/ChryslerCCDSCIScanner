@@ -8,7 +8,7 @@
                                      Masks                                     
 ******************************************************************************/
 
-// Set (1), clear (0) and invert (^) bit in a register or variable easily
+// Set (1), clear (0) and invert (1->0; 0->1) bit in a register or variable easily
 #define sbi(port, bit) (port) |=  (1 << (bit))
 #define cbi(port, bit) (port) &= ~(1 << (bit))
 #define ibi(port, bit) (port) ^=  (1 << (bit))

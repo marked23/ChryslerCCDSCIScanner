@@ -56,7 +56,7 @@
 #include <util/delay.h>
 #include <inttypes.h>
 #include "exteeprom.h"
-#include "i2c_master.h"
+#include "i2cmaster.h"
 
 // Initializer
 // - deviceCapacity is the capacity of a single EEPROM device in
@@ -99,13 +99,9 @@ void exteeprom_init(uint16_t deviceCapacity, uint8_t nDevice, uint16_t pageSize,
 //calls for the other devices to ensure the intended I2C clock speed is set.
 uint8_t exteeprom_begin()
 {
-	//i2c_init(( (F_CPU / twiFreq) - 16) / 2);
-    //TWBR = ( (F_CPU / twiFreq) - 16) / 2;
-	i2c_init();
     i2c_start_wait(_eepromAddr + I2C_WRITE);
     if (_nAddrBytes == 2) i2c_write(0);      //high addr byte
     i2c_write(0);                            //low addr byte
-	//i2c_stop();
     return i2c_readNak();
 }
 

@@ -38,6 +38,23 @@ namespace ChryslerCCDSCIScanner_GUI
         public const byte ok_error          = 0x0F;
 
         // SUB-DATA CODE bytes
+
+        // DC command 0x03 (Settings)
+        public const byte enable_ccd_bus    = 0x03;
+        public const byte disable_ccd_bus   = 0x04;
+        public const byte enable_sci_bus    = 0x05;
+        public const byte disable_sci_bus   = 0x06;
+
+        // DC command 0x04 (General request)
+        public const byte scanner_firmware_ver  = 0x01;
+        public const byte read_int_eeprom       = 0x02;
+        public const byte read_ext_eeprom       = 0x03;
+        public const byte write_int_eeprom      = 0x04;
+        public const byte write_ext_eeprom      = 0x05;
+        public const byte scan_vehicle_modules  = 0x06;
+        public const byte free_ram_available    = 0x07;
+        public const byte mcu_counter_value     = 0x08;
+
         // DC command 0x0F (OK/ERROR)
         public const byte ok                                    = 0x00;
         public const byte error_sync_invalid_value              = 0x01;
@@ -231,6 +248,8 @@ namespace ChryslerCCDSCIScanner_GUI
             // Side note: packets are easier to be generated with the help of this function than with the ToBytes() function alone
             public void GeneratePacket(byte source, byte target, byte dc_command, byte subdatacode_value, byte[] payloadbuff)
             {
+                payload = null; // causes a bug if it's not here
+
                 sync = new byte[1] { SYNC_BYTE };
 
                 if (payloadbuff != null)

@@ -16,7 +16,7 @@ UART code is based on original library by Andy Gock:
 https://github.com/andygock/avr-uart
 
 They helped me a lot:
-Sergey Tsinin with BCM firmware reverse engineering and general knowledge
+Sergey Tsinin with BCM firmware reverse engineering and sharing general knowledge
 of diagnostic request messages.
 Kyle Repinski with understanding the DRB-III's database file.
 Many others with little things.
@@ -66,7 +66,7 @@ it doesn't have the necessary circuitry to achieve that!
 // Custom libraries
 #include "uart.h"				// UART serial communication
 #include "ccdsci.h"				// CCD/SCI protocols
-#include "i2c_master.h"			// I2C standard library
+#include "i2cmaster.h"			// I2C standard library
 #include "exteeprom.h"			// External EEPROM driver (using I2C)
 #include "mcp23017.h"			// I/O expander for buttons (using I2C)
 #include "packet.h"				// Serial Packet Communication protocols
@@ -113,9 +113,10 @@ DRIVER: KS0107/KS0108
                                    Variables                                   
 ******************************************************************************/
 
-uint8_t avr_signature[32];
-bool button_pressed = false;
+bool ccd_enabled = false;
+bool sci_enabled = false;
 bool lcd_enabled = false;
+bool button_pressed = false;
 
 // Create I/O expander object
 MCP23017 mcp;
@@ -130,16 +131,13 @@ uint16_t volatile ccd_bus_tasks = 0x0000;
 uint16_t lcd_tasks     = 0x0000;
 uint16_t button_tasks  = 0x0000;
 
+uint8_t sci_active_bus = 0x00;
+
 uint32_t previous_millis = 0;
 uint32_t interval = 500;
 
 volatile uint32_t ccd_messages_count;
-uint8_t ccd_message_buffer_usb[16];
-uint8_t ccd_message_buffer_usb_length = 0;
-
 volatile uint32_t sci_messages_count;
-uint8_t sci_message_buffer_usb[16];
-uint8_t sci_message_buffer_usb_length = 0;
 
 bool ccd_bus_present = false;
 bool sci_bus_present = false;
@@ -162,16 +160,25 @@ volatile bool ccd_active_byte;
 
 uint8_t ccd_bus_bytes_buffer[32];
 uint8_t ccd_bus_bytes_buffer_ptr = 0;
-bool    ccd_bus_som_found = false;
-uint32_t last_ccd_byte_received = 0;
-uint8_t ccd_bus_intermessage_delay = 200;
 
 bool ccd_bus_msg_pending = false;
 uint8_t ccd_bus_msg_to_send[16];
 uint8_t ccd_bus_msg_to_send_ptr = 0;
 
+uint8_t sci_bus_bytes_buffer[32];
+uint8_t sci_bus_bytes_buffer_ptr = 0;
+
+bool sci_bus_msg_pending = false;
+uint8_t sci_bus_msg_to_send[16];
+uint8_t sci_bus_msg_to_send_ptr = 0;
+
+uint32_t last_sci_byte_received = 0;
+bool sci_bus_active_bytes = false;
+
 uint8_t ccd_bus_module_addr[32];
 uint8_t ccd_bus_module_num = 0;
+
+uint8_t avr_signature[32];
 
 
 
@@ -257,6 +264,8 @@ void check_commands(void)
 		}
 		command_timeout_reached = false;
 
+		if (uart2_available_rx() == 0) return; // exit this function right here if there are no bytes left
+
 		// Read 3 bytes (one SYNC and two LENGTH byte).
 		// All UART reads are masked with 0xFF because the ring buffer
 		// contains words (two bytes). MSB contains flags, LSB contains
@@ -340,6 +349,7 @@ void check_commands(void)
 
 			// Compare calculated checksum to the received CHECKSUM byte
 			// and ensure the first byte is the correct SYNC byte.
+			// Here it goes...
 			if ( (sync == SYNC_BYTE) && (calculated_checksum  == checksum) )
 			{
 				// Find out what is the source and the target of the packet by examining the high nibble (4 bits)
@@ -389,6 +399,11 @@ void check_commands(void)
 
 									// Send it back to the laptop
 									send_packet(from_scanner, to_laptop, handshake, ok, handshake_array, 21);
+
+									// Reset tasks
+									stop_clock_generator();
+									select_sci_bus_target(PCM);
+
 									break;
 								}
 								case status: // 0x02 - Scanner status report request
@@ -409,95 +424,62 @@ void check_commands(void)
 										}
 										case read_settings: // 0x01 - Read scanner settings directly from EEPROM
 										{
+											send_packet(from_scanner, to_laptop, ok_error, ok, (uint8_t*)ok, 0); // acknowledge
 											dummy_ok = true;
 											interval = 50;
 											break;
 										}
 										case write_settings: // 0x02 - Write scanner settings directly to EEPROM (values in PAYLOAD) (warning!)
 										{
+											send_packet(from_scanner, to_laptop, ok_error, ok, (uint8_t*)ok, 0); // acknowledge
 											dummy_ok = false;
 											interval = 500;
 											break;
 										}
 										case enable_ccd_bus: // 0x03 - Enable CCD-bus communication
 										{
-											// 5 valid packets are hidden in this mess
-											uint8_t dummy_packet[168] = {	0x33, 0x67, 0x23, 0x64, 0x33, 0x34, 0x77, 0xAA, 
-																			0x33, 0x33, 0x33, 0x33, 0xAA, 0x33, 0x00, 0x17, 
-																			0x41, 0x00, 0x43, 0x48, 0x52, 0x59, 0x53, 0x4C, 
-																			0x45, 0x52, 0x43, 0x43, 0x44, 0x53, 0x43, 0x49, 
-																			0x53, 0x43, 0x41, 0x4E, 0x4E, 0x45, 0x52, 0x77, 
-																			0xBB, 0xAA, 0x00, 0x45, 0x33, 0x00, 0x17, 0x41, 
-																			0x00, 0x43, 0x48, 0x52, 0x59, 0x53, 0x4C, 0x45, 
-																			0x52, 0x43, 0x43, 0x44, 0x53, 0x43, 0x49, 0x53, 
-																			0x43, 0x41, 0x4E, 0x4E, 0x45, 0x52, 0x77, 0x33, 
-																			0x00, 0x17, 0x41, 0x00, 0x43, 0x48, 0x52, 0x59, 
-																			0x53, 0x4C, 0x45, 0x52, 0x43, 0x43, 0x44, 0x53, 
-																			0x43, 0x49, 0x53, 0x43, 0x41, 0x4E, 0x4E, 0x45, 
-																			0x52, 0x77, 0xBB, 0x00, 0x00, 0x45, 0x23, 0x98, 
-																			0x33, 0x00, 0x17, 0x41, 0x00, 0x43, 0x48, 0x52, 
-																			0x59, 0x53, 0x4C, 0x45, 0x52, 0x43, 0x43, 0x44, 
-																			0x53, 0x43, 0x49, 0x53, 0x43, 0x41, 0x4E, 0x4E, 
-																			0x45, 0x52, 0x77, 0x33, 0x66, 0x33, 0x22, 0x00, 
-																			0x33, 0x00, 0x17, 0x41, 0x00, 0x43, 0x48, 0x52, 
-																			0x59, 0x53, 0x4C, 0x45, 0x52, 0x43, 0x43, 0x44, 
-																			0x53, 0x43, 0x49, 0x53, 0x43, 0x41, 0x4E, 0x4E, 
-																			0x45, 0x52, 0x77, 0x88, 0xAA, 0xBB, 0xCC, 0x33 
-																		};
-											//33
-											//67
-											//23
-											//64
-											//33
-											//34
-											//77
-											//AA
-											//33
-											//33
-											//33
-											//33
-											//AA
-											//33 00 17 41 00 43 48 52 59 53 4C 45 52 43 43 44 53 43 49 53 43 41 4E 4E 45 52 77
-											//BB
-											//AA
-											//00
-											//45
-											//33 00 17 41 00 43 48 52 59 53 4C 45 52 43 43 44 53 43 49 53 43 41 4E 4E 45 52 77
-											//33 00 17 41 00 43 48 52 59 53 4C 45 52 43 43 44 53 43 49 53 43 41 4E 4E 45 52 77
-											//BB
-											//00
-											//00
-											//45
-											//23
-											//98
-											//33 00 17 41 00 43 48 52 59 53 4C 45 52 43 43 44 53 43 49 53 43 41 4E 4E 45 52 77
-											//33
-											//66
-											//33
-											//22
-											//00
-											//33 00 17 41 00 43 48 52 59 53 4C 45 52 43 43 44 53 43 49 53 43 41 4E 4E 45 52 77
-											//88
-											//AA
-											//BB
-											//CC
+											// First make sure the CCD-buffers are empty
+											while (uart0_available() > 0) uart0_getc();
+
+											// Reset pending message buffer too
+											ccd_bus_bytes_buffer_ptr = 0;
+											ccd_bus_msg_pending = false;
+											ccd_bus_msg_to_send_ptr = 0;
 											
-											for (uint8_t i = 0; i < 167; i++)
-											{
-												uart2_putc(dummy_packet[i]);
-											}
+											ccd_enabled = true;
+											uint8_t ack[1] = { 0x00 };
+											start_clock_generator();
+											send_packet(from_scanner, to_laptop, settings, enable_ccd_bus, ack, 1); // acknowledge with zero byte
 											break;
 										}
 										case disable_ccd_bus: // 0x04 - Disable CCD-bus communication
 										{
+											ccd_enabled = false;
+											uint8_t ack[1] = { 0x00 };
+											stop_clock_generator();
+											send_packet(from_scanner, to_laptop, settings, disable_ccd_bus, ack, 1); // acknowledge with zero byte
 											break;
 										}
 										case enable_sci_bus: // 0x05 - Enable SCI-bus communication
 										{
+											// First make sure the SCI-buffers are empty
+											while (uart1_available() > 0) uart1_getc();
+
+											// Reset pending message buffer too
+											sci_bus_bytes_buffer_ptr = 0;
+											sci_bus_msg_pending = false;
+											sci_bus_msg_to_send_ptr = 0;
+											
+											sci_enabled = true;
+											select_sci_bus_target(cmd_payload[0]); // 0x01 if PCM, 0x02 if TCM
+											send_packet(from_scanner, to_laptop, settings, enable_sci_bus, cmd_payload, 1); // acknowledge with 1 byte payload, that is the selected bus
 											break;
 										}
 										case disable_sci_bus: // 0x06 - Disable SCI-bus communication
 										{
+											sci_enabled = false;
+											select_sci_bus_target(NON);
+											send_packet(from_scanner, to_laptop, settings, disable_sci_bus, cmd_payload, 1); // acknowledge with 1 byte payload, that is none of the buses
 											break;
 										}
 										case enable_lcd_bl: // 0x07 - Enable LCD backlight (100%)
@@ -700,11 +682,76 @@ void check_commands(void)
 								{
 									break;
 								}
-								case ok_error: // 0x0E - OK/ERROR message
+								case debug: // 0x0E - Debug
 								{
-									// If an OK/ERROR message is received from the laptop just ignore it
+									// 5 valid packets are hidden in this mess
+									uint8_t dummy_packet[168] = {	0x33, 0x67, 0x23, 0x64, 0x33, 0x34, 0x77, 0xAA,
+										0x33, 0x33, 0x33, 0x33, 0xAA, 0x33, 0x00, 0x17,
+										0x41, 0x00, 0x43, 0x48, 0x52, 0x59, 0x53, 0x4C,
+										0x45, 0x52, 0x43, 0x43, 0x44, 0x53, 0x43, 0x49,
+										0x53, 0x43, 0x41, 0x4E, 0x4E, 0x45, 0x52, 0x77,
+										0xBB, 0xAA, 0x00, 0x45, 0x33, 0x00, 0x17, 0x41,
+										0x00, 0x43, 0x48, 0x52, 0x59, 0x53, 0x4C, 0x45,
+										0x52, 0x43, 0x43, 0x44, 0x53, 0x43, 0x49, 0x53,
+										0x43, 0x41, 0x4E, 0x4E, 0x45, 0x52, 0x77, 0x33,
+										0x00, 0x17, 0x41, 0x00, 0x43, 0x48, 0x52, 0x59,
+										0x53, 0x4C, 0x45, 0x52, 0x43, 0x43, 0x44, 0x53,
+										0x43, 0x49, 0x53, 0x43, 0x41, 0x4E, 0x4E, 0x45,
+										0x52, 0x77, 0xBB, 0x00, 0x00, 0x45, 0x23, 0x98,
+										0x33, 0x00, 0x17, 0x41, 0x00, 0x43, 0x48, 0x52,
+										0x59, 0x53, 0x4C, 0x45, 0x52, 0x43, 0x43, 0x44,
+										0x53, 0x43, 0x49, 0x53, 0x43, 0x41, 0x4E, 0x4E,
+										0x45, 0x52, 0x77, 0x33, 0x66, 0x33, 0x22, 0x00,
+										0x33, 0x00, 0x17, 0x41, 0x00, 0x43, 0x48, 0x52,
+										0x59, 0x53, 0x4C, 0x45, 0x52, 0x43, 0x43, 0x44,
+										0x53, 0x43, 0x49, 0x53, 0x43, 0x41, 0x4E, 0x4E,
+										0x45, 0x52, 0x77, 0x88, 0xAA, 0xBB, 0xCC, 0x33
+									};
+									//33
+									//67
+									//23
+									//64
+									//33
+									//34
+									//77
+									//AA
+									//33
+									//33
+									//33
+									//33
+									//AA
+									//33 00 17 41 00 43 48 52 59 53 4C 45 52 43 43 44 53 43 49 53 43 41 4E 4E 45 52 77
+									//BB
+									//AA
+									//00
+									//45
+									//33 00 17 41 00 43 48 52 59 53 4C 45 52 43 43 44 53 43 49 53 43 41 4E 4E 45 52 77
+									//33 00 17 41 00 43 48 52 59 53 4C 45 52 43 43 44 53 43 49 53 43 41 4E 4E 45 52 77
+									//BB
+									//00
+									//00
+									//45
+									//23
+									//98
+									//33 00 17 41 00 43 48 52 59 53 4C 45 52 43 43 44 53 43 49 53 43 41 4E 4E 45 52 77
+									//33
+									//66
+									//33
+									//22
+									//00
+									//33 00 17 41 00 43 48 52 59 53 4C 45 52 43 43 44 53 43 49 53 43 41 4E 4E 45 52 77
+									//88
+									//AA
+									//BB
+									//CC
+																				
+									for (uint8_t i = 0; i < 167; i++)
+									{
+										uart2_putc(dummy_packet[i]);
+									}
 									break;
 								}
+								case ok_error: // 0x0F - OK/ERROR message
 								default: // These values are not used.
 								{
 									send_packet(from_scanner, to_laptop, ok_error, error_datacode_invalid_dc_command, (uint8_t*)ok, 0);
@@ -752,6 +799,15 @@ void check_commands(void)
 							{
 								case send_msg: // 0x06 - Send message to the SCI-bus
 								{
+									// Fill the pending buffer with the message to be sent
+									for (uint8_t i = 0; i < payload_length; i++)
+									{
+										sci_bus_msg_to_send[i] = cmd_payload[i];
+									}
+									sci_bus_msg_to_send_ptr = payload_length;
+
+									// Set flag so the main loop knows there's something to do
+									sci_bus_msg_pending = true;									
 									break;
 								}
 								case send_rep_msg: // 0x07 - Send message(s) repeatedly to the SCI-bus
@@ -783,7 +839,7 @@ void check_commands(void)
 					send_packet(from_scanner, to_laptop, ok_error, error_packet_unknown_source, (uint8_t*)ok, 0);
 				}
 			} // SYNC and CHECKSUM is OK
-			else // CHECKSUM byte and/or SYNC byte error!
+			else // CHECKSUM byte and/or SYNC byte error! Something is wrong with this packet
 			{
 				if ( calculated_checksum != checksum )
 				{
@@ -824,47 +880,9 @@ void check_commands(void)
 			command_timeout_reached = false;
 		}								
 	}
-}
-
-/*************************************************************************
-Function: check_bus_data()
-Purpose:  checks when a full message is received from the CCD/SCI-bus
-**************************************************************************/
-void check_bus_data(void)
-{
-	// Check if there are any data bytes in the ringbuffer
-	if (uart0_available() > 0)
+	else
 	{
-		// Peek one byte (don't remove it from the buffer yet)
-		uint16_t dummy_read = uart0_peek();
-
-		// If it's an ID-byte then send the previous bytes to the laptop
-		if (((dummy_read >> 8) & 0xFF) == 0x40)
-		{
-			//              where        to         what      ok/error flag     buffer          length
-			send_packet(from_ccd_bus, to_laptop, receive_msg, ok, ccd_bus_bytes_buffer, ccd_bus_bytes_buffer_ptr);
-			ccd_bus_bytes_buffer_ptr = 0; // reset pointer
-
-			// And save this byte as the first one in the buffer
-			ccd_bus_bytes_buffer[ccd_bus_bytes_buffer_ptr] = uart0_getc() & 0xFF;
-			ccd_bus_bytes_buffer_ptr++;
-		}
-		else // get this byte and save to the temporary buffer
-		{
-			ccd_bus_bytes_buffer[ccd_bus_bytes_buffer_ptr] = uart0_getc() & 0xFF;
-			ccd_bus_bytes_buffer_ptr++;
-		}
-	}
-
-	if (ccd_bus_msg_pending && ccd_idle)
-	{
-		for (uint8_t i = 0; i < ccd_bus_msg_to_send_ptr; i++)
-		{
-			uart0_putc(ccd_bus_msg_to_send[i]);
-		}
-
-		ccd_bus_msg_to_send_ptr = 0; // reset pointer
-		ccd_bus_msg_pending = false; // re-arm
+		// TODO: check here if the maximum number of 3 bytes are stayed long enough to consider them junk and get rid of them
 	}
 }
 
@@ -958,7 +976,7 @@ uint8_t available_buses(void)
 	// Now do the same with the SCI-bus
 	sci_bus_state = sci_enabled;
 	if (!sci_enabled) sci_enabled = true;
-	select_sci_bus_target(0x01); // Select PCM by default
+	select_sci_bus_target(PCM); // Select PCM by default
 
 	// Clear SCI-bus UART buffer
 	while (uart1_available() > 0) uart1_getc();
@@ -1088,10 +1106,14 @@ int main(void)
 	// This would be the setup() function of the Arduino IDE.
 	// ------------------------------------------------------
 
+	// Disable global interrupts until setup is complete
 	cli();
 
 	// Enable timer that counts elapsed time in milliseconds (Arduino style).
 	millis_init();
+
+	// Init I2C-bus
+	i2c_init();
 
 	// Enable external EEPROM memories.
 	// I2C is enabled here for the first time.
@@ -1110,15 +1132,14 @@ int main(void)
 	sbi(DDRD, DDD7);						// Data Direction Register D, set Data Direction on PORT D pin 7 to 1 => output
 	cbi(ACT_LED_PORT, ACT_LED_PIN);			// Clear Activity LED (blue) (OFF)
 
-	select_sci_bus_target(0x01);					// Default SCI-bus target is the PCM.
+	select_sci_bus_target(NON);				// Default SCI-bus target is none.
 	
-
 	// Read scanner settings from internal EEPROM.
 	// ...
 
 	// Make changes according to saved settings.
 	// ...
-	start_clock_generator();
+	//start_clock_generator(); // CCD-bus ON!
 
 	// Enable serial communication.
 	uart0_init(SCI_CCD_LO_SPEED);	// CCD-bus default (and only) speed is 7812.5 baud
@@ -1154,7 +1175,6 @@ int main(void)
 	init_interrupt();
 
 
-
 	// -----------------------------------------------------
 	// This would be the loop() function of the Arduino IDE.
 	// -----------------------------------------------------
@@ -1162,15 +1182,48 @@ int main(void)
 	// Loop forever
 	for(;;)
     {
-		// Check if a command has been received and assign tasks
+		// Check if a command has been received from the laptop
 		check_commands();
-
-		// Check if a message is available from the CCD/SCI-bus
-		check_bus_data();
 		
 		// Do CCD-bus things here.
 		if (ccd_enabled)
 		{
+			// Check if there are any data bytes in the CCD-ringbuffer
+			if (uart0_available() > 0)
+			{
+				// Peek one byte (don't remove it from the buffer yet)
+				uint16_t dummy_read = uart0_peek();
+
+				// If it's an ID-byte then send the previous bytes to the laptop
+				if (((dummy_read >> 8) & 0xFF) == 0x40)
+				{
+					//              where        to         what      ok/error flag     buffer          length
+					send_packet(from_ccd_bus, to_laptop, receive_msg, ok, ccd_bus_bytes_buffer, ccd_bus_bytes_buffer_ptr);
+					ccd_bus_bytes_buffer_ptr = 0; // reset pointer
+
+					// And save this byte as the first one in the buffer
+					ccd_bus_bytes_buffer[ccd_bus_bytes_buffer_ptr] = uart0_getc() & 0xFF;
+					ccd_bus_bytes_buffer_ptr++;
+				}
+				else // get this byte and save to the temporary buffer
+				{
+					ccd_bus_bytes_buffer[ccd_bus_bytes_buffer_ptr] = uart0_getc() & 0xFF;
+					ccd_bus_bytes_buffer_ptr++;
+				}
+			}
+
+			// If there's a message to be sent to the CCD-bus and the bus happens to be idling then send it here and now
+			if (ccd_bus_msg_pending && ccd_idle)
+			{
+				for (uint8_t i = 0; i < ccd_bus_msg_to_send_ptr; i++)
+				{
+					uart0_putc(ccd_bus_msg_to_send[i]);
+				}
+
+				ccd_bus_msg_to_send_ptr = 0; // reset pointer
+				ccd_bus_msg_pending = false; // re-arm
+			}
+			
 			switch (ccd_bus_tasks)
 			{
 				case 0x00: // Check if there's a full message in the receive buffer
@@ -1180,13 +1233,12 @@ int main(void)
 				}
 				case 0x01: // At least one CCD-message is ready to be transmitted through USB
 				{
-					// Read the uart0 receive buffer to get the message out
-					// Then evaluate it and send
-					send_packet(from_ccd_bus, to_laptop, receive_msg, ok, ccd_message_buffer_usb, ccd_message_buffer_usb_length);					
+
 					break;
 				}
 				default: // Anything else is discarded like it was 0x00
 				{
+					
 					break;
 				}
 			}
@@ -1195,6 +1247,47 @@ int main(void)
 		// Do SCI-bus things here.
 		if (sci_enabled)
 		{
+			// Check if there are any data bytes in the SCI-ringbuffer
+			if (uart1_available() > 0)
+			{
+				// Check how much bytes do we have
+				uint8_t sci_bytes_available = uart1_available();
+
+				// Save all of them
+				for (uint8_t i = 0; i < sci_bytes_available; i++)
+				{
+					sci_bus_bytes_buffer[sci_bus_bytes_buffer_ptr] = uart1_getc();
+					sci_bus_bytes_buffer_ptr++;
+				}
+
+				// Save the current time
+				last_sci_byte_received = millis_get();
+				sci_bus_active_bytes = true;
+			}
+
+			// If there's no data coming in after a while then consider the previous message to be completed
+			// Make sure there's data in the buffer before sending empty packets... been there done that...
+			if ((millis_get() - last_sci_byte_received > SCI_INTERMESSAGE_RESPONSE_DELAY) && (sci_bus_bytes_buffer_ptr > 0) )
+			{
+				send_packet(from_sci_bus, to_laptop, receive_msg, ok, sci_bus_bytes_buffer, sci_bus_bytes_buffer_ptr); // send sci-bus msg
+				sci_bus_bytes_buffer_ptr = 0; // reset pointer
+				sci_bus_active_bytes = false;
+			}
+
+			// If there's a message to be sent to the SCI-bus then send it here and now
+			// Check if there's activity on the SCI-bus before sending, if there's activity then wait!
+			if (sci_bus_msg_pending && !sci_bus_active_bytes)
+			{
+				for (uint8_t i = 0; i < sci_bus_msg_to_send_ptr; i++)
+				{
+					uart1_putc(sci_bus_msg_to_send[i]);
+				}
+
+				sci_bus_msg_to_send_ptr = 0; // reset pointer
+				sci_bus_msg_pending = false; // re-arm
+				sci_bus_active_bytes = true;
+			}
+			
 			switch (sci_bus_tasks)
 			{
 				case 0x00: // Don't do anything!
@@ -1203,11 +1296,12 @@ int main(void)
 				}
 				case 0x01: // At least one SCI-message is ready to be transmitted through USB
 				{
-					send_packet(from_sci_bus, to_laptop, receive_msg, ok, sci_message_buffer_usb, sci_message_buffer_usb_length);
+
 					break;
 				}
 				default: // Anything else is discarded like it was 0x00
 				{
+					
 					break;
 				}
 			}
@@ -1261,6 +1355,7 @@ int main(void)
 
 		}
 
+		// Blink activity LED to show everything is okay
 		uint32_t current_millis = millis_get();
 		if (current_millis - previous_millis >= interval)
 		{

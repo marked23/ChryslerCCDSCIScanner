@@ -101,6 +101,7 @@
 #define error_general_invalid_address_range		0x11
 #define error_incomplete_ccd_msg				0x20
 #define error_incomplete_sci_msg				0x21
+#define error_fatal								0xFF
 
 
 extern uint8_t send_packet(uint8_t source, uint8_t target, uint8_t dc_command, uint8_t subdatacode, uint8_t *payloadbuff, uint16_t payloadbufflen);

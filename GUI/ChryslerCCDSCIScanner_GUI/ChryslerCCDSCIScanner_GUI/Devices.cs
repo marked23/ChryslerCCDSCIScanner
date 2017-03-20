@@ -31,11 +31,11 @@ namespace ChryslerCCDSCIScanner_GUI
                     switch ((int)m.WParam)
                     {
                         case DBT_DEVICEARRIVAL:
-                            command_history_textbox.AppendText("New Device Arrived" + Environment.NewLine);
+                            CommandHistoryTextBox.AppendText("New Device Arrived" + Environment.NewLine);
 
                             // Scroll down
-                            command_history_textbox.SelectionStart = command_history_textbox.TextLength;
-                            command_history_textbox.ScrollToCaret();
+                            CommandHistoryTextBox.SelectionStart = CommandHistoryTextBox.TextLength;
+                            CommandHistoryTextBox.ScrollToCaret();
 
                             int devType = Marshal.ReadInt32(m.LParam, 4);
                             if (devType == DBT_DEVTYP_VOLUME)
@@ -44,21 +44,21 @@ namespace ChryslerCCDSCIScanner_GUI
                                 vol = (DevBroadcastVolume)
                                    Marshal.PtrToStructure(m.LParam,
                                    typeof(DevBroadcastVolume));
-                                command_history_textbox.AppendText("Mask is " + vol.Mask + Environment.NewLine);
+                                CommandHistoryTextBox.AppendText("Mask is " + vol.Mask + Environment.NewLine);
 
                                 // Scroll down
-                                command_history_textbox.SelectionStart = command_history_textbox.TextLength;
-                                command_history_textbox.ScrollToCaret();
+                                CommandHistoryTextBox.SelectionStart = CommandHistoryTextBox.TextLength;
+                                CommandHistoryTextBox.ScrollToCaret();
                             }
 
                             break;
 
                         case DBT_DEVICEREMOVECOMPLETE:
-                            command_history_textbox.AppendText("Device Removed" + Environment.NewLine);
+                            CommandHistoryTextBox.AppendText("Device Removed" + Environment.NewLine);
 
                             // Scroll down
-                            command_history_textbox.SelectionStart = command_history_textbox.TextLength;
-                            command_history_textbox.ScrollToCaret();
+                            CommandHistoryTextBox.SelectionStart = CommandHistoryTextBox.TextLength;
+                            CommandHistoryTextBox.ScrollToCaret();
                             break;
                     }
                     break;

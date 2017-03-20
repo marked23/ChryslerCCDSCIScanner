@@ -28,62 +28,59 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
             this.ConnectButton = new System.Windows.Forms.Button();
-            this.packet_count_rx_label = new System.Windows.Forms.Label();
-            this.buffer_writelength_label = new System.Windows.Forms.Label();
-            this.buffer_start_label = new System.Windows.Forms.Label();
-            this.buffer_end_label = new System.Windows.Forms.Label();
-            this.buffer_readlength_label = new System.Windows.Forms.Label();
+            this.PacketCountRxLabel = new System.Windows.Forms.Label();
+            this.BufferWritelengthLabel = new System.Windows.Forms.Label();
+            this.BufferStartLabel = new System.Windows.Forms.Label();
+            this.BufferEndLabel = new System.Windows.Forms.Label();
+            this.BufferReadlengthLabel = new System.Windows.Forms.Label();
             this.read_exteeprom_button = new System.Windows.Forms.Button();
             this.read_inteeprom_button = new System.Windows.Forms.Button();
             this.StatusButton = new System.Windows.Forms.Button();
             this.SCIBusSendMsgButton = new System.Windows.Forms.Button();
-            this.SCIBusSendMsgTextbox = new System.Windows.Forms.TextBox();
-            this.sci_bus_hs_button = new System.Windows.Forms.Button();
-            this.sci_bus_speed_label = new System.Windows.Forms.Label();
+            this.SCIBusSendMsgTextBox = new System.Windows.Forms.TextBox();
             this.erase_exteeprom_button = new System.Windows.Forms.Button();
             this.PacketLogGroupbox = new System.Windows.Forms.GroupBox();
-            this.PacketTextbox = new System.Windows.Forms.TextBox();
+            this.PacketTextBox = new System.Windows.Forms.TextBox();
             this.TXLabel = new System.Windows.Forms.Label();
             this.RXLabel = new System.Windows.Forms.Label();
-            this.PacketSendTextbox = new System.Windows.Forms.TextBox();
+            this.PacketSendTextBox = new System.Windows.Forms.TextBox();
             this.PacketSendButton = new System.Windows.Forms.Button();
             this.PacketClearButton = new System.Windows.Forms.Button();
             this.PacketLogEnabledCheckbox = new System.Windows.Forms.CheckBox();
-            this.PacketGeneratorButton = new System.Windows.Forms.Button();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.packetGeneratorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.superCardReaderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.CCDBusMessagesGroupbox = new System.Windows.Forms.GroupBox();
             this.CCDBusMsgStackingCheckbox = new System.Windows.Forms.CheckBox();
-            this.CCDBusMsgTextbox = new System.Windows.Forms.TextBox();
+            this.CCDBusMsgTextBox = new System.Windows.Forms.TextBox();
             this.CCDBusMsgFilterClearButton = new System.Windows.Forms.Button();
             this.CCDBusMsgFilterApplyButton = new System.Windows.Forms.Button();
-            this.CCDBusMsgFilterTextbox = new System.Windows.Forms.TextBox();
+            this.CCDBusMsgFilterTextBox = new System.Windows.Forms.TextBox();
             this.CCDBusMsgFilterCheckbox = new System.Windows.Forms.CheckBox();
-            this.CCDBusSendMsgTextbox = new System.Windows.Forms.TextBox();
+            this.CCDBusSendMsgTextBox = new System.Windows.Forms.TextBox();
             this.CCDBusSendMsgButton = new System.Windows.Forms.Button();
             this.CCDBusEnabledCheckbox = new System.Windows.Forms.CheckBox();
             this.CCDBusClearMsgButton = new System.Windows.Forms.Button();
             this.SCIBusMessagesGroupbox = new System.Windows.Forms.GroupBox();
             this.SCIBusMsgStackingCheckbox = new System.Windows.Forms.CheckBox();
-            this.SCIBusMsgTextbox = new System.Windows.Forms.TextBox();
+            this.SCIBusMsgTextBox = new System.Windows.Forms.TextBox();
             this.SCIBusMsgFilterClearButton = new System.Windows.Forms.Button();
             this.SCIBusMsgFilterApplyButton = new System.Windows.Forms.Button();
             this.SCIBusEnabledCheckbox = new System.Windows.Forms.CheckBox();
-            this.SCIBusMsgFilterTextbox = new System.Windows.Forms.TextBox();
+            this.SCIBusMsgFilterTextBox = new System.Windows.Forms.TextBox();
             this.SCIBusMsgFilterCheckbox = new System.Windows.Forms.CheckBox();
             this.SCIBusClearMsgButton = new System.Windows.Forms.Button();
             this.command_history_groupbox = new System.Windows.Forms.GroupBox();
-            this.command_history_textbox = new System.Windows.Forms.TextBox();
+            this.CommandHistoryTextBox = new System.Windows.Forms.TextBox();
             this.MiscGroupbox = new System.Windows.Forms.GroupBox();
-            this.packet_count_tx_label = new System.Windows.Forms.Label();
+            this.PacketCountTxLabel = new System.Windows.Forms.Label();
             this.RebootScannerButton = new System.Windows.Forms.Button();
             this.ControlPanelGroupbox = new System.Windows.Forms.GroupBox();
             this.ExitButton = new System.Windows.Forms.Button();
@@ -98,19 +95,17 @@
             this.label16 = new System.Windows.Forms.Label();
             this.RealTimeDiagnosticsGroupbox = new System.Windows.Forms.GroupBox();
             this.real_time_diagnostics_button = new System.Windows.Forms.Button();
-            this.ReadDTCsGroupbox = new System.Windows.Forms.GroupBox();
-            this.ReadDTCTCMButton = new System.Windows.Forms.Button();
-            this.ReadDTCMICButton = new System.Windows.Forms.Button();
-            this.ReadDTCABSButton = new System.Windows.Forms.Button();
-            this.ReadDTCACMButton = new System.Windows.Forms.Button();
-            this.ReadDTCBCMButton = new System.Windows.Forms.Button();
-            this.ReadDTCPCMButton = new System.Windows.Forms.Button();
-            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.SCIBusSpeedGroupbox = new System.Windows.Forms.GroupBox();
+            this.ReadDTCGroupbox = new System.Windows.Forms.GroupBox();
+            this.ScanModulesButton = new System.Windows.Forms.Button();
+            this.ModuleListComboBox = new System.Windows.Forms.ComboBox();
+            this.ReadDTCByModuleButton = new System.Windows.Forms.Button();
+            this.ReadAllDTCButton = new System.Windows.Forms.Button();
+            this.ReadAllDTCGroupbox = new System.Windows.Forms.GroupBox();
             this.SensorDataGroupbox = new System.Windows.Forms.GroupBox();
-            this.SensorDataTextbox = new System.Windows.Forms.TextBox();
-            this.ETCGroupbox = new System.Windows.Forms.GroupBox();
-            this.SuperCardButton = new System.Windows.Forms.Button();
+            this.SensorDataTextBox = new System.Windows.Forms.TextBox();
+            this.DTCListGroupbox = new System.Windows.Forms.GroupBox();
+            this.DTCListTextBox = new System.Windows.Forms.TextBox();
+            this.PCMTCMSelectorComboBox = new System.Windows.Forms.ComboBox();
             this.PacketLogGroupbox.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.CCDBusMessagesGroupbox.SuspendLayout();
@@ -120,9 +115,10 @@
             this.ControlPanelGroupbox.SuspendLayout();
             this.EEPROMGroupbox.SuspendLayout();
             this.RealTimeDiagnosticsGroupbox.SuspendLayout();
-            this.ReadDTCsGroupbox.SuspendLayout();
-            this.SCIBusSpeedGroupbox.SuspendLayout();
+            this.ReadDTCGroupbox.SuspendLayout();
+            this.ReadAllDTCGroupbox.SuspendLayout();
             this.SensorDataGroupbox.SuspendLayout();
+            this.DTCListGroupbox.SuspendLayout();
             this.SuspendLayout();
             // 
             // ConnectButton
@@ -135,50 +131,50 @@
             this.ConnectButton.UseVisualStyleBackColor = true;
             this.ConnectButton.Click += new System.EventHandler(this.ConnectButton_Click);
             // 
-            // packet_count_rx_label
+            // PacketCountRxLabel
             // 
-            this.packet_count_rx_label.AutoSize = true;
-            this.packet_count_rx_label.Location = new System.Drawing.Point(6, 22);
-            this.packet_count_rx_label.Name = "packet_count_rx_label";
-            this.packet_count_rx_label.Size = new System.Drawing.Size(96, 13);
-            this.packet_count_rx_label.TabIndex = 2;
-            this.packet_count_rx_label.Text = "Packets received: ";
+            this.PacketCountRxLabel.AutoSize = true;
+            this.PacketCountRxLabel.Location = new System.Drawing.Point(6, 22);
+            this.PacketCountRxLabel.Name = "PacketCountRxLabel";
+            this.PacketCountRxLabel.Size = new System.Drawing.Size(96, 13);
+            this.PacketCountRxLabel.TabIndex = 2;
+            this.PacketCountRxLabel.Text = "Packets received: ";
             // 
-            // buffer_writelength_label
+            // BufferWritelengthLabel
             // 
-            this.buffer_writelength_label.AutoSize = true;
-            this.buffer_writelength_label.Location = new System.Drawing.Point(6, 87);
-            this.buffer_writelength_label.Name = "buffer_writelength_label";
-            this.buffer_writelength_label.Size = new System.Drawing.Size(99, 13);
-            this.buffer_writelength_label.TabIndex = 3;
-            this.buffer_writelength_label.Text = "Buffer WriteLength:";
+            this.BufferWritelengthLabel.AutoSize = true;
+            this.BufferWritelengthLabel.Location = new System.Drawing.Point(6, 87);
+            this.BufferWritelengthLabel.Name = "BufferWritelengthLabel";
+            this.BufferWritelengthLabel.Size = new System.Drawing.Size(99, 13);
+            this.BufferWritelengthLabel.TabIndex = 3;
+            this.BufferWritelengthLabel.Text = "Buffer WriteLength:";
             // 
-            // buffer_start_label
+            // BufferStartLabel
             // 
-            this.buffer_start_label.AutoSize = true;
-            this.buffer_start_label.Location = new System.Drawing.Point(6, 48);
-            this.buffer_start_label.Name = "buffer_start_label";
-            this.buffer_start_label.Size = new System.Drawing.Size(63, 13);
-            this.buffer_start_label.TabIndex = 6;
-            this.buffer_start_label.Text = "Buffer Start:";
+            this.BufferStartLabel.AutoSize = true;
+            this.BufferStartLabel.Location = new System.Drawing.Point(6, 48);
+            this.BufferStartLabel.Name = "BufferStartLabel";
+            this.BufferStartLabel.Size = new System.Drawing.Size(63, 13);
+            this.BufferStartLabel.TabIndex = 6;
+            this.BufferStartLabel.Text = "Buffer Start:";
             // 
-            // buffer_end_label
+            // BufferEndLabel
             // 
-            this.buffer_end_label.AutoSize = true;
-            this.buffer_end_label.Location = new System.Drawing.Point(6, 61);
-            this.buffer_end_label.Name = "buffer_end_label";
-            this.buffer_end_label.Size = new System.Drawing.Size(60, 13);
-            this.buffer_end_label.TabIndex = 7;
-            this.buffer_end_label.Text = "Buffer End:";
+            this.BufferEndLabel.AutoSize = true;
+            this.BufferEndLabel.Location = new System.Drawing.Point(6, 61);
+            this.BufferEndLabel.Name = "BufferEndLabel";
+            this.BufferEndLabel.Size = new System.Drawing.Size(60, 13);
+            this.BufferEndLabel.TabIndex = 7;
+            this.BufferEndLabel.Text = "Buffer End:";
             // 
-            // buffer_readlength_label
+            // BufferReadlengthLabel
             // 
-            this.buffer_readlength_label.AutoSize = true;
-            this.buffer_readlength_label.Location = new System.Drawing.Point(6, 74);
-            this.buffer_readlength_label.Name = "buffer_readlength_label";
-            this.buffer_readlength_label.Size = new System.Drawing.Size(100, 13);
-            this.buffer_readlength_label.TabIndex = 8;
-            this.buffer_readlength_label.Text = "Buffer ReadLength:";
+            this.BufferReadlengthLabel.AutoSize = true;
+            this.BufferReadlengthLabel.Location = new System.Drawing.Point(6, 74);
+            this.BufferReadlengthLabel.Name = "BufferReadlengthLabel";
+            this.BufferReadlengthLabel.Size = new System.Drawing.Size(100, 13);
+            this.BufferReadlengthLabel.TabIndex = 8;
+            this.BufferReadlengthLabel.Text = "Buffer ReadLength:";
             // 
             // read_exteeprom_button
             // 
@@ -222,36 +218,16 @@
             this.SCIBusSendMsgButton.UseVisualStyleBackColor = true;
             this.SCIBusSendMsgButton.Click += new System.EventHandler(this.SCIBusSendMsgButton_Click);
             // 
-            // SCIBusSendMsgTextbox
+            // SCIBusSendMsgTextBox
             // 
-            this.SCIBusSendMsgTextbox.Enabled = false;
-            this.SCIBusSendMsgTextbox.Font = new System.Drawing.Font("Courier New", 9F);
-            this.SCIBusSendMsgTextbox.Location = new System.Drawing.Point(3, 256);
-            this.SCIBusSendMsgTextbox.Name = "SCIBusSendMsgTextbox";
-            this.SCIBusSendMsgTextbox.Size = new System.Drawing.Size(143, 21);
-            this.SCIBusSendMsgTextbox.TabIndex = 27;
-            this.SCIBusSendMsgTextbox.TextChanged += new System.EventHandler(this.SCIBusSendMsgTextbox_TextChanged);
-            this.SCIBusSendMsgTextbox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.SCIBusSendMsgTextbox_KeyPress);
-            // 
-            // sci_bus_hs_button
-            // 
-            this.sci_bus_hs_button.Dock = System.Windows.Forms.DockStyle.Left;
-            this.sci_bus_hs_button.Location = new System.Drawing.Point(3, 16);
-            this.sci_bus_hs_button.Name = "sci_bus_hs_button";
-            this.sci_bus_hs_button.Size = new System.Drawing.Size(48, 23);
-            this.sci_bus_hs_button.TabIndex = 28;
-            this.sci_bus_hs_button.Text = "Switch";
-            this.sci_bus_hs_button.UseVisualStyleBackColor = true;
-            this.sci_bus_hs_button.Click += new System.EventHandler(this.SCIBusHsButton_Click);
-            // 
-            // sci_bus_speed_label
-            // 
-            this.sci_bus_speed_label.AutoSize = true;
-            this.sci_bus_speed_label.Location = new System.Drawing.Point(57, 21);
-            this.sci_bus_speed_label.Name = "sci_bus_speed_label";
-            this.sci_bus_speed_label.Size = new System.Drawing.Size(67, 13);
-            this.sci_bus_speed_label.TabIndex = 29;
-            this.sci_bus_speed_label.Text = "7812.5 baud";
+            this.SCIBusSendMsgTextBox.Enabled = false;
+            this.SCIBusSendMsgTextBox.Font = new System.Drawing.Font("Courier New", 9F);
+            this.SCIBusSendMsgTextBox.Location = new System.Drawing.Point(3, 256);
+            this.SCIBusSendMsgTextBox.Name = "SCIBusSendMsgTextBox";
+            this.SCIBusSendMsgTextBox.Size = new System.Drawing.Size(143, 21);
+            this.SCIBusSendMsgTextBox.TabIndex = 27;
+            this.SCIBusSendMsgTextBox.TextChanged += new System.EventHandler(this.SCIBusSendMsgTextBox_TextChanged);
+            this.SCIBusSendMsgTextBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.SCIBusSendMsgTextBox_KeyPress);
             // 
             // erase_exteeprom_button
             // 
@@ -265,10 +241,10 @@
             // 
             // PacketLogGroupbox
             // 
-            this.PacketLogGroupbox.Controls.Add(this.PacketTextbox);
+            this.PacketLogGroupbox.Controls.Add(this.PacketTextBox);
             this.PacketLogGroupbox.Controls.Add(this.TXLabel);
             this.PacketLogGroupbox.Controls.Add(this.RXLabel);
-            this.PacketLogGroupbox.Controls.Add(this.PacketSendTextbox);
+            this.PacketLogGroupbox.Controls.Add(this.PacketSendTextBox);
             this.PacketLogGroupbox.Controls.Add(this.PacketSendButton);
             this.PacketLogGroupbox.Controls.Add(this.PacketClearButton);
             this.PacketLogGroupbox.Controls.Add(this.PacketLogEnabledCheckbox);
@@ -279,23 +255,23 @@
             this.PacketLogGroupbox.TabStop = false;
             this.PacketLogGroupbox.Text = "COM packets";
             // 
-            // PacketTextbox
+            // PacketTextBox
             // 
-            this.PacketTextbox.Font = new System.Drawing.Font("Courier New", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.PacketTextbox.Location = new System.Drawing.Point(3, 16);
-            this.PacketTextbox.MaxLength = 0;
-            this.PacketTextbox.Multiline = true;
-            this.PacketTextbox.Name = "PacketTextbox";
-            this.PacketTextbox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.PacketTextbox.Size = new System.Drawing.Size(359, 234);
-            this.PacketTextbox.TabIndex = 65;
-            this.PacketTextbox.TextChanged += new System.EventHandler(this.PacketTextbox_TextChanged);
+            this.PacketTextBox.Font = new System.Drawing.Font("Courier New", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.PacketTextBox.Location = new System.Drawing.Point(3, 16);
+            this.PacketTextBox.MaxLength = 0;
+            this.PacketTextBox.Multiline = true;
+            this.PacketTextBox.Name = "PacketTextBox";
+            this.PacketTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.PacketTextBox.Size = new System.Drawing.Size(359, 234);
+            this.PacketTextBox.TabIndex = 65;
+            this.PacketTextBox.TextChanged += new System.EventHandler(this.PacketTextBox_TextChanged);
             // 
             // TXLabel
             // 
             this.TXLabel.AutoSize = true;
             this.TXLabel.ForeColor = System.Drawing.SystemColors.AppWorkspace;
-            this.TXLabel.Location = new System.Drawing.Point(127, 294);
+            this.TXLabel.Location = new System.Drawing.Point(183, 289);
             this.TXLabel.Name = "TXLabel";
             this.TXLabel.Size = new System.Drawing.Size(78, 13);
             this.TXLabel.TabIndex = 56;
@@ -305,22 +281,21 @@
             // 
             this.RXLabel.AutoSize = true;
             this.RXLabel.ForeColor = System.Drawing.SystemColors.AppWorkspace;
-            this.RXLabel.Location = new System.Drawing.Point(126, 280);
+            this.RXLabel.Location = new System.Drawing.Point(108, 289);
             this.RXLabel.Name = "RXLabel";
             this.RXLabel.Size = new System.Drawing.Size(69, 13);
             this.RXLabel.TabIndex = 52;
             this.RXLabel.Text = "RX: received";
             // 
-            // PacketSendTextbox
+            // PacketSendTextBox
             // 
-            this.PacketSendTextbox.Enabled = false;
-            this.PacketSendTextbox.Font = new System.Drawing.Font("Courier New", 9F);
-            this.PacketSendTextbox.Location = new System.Drawing.Point(3, 256);
-            this.PacketSendTextbox.Name = "PacketSendTextbox";
-            this.PacketSendTextbox.Size = new System.Drawing.Size(289, 21);
-            this.PacketSendTextbox.TabIndex = 55;
-            this.PacketSendTextbox.TextChanged += new System.EventHandler(this.PacketSendTextbox_TextChanged);
-            this.PacketSendTextbox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.PacketSendTextbox_KeyPress);
+            this.PacketSendTextBox.Font = new System.Drawing.Font("Courier New", 9F);
+            this.PacketSendTextBox.Location = new System.Drawing.Point(3, 256);
+            this.PacketSendTextBox.Name = "PacketSendTextBox";
+            this.PacketSendTextBox.Size = new System.Drawing.Size(289, 21);
+            this.PacketSendTextBox.TabIndex = 55;
+            this.PacketSendTextBox.TextChanged += new System.EventHandler(this.PacketSendTextBox_TextChanged);
+            this.PacketSendTextBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.PacketSendTextBox_KeyPress);
             // 
             // PacketSendButton
             // 
@@ -349,24 +324,13 @@
             this.PacketLogEnabledCheckbox.AutoSize = true;
             this.PacketLogEnabledCheckbox.Checked = true;
             this.PacketLogEnabledCheckbox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.PacketLogEnabledCheckbox.Enabled = false;
             this.PacketLogEnabledCheckbox.Location = new System.Drawing.Point(6, 288);
             this.PacketLogEnabledCheckbox.Name = "PacketLogEnabledCheckbox";
-            this.PacketLogEnabledCheckbox.Size = new System.Drawing.Size(118, 17);
+            this.PacketLogEnabledCheckbox.Size = new System.Drawing.Size(77, 17);
             this.PacketLogEnabledCheckbox.TabIndex = 1;
-            this.PacketLogEnabledCheckbox.Text = "Packet log enabled";
+            this.PacketLogEnabledCheckbox.Text = "Packet log";
             this.PacketLogEnabledCheckbox.UseVisualStyleBackColor = true;
             this.PacketLogEnabledCheckbox.CheckedChanged += new System.EventHandler(this.PacketLogEnabledCheckbox_CheckedChanged);
-            // 
-            // PacketGeneratorButton
-            // 
-            this.PacketGeneratorButton.Location = new System.Drawing.Point(536, 476);
-            this.PacketGeneratorButton.Name = "PacketGeneratorButton";
-            this.PacketGeneratorButton.Size = new System.Drawing.Size(79, 23);
-            this.PacketGeneratorButton.TabIndex = 66;
-            this.PacketGeneratorButton.Text = "Generator";
-            this.PacketGeneratorButton.UseVisualStyleBackColor = true;
-            this.PacketGeneratorButton.Click += new System.EventHandler(this.PacketGeneratorButton_Click);
             // 
             // menuStrip1
             // 
@@ -377,6 +341,7 @@
             this.toolStripMenuItem1});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
+            this.menuStrip1.Padding = new System.Windows.Forms.Padding(2, 2, 0, 2);
             this.menuStrip1.Size = new System.Drawing.Size(1184, 24);
             this.menuStrip1.TabIndex = 42;
             this.menuStrip1.Text = "menuStrip1";
@@ -390,7 +355,8 @@
             // toolsToolStripMenuItem
             // 
             this.toolsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.packetGeneratorToolStripMenuItem});
+            this.packetGeneratorToolStripMenuItem,
+            this.superCardReaderToolStripMenuItem});
             this.toolsToolStripMenuItem.Name = "toolsToolStripMenuItem";
             this.toolsToolStripMenuItem.Size = new System.Drawing.Size(48, 20);
             this.toolsToolStripMenuItem.Text = "Tools";
@@ -398,8 +364,16 @@
             // packetGeneratorToolStripMenuItem
             // 
             this.packetGeneratorToolStripMenuItem.Name = "packetGeneratorToolStripMenuItem";
-            this.packetGeneratorToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
+            this.packetGeneratorToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
             this.packetGeneratorToolStripMenuItem.Text = "Packet Generator";
+            this.packetGeneratorToolStripMenuItem.Click += new System.EventHandler(this.packetGeneratorToolStripMenuItem_Click);
+            // 
+            // superCardReaderToolStripMenuItem
+            // 
+            this.superCardReaderToolStripMenuItem.Name = "superCardReaderToolStripMenuItem";
+            this.superCardReaderToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
+            this.superCardReaderToolStripMenuItem.Text = "SuperCard Reader";
+            this.superCardReaderToolStripMenuItem.Click += new System.EventHandler(this.superCardReaderToolStripMenuItem_Click);
             // 
             // aboutToolStripMenuItem1
             // 
@@ -428,12 +402,12 @@
             // CCDBusMessagesGroupbox
             // 
             this.CCDBusMessagesGroupbox.Controls.Add(this.CCDBusMsgStackingCheckbox);
-            this.CCDBusMessagesGroupbox.Controls.Add(this.CCDBusMsgTextbox);
+            this.CCDBusMessagesGroupbox.Controls.Add(this.CCDBusMsgTextBox);
             this.CCDBusMessagesGroupbox.Controls.Add(this.CCDBusMsgFilterClearButton);
             this.CCDBusMessagesGroupbox.Controls.Add(this.CCDBusMsgFilterApplyButton);
-            this.CCDBusMessagesGroupbox.Controls.Add(this.CCDBusMsgFilterTextbox);
+            this.CCDBusMessagesGroupbox.Controls.Add(this.CCDBusMsgFilterTextBox);
             this.CCDBusMessagesGroupbox.Controls.Add(this.CCDBusMsgFilterCheckbox);
-            this.CCDBusMessagesGroupbox.Controls.Add(this.CCDBusSendMsgTextbox);
+            this.CCDBusMessagesGroupbox.Controls.Add(this.CCDBusSendMsgTextBox);
             this.CCDBusMessagesGroupbox.Controls.Add(this.CCDBusSendMsgButton);
             this.CCDBusMessagesGroupbox.Controls.Add(this.CCDBusEnabledCheckbox);
             this.CCDBusMessagesGroupbox.Controls.Add(this.CCDBusClearMsgButton);
@@ -455,18 +429,18 @@
             this.CCDBusMsgStackingCheckbox.Text = "Stacking";
             this.CCDBusMsgStackingCheckbox.UseVisualStyleBackColor = true;
             // 
-            // CCDBusMsgTextbox
+            // CCDBusMsgTextBox
             // 
-            this.CCDBusMsgTextbox.Enabled = false;
-            this.CCDBusMsgTextbox.Font = new System.Drawing.Font("Courier New", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.CCDBusMsgTextbox.Location = new System.Drawing.Point(3, 16);
-            this.CCDBusMsgTextbox.MaxLength = 0;
-            this.CCDBusMsgTextbox.Multiline = true;
-            this.CCDBusMsgTextbox.Name = "CCDBusMsgTextbox";
-            this.CCDBusMsgTextbox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.CCDBusMsgTextbox.Size = new System.Drawing.Size(214, 234);
-            this.CCDBusMsgTextbox.TabIndex = 66;
-            this.CCDBusMsgTextbox.TextChanged += new System.EventHandler(this.CCDBusMsgTextbox_TextChanged);
+            this.CCDBusMsgTextBox.Enabled = false;
+            this.CCDBusMsgTextBox.Font = new System.Drawing.Font("Courier New", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.CCDBusMsgTextBox.Location = new System.Drawing.Point(3, 16);
+            this.CCDBusMsgTextBox.MaxLength = 0;
+            this.CCDBusMsgTextBox.Multiline = true;
+            this.CCDBusMsgTextBox.Name = "CCDBusMsgTextBox";
+            this.CCDBusMsgTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.CCDBusMsgTextBox.Size = new System.Drawing.Size(214, 234);
+            this.CCDBusMsgTextBox.TabIndex = 66;
+            this.CCDBusMsgTextBox.TextChanged += new System.EventHandler(this.CCDBusMsgTextBox_TextChanged);
             // 
             // CCDBusMsgFilterClearButton
             // 
@@ -490,18 +464,18 @@
             this.CCDBusMsgFilterApplyButton.UseVisualStyleBackColor = true;
             this.CCDBusMsgFilterApplyButton.Click += new System.EventHandler(this.CCDBusMsgFilterApplyButton_Click);
             // 
-            // CCDBusMsgFilterTextbox
+            // CCDBusMsgFilterTextBox
             // 
-            this.CCDBusMsgFilterTextbox.Enabled = false;
-            this.CCDBusMsgFilterTextbox.Font = new System.Drawing.Font("Courier New", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.CCDBusMsgFilterTextbox.Location = new System.Drawing.Point(3, 338);
-            this.CCDBusMsgFilterTextbox.MaxLength = 0;
-            this.CCDBusMsgFilterTextbox.Multiline = true;
-            this.CCDBusMsgFilterTextbox.Name = "CCDBusMsgFilterTextbox";
-            this.CCDBusMsgFilterTextbox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.CCDBusMsgFilterTextbox.Size = new System.Drawing.Size(213, 59);
-            this.CCDBusMsgFilterTextbox.TabIndex = 66;
-            this.CCDBusMsgFilterTextbox.TextChanged += new System.EventHandler(this.CCDMessageFilteringTextbox_TextChanged);
+            this.CCDBusMsgFilterTextBox.Enabled = false;
+            this.CCDBusMsgFilterTextBox.Font = new System.Drawing.Font("Courier New", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.CCDBusMsgFilterTextBox.Location = new System.Drawing.Point(3, 338);
+            this.CCDBusMsgFilterTextBox.MaxLength = 0;
+            this.CCDBusMsgFilterTextBox.Multiline = true;
+            this.CCDBusMsgFilterTextBox.Name = "CCDBusMsgFilterTextBox";
+            this.CCDBusMsgFilterTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.CCDBusMsgFilterTextBox.Size = new System.Drawing.Size(213, 59);
+            this.CCDBusMsgFilterTextBox.TabIndex = 66;
+            this.CCDBusMsgFilterTextBox.TextChanged += new System.EventHandler(this.CCDMessageFilteringTextBox_TextChanged);
             // 
             // CCDBusMsgFilterCheckbox
             // 
@@ -514,16 +488,16 @@
             this.CCDBusMsgFilterCheckbox.UseVisualStyleBackColor = true;
             this.CCDBusMsgFilterCheckbox.CheckedChanged += new System.EventHandler(this.CCDBusMsgFilterCheckbox_CheckedChanged);
             // 
-            // CCDBusSendMsgTextbox
+            // CCDBusSendMsgTextBox
             // 
-            this.CCDBusSendMsgTextbox.Enabled = false;
-            this.CCDBusSendMsgTextbox.Font = new System.Drawing.Font("Courier New", 9F);
-            this.CCDBusSendMsgTextbox.Location = new System.Drawing.Point(3, 256);
-            this.CCDBusSendMsgTextbox.Name = "CCDBusSendMsgTextbox";
-            this.CCDBusSendMsgTextbox.Size = new System.Drawing.Size(143, 21);
-            this.CCDBusSendMsgTextbox.TabIndex = 53;
-            this.CCDBusSendMsgTextbox.TextChanged += new System.EventHandler(this.CCDBusSendMsgTextbox_TextChanged);
-            this.CCDBusSendMsgTextbox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.CCDBusSendMsgTextbox_KeyPress);
+            this.CCDBusSendMsgTextBox.Enabled = false;
+            this.CCDBusSendMsgTextBox.Font = new System.Drawing.Font("Courier New", 9F);
+            this.CCDBusSendMsgTextBox.Location = new System.Drawing.Point(3, 256);
+            this.CCDBusSendMsgTextBox.Name = "CCDBusSendMsgTextBox";
+            this.CCDBusSendMsgTextBox.Size = new System.Drawing.Size(143, 21);
+            this.CCDBusSendMsgTextBox.TabIndex = 53;
+            this.CCDBusSendMsgTextBox.TextChanged += new System.EventHandler(this.CCDBusSendMsgTextBox_TextChanged);
+            this.CCDBusSendMsgTextBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.CCDBusSendMsgTextBox_KeyPress);
             // 
             // CCDBusSendMsgButton
             // 
@@ -541,9 +515,9 @@
             this.CCDBusEnabledCheckbox.AutoSize = true;
             this.CCDBusEnabledCheckbox.Location = new System.Drawing.Point(6, 288);
             this.CCDBusEnabledCheckbox.Name = "CCDBusEnabledCheckbox";
-            this.CCDBusEnabledCheckbox.Size = new System.Drawing.Size(110, 17);
+            this.CCDBusEnabledCheckbox.Size = new System.Drawing.Size(68, 17);
             this.CCDBusEnabledCheckbox.TabIndex = 47;
-            this.CCDBusEnabledCheckbox.Text = "CCD-bus disabled";
+            this.CCDBusEnabledCheckbox.Text = "CCD-bus";
             this.CCDBusEnabledCheckbox.UseVisualStyleBackColor = true;
             this.CCDBusEnabledCheckbox.CheckedChanged += new System.EventHandler(this.CCDBusEnabledCheckbox_CheckedChanged);
             // 
@@ -560,15 +534,16 @@
             // 
             // SCIBusMessagesGroupbox
             // 
+            this.SCIBusMessagesGroupbox.Controls.Add(this.PCMTCMSelectorComboBox);
             this.SCIBusMessagesGroupbox.Controls.Add(this.SCIBusMsgStackingCheckbox);
-            this.SCIBusMessagesGroupbox.Controls.Add(this.SCIBusMsgTextbox);
+            this.SCIBusMessagesGroupbox.Controls.Add(this.SCIBusMsgTextBox);
             this.SCIBusMessagesGroupbox.Controls.Add(this.SCIBusMsgFilterClearButton);
             this.SCIBusMessagesGroupbox.Controls.Add(this.SCIBusMsgFilterApplyButton);
             this.SCIBusMessagesGroupbox.Controls.Add(this.SCIBusEnabledCheckbox);
-            this.SCIBusMessagesGroupbox.Controls.Add(this.SCIBusMsgFilterTextbox);
+            this.SCIBusMessagesGroupbox.Controls.Add(this.SCIBusMsgFilterTextBox);
             this.SCIBusMessagesGroupbox.Controls.Add(this.SCIBusMsgFilterCheckbox);
             this.SCIBusMessagesGroupbox.Controls.Add(this.SCIBusClearMsgButton);
-            this.SCIBusMessagesGroupbox.Controls.Add(this.SCIBusSendMsgTextbox);
+            this.SCIBusMessagesGroupbox.Controls.Add(this.SCIBusSendMsgTextBox);
             this.SCIBusMessagesGroupbox.Controls.Add(this.SCIBusSendMsgButton);
             this.SCIBusMessagesGroupbox.Location = new System.Drawing.Point(609, 27);
             this.SCIBusMessagesGroupbox.Name = "SCIBusMessagesGroupbox";
@@ -588,18 +563,18 @@
             this.SCIBusMsgStackingCheckbox.Text = "Stacking";
             this.SCIBusMsgStackingCheckbox.UseVisualStyleBackColor = true;
             // 
-            // SCIBusMsgTextbox
+            // SCIBusMsgTextBox
             // 
-            this.SCIBusMsgTextbox.Enabled = false;
-            this.SCIBusMsgTextbox.Font = new System.Drawing.Font("Courier New", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.SCIBusMsgTextbox.Location = new System.Drawing.Point(3, 16);
-            this.SCIBusMsgTextbox.MaxLength = 0;
-            this.SCIBusMsgTextbox.Multiline = true;
-            this.SCIBusMsgTextbox.Name = "SCIBusMsgTextbox";
-            this.SCIBusMsgTextbox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.SCIBusMsgTextbox.Size = new System.Drawing.Size(214, 234);
-            this.SCIBusMsgTextbox.TabIndex = 69;
-            this.SCIBusMsgTextbox.TextChanged += new System.EventHandler(this.SCIBusMsgTextbox_TextChanged);
+            this.SCIBusMsgTextBox.Enabled = false;
+            this.SCIBusMsgTextBox.Font = new System.Drawing.Font("Courier New", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.SCIBusMsgTextBox.Location = new System.Drawing.Point(3, 16);
+            this.SCIBusMsgTextBox.MaxLength = 0;
+            this.SCIBusMsgTextBox.Multiline = true;
+            this.SCIBusMsgTextBox.Name = "SCIBusMsgTextBox";
+            this.SCIBusMsgTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.SCIBusMsgTextBox.Size = new System.Drawing.Size(214, 234);
+            this.SCIBusMsgTextBox.TabIndex = 69;
+            this.SCIBusMsgTextBox.TextChanged += new System.EventHandler(this.SCIBusMsgTextBox_TextChanged);
             // 
             // SCIBusMsgFilterClearButton
             // 
@@ -628,24 +603,24 @@
             this.SCIBusEnabledCheckbox.AutoSize = true;
             this.SCIBusEnabledCheckbox.Location = new System.Drawing.Point(6, 288);
             this.SCIBusEnabledCheckbox.Name = "SCIBusEnabledCheckbox";
-            this.SCIBusEnabledCheckbox.Size = new System.Drawing.Size(105, 17);
+            this.SCIBusEnabledCheckbox.Size = new System.Drawing.Size(66, 17);
             this.SCIBusEnabledCheckbox.TabIndex = 49;
-            this.SCIBusEnabledCheckbox.Text = "SCI-bus disabled";
+            this.SCIBusEnabledCheckbox.Text = "SCI-bus:";
             this.SCIBusEnabledCheckbox.UseVisualStyleBackColor = true;
             this.SCIBusEnabledCheckbox.CheckedChanged += new System.EventHandler(this.SCIBusEnabledCheckbox_CheckedChanged);
             // 
-            // SCIBusMsgFilterTextbox
+            // SCIBusMsgFilterTextBox
             // 
-            this.SCIBusMsgFilterTextbox.Enabled = false;
-            this.SCIBusMsgFilterTextbox.Font = new System.Drawing.Font("Courier New", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.SCIBusMsgFilterTextbox.Location = new System.Drawing.Point(3, 338);
-            this.SCIBusMsgFilterTextbox.MaxLength = 0;
-            this.SCIBusMsgFilterTextbox.Multiline = true;
-            this.SCIBusMsgFilterTextbox.Name = "SCIBusMsgFilterTextbox";
-            this.SCIBusMsgFilterTextbox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.SCIBusMsgFilterTextbox.Size = new System.Drawing.Size(213, 59);
-            this.SCIBusMsgFilterTextbox.TabIndex = 70;
-            this.SCIBusMsgFilterTextbox.TextChanged += new System.EventHandler(this.SCIMessageFilteringTextbox_TextChanged);
+            this.SCIBusMsgFilterTextBox.Enabled = false;
+            this.SCIBusMsgFilterTextBox.Font = new System.Drawing.Font("Courier New", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.SCIBusMsgFilterTextBox.Location = new System.Drawing.Point(3, 338);
+            this.SCIBusMsgFilterTextBox.MaxLength = 0;
+            this.SCIBusMsgFilterTextBox.Multiline = true;
+            this.SCIBusMsgFilterTextBox.Name = "SCIBusMsgFilterTextBox";
+            this.SCIBusMsgFilterTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.SCIBusMsgFilterTextBox.Size = new System.Drawing.Size(213, 59);
+            this.SCIBusMsgFilterTextBox.TabIndex = 70;
+            this.SCIBusMsgFilterTextBox.TextChanged += new System.EventHandler(this.SCIMessageFilteringTextBox_TextChanged);
             // 
             // SCIBusMsgFilterCheckbox
             // 
@@ -671,7 +646,7 @@
             // 
             // command_history_groupbox
             // 
-            this.command_history_groupbox.Controls.Add(this.command_history_textbox);
+            this.command_history_groupbox.Controls.Add(this.CommandHistoryTextBox);
             this.command_history_groupbox.Location = new System.Drawing.Point(12, 348);
             this.command_history_groupbox.Name = "command_history_groupbox";
             this.command_history_groupbox.Size = new System.Drawing.Size(365, 110);
@@ -679,26 +654,26 @@
             this.command_history_groupbox.TabStop = false;
             this.command_history_groupbox.Text = "Command history";
             // 
-            // command_history_textbox
+            // CommandHistoryTextBox
             // 
-            this.command_history_textbox.Font = new System.Drawing.Font("Courier New", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.command_history_textbox.Location = new System.Drawing.Point(3, 17);
-            this.command_history_textbox.MaxLength = 0;
-            this.command_history_textbox.Multiline = true;
-            this.command_history_textbox.Name = "command_history_textbox";
-            this.command_history_textbox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.command_history_textbox.Size = new System.Drawing.Size(358, 87);
-            this.command_history_textbox.TabIndex = 69;
+            this.CommandHistoryTextBox.Font = new System.Drawing.Font("Courier New", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.CommandHistoryTextBox.Location = new System.Drawing.Point(3, 17);
+            this.CommandHistoryTextBox.MaxLength = 0;
+            this.CommandHistoryTextBox.Multiline = true;
+            this.CommandHistoryTextBox.Name = "CommandHistoryTextBox";
+            this.CommandHistoryTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.CommandHistoryTextBox.Size = new System.Drawing.Size(358, 87);
+            this.CommandHistoryTextBox.TabIndex = 69;
             // 
             // MiscGroupbox
             // 
-            this.MiscGroupbox.Controls.Add(this.packet_count_tx_label);
+            this.MiscGroupbox.Controls.Add(this.PacketCountTxLabel);
             this.MiscGroupbox.Controls.Add(this.RebootScannerButton);
-            this.MiscGroupbox.Controls.Add(this.packet_count_rx_label);
-            this.MiscGroupbox.Controls.Add(this.buffer_start_label);
-            this.MiscGroupbox.Controls.Add(this.buffer_end_label);
-            this.MiscGroupbox.Controls.Add(this.buffer_readlength_label);
-            this.MiscGroupbox.Controls.Add(this.buffer_writelength_label);
+            this.MiscGroupbox.Controls.Add(this.PacketCountRxLabel);
+            this.MiscGroupbox.Controls.Add(this.BufferStartLabel);
+            this.MiscGroupbox.Controls.Add(this.BufferEndLabel);
+            this.MiscGroupbox.Controls.Add(this.BufferReadlengthLabel);
+            this.MiscGroupbox.Controls.Add(this.BufferWritelengthLabel);
             this.MiscGroupbox.Location = new System.Drawing.Point(162, 464);
             this.MiscGroupbox.Name = "MiscGroupbox";
             this.MiscGroupbox.Size = new System.Drawing.Size(215, 136);
@@ -706,14 +681,14 @@
             this.MiscGroupbox.TabStop = false;
             this.MiscGroupbox.Text = "Misc.";
             // 
-            // packet_count_tx_label
+            // PacketCountTxLabel
             // 
-            this.packet_count_tx_label.AutoSize = true;
-            this.packet_count_tx_label.Location = new System.Drawing.Point(6, 35);
-            this.packet_count_tx_label.Name = "packet_count_tx_label";
-            this.packet_count_tx_label.Size = new System.Drawing.Size(75, 13);
-            this.packet_count_tx_label.TabIndex = 24;
-            this.packet_count_tx_label.Text = "Packets sent: ";
+            this.PacketCountTxLabel.AutoSize = true;
+            this.PacketCountTxLabel.Location = new System.Drawing.Point(6, 35);
+            this.PacketCountTxLabel.Name = "PacketCountTxLabel";
+            this.PacketCountTxLabel.Size = new System.Drawing.Size(75, 13);
+            this.PacketCountTxLabel.TabIndex = 24;
+            this.PacketCountTxLabel.Text = "Packets sent: ";
             // 
             // RebootScannerButton
             // 
@@ -851,117 +826,85 @@
             this.RealTimeDiagnosticsGroupbox.Controls.Add(this.real_time_diagnostics_button);
             this.RealTimeDiagnosticsGroupbox.Location = new System.Drawing.Point(383, 464);
             this.RealTimeDiagnosticsGroupbox.Name = "RealTimeDiagnosticsGroupbox";
-            this.RealTimeDiagnosticsGroupbox.Size = new System.Drawing.Size(140, 66);
+            this.RealTimeDiagnosticsGroupbox.Size = new System.Drawing.Size(140, 65);
             this.RealTimeDiagnosticsGroupbox.TabIndex = 50;
             this.RealTimeDiagnosticsGroupbox.TabStop = false;
             this.RealTimeDiagnosticsGroupbox.Text = "Real Time Diagnostics";
             // 
             // real_time_diagnostics_button
             // 
-            this.real_time_diagnostics_button.Dock = System.Windows.Forms.DockStyle.Top;
-            this.real_time_diagnostics_button.Location = new System.Drawing.Point(3, 16);
+            this.real_time_diagnostics_button.Location = new System.Drawing.Point(6, 26);
             this.real_time_diagnostics_button.Name = "real_time_diagnostics_button";
-            this.real_time_diagnostics_button.Size = new System.Drawing.Size(134, 44);
+            this.real_time_diagnostics_button.Size = new System.Drawing.Size(128, 30);
             this.real_time_diagnostics_button.TabIndex = 51;
             this.real_time_diagnostics_button.Text = "Open";
             this.real_time_diagnostics_button.UseVisualStyleBackColor = true;
             this.real_time_diagnostics_button.Click += new System.EventHandler(this.RealTimeDiagnosticsButton_Click);
             // 
-            // ReadDTCsGroupbox
+            // ReadDTCGroupbox
             // 
-            this.ReadDTCsGroupbox.Controls.Add(this.ReadDTCTCMButton);
-            this.ReadDTCsGroupbox.Controls.Add(this.ReadDTCMICButton);
-            this.ReadDTCsGroupbox.Controls.Add(this.ReadDTCABSButton);
-            this.ReadDTCsGroupbox.Controls.Add(this.ReadDTCACMButton);
-            this.ReadDTCsGroupbox.Controls.Add(this.ReadDTCBCMButton);
-            this.ReadDTCsGroupbox.Controls.Add(this.ReadDTCPCMButton);
-            this.ReadDTCsGroupbox.Location = new System.Drawing.Point(383, 534);
-            this.ReadDTCsGroupbox.Name = "ReadDTCsGroupbox";
-            this.ReadDTCsGroupbox.Size = new System.Drawing.Size(140, 106);
-            this.ReadDTCsGroupbox.TabIndex = 51;
-            this.ReadDTCsGroupbox.TabStop = false;
-            this.ReadDTCsGroupbox.Text = "Read DTCs";
+            this.ReadDTCGroupbox.Controls.Add(this.ScanModulesButton);
+            this.ReadDTCGroupbox.Controls.Add(this.ModuleListComboBox);
+            this.ReadDTCGroupbox.Controls.Add(this.ReadDTCByModuleButton);
+            this.ReadDTCGroupbox.Location = new System.Drawing.Point(383, 606);
+            this.ReadDTCGroupbox.Name = "ReadDTCGroupbox";
+            this.ReadDTCGroupbox.Size = new System.Drawing.Size(140, 82);
+            this.ReadDTCGroupbox.TabIndex = 51;
+            this.ReadDTCGroupbox.TabStop = false;
+            this.ReadDTCGroupbox.Text = "Read DTC by modules";
             // 
-            // ReadDTCTCMButton
+            // ScanModulesButton
             // 
-            this.ReadDTCTCMButton.Location = new System.Drawing.Point(6, 77);
-            this.ReadDTCTCMButton.Name = "ReadDTCTCMButton";
-            this.ReadDTCTCMButton.Size = new System.Drawing.Size(61, 23);
-            this.ReadDTCTCMButton.TabIndex = 57;
-            this.ReadDTCTCMButton.Text = "TCM";
-            this.toolTip1.SetToolTip(this.ReadDTCTCMButton, "Transmission Control Module");
-            this.ReadDTCTCMButton.UseVisualStyleBackColor = true;
-            this.ReadDTCTCMButton.Click += new System.EventHandler(this.ReadDTCTCMButton_Click);
+            this.ScanModulesButton.Location = new System.Drawing.Point(85, 46);
+            this.ScanModulesButton.Name = "ScanModulesButton";
+            this.ScanModulesButton.Size = new System.Drawing.Size(49, 30);
+            this.ScanModulesButton.TabIndex = 54;
+            this.ScanModulesButton.Text = "Scan";
+            this.ScanModulesButton.UseVisualStyleBackColor = true;
             // 
-            // ReadDTCMICButton
+            // ModuleListComboBox
             // 
-            this.ReadDTCMICButton.Location = new System.Drawing.Point(73, 77);
-            this.ReadDTCMICButton.Name = "ReadDTCMICButton";
-            this.ReadDTCMICButton.Size = new System.Drawing.Size(61, 23);
-            this.ReadDTCMICButton.TabIndex = 56;
-            this.ReadDTCMICButton.Text = "MIC";
-            this.toolTip1.SetToolTip(this.ReadDTCMICButton, "Mechanical Instrument Cluster");
-            this.ReadDTCMICButton.UseVisualStyleBackColor = true;
-            this.ReadDTCMICButton.Click += new System.EventHandler(this.ReadDTCMICButton_Click);
+            this.ModuleListComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.ModuleListComboBox.FormattingEnabled = true;
+            this.ModuleListComboBox.Items.AddRange(new object[] {
+            "Scanning needed"});
+            this.ModuleListComboBox.Location = new System.Drawing.Point(6, 18);
+            this.ModuleListComboBox.Name = "ModuleListComboBox";
+            this.ModuleListComboBox.Size = new System.Drawing.Size(128, 21);
+            this.ModuleListComboBox.TabIndex = 53;
             // 
-            // ReadDTCABSButton
+            // ReadDTCByModuleButton
             // 
-            this.ReadDTCABSButton.Location = new System.Drawing.Point(73, 48);
-            this.ReadDTCABSButton.Name = "ReadDTCABSButton";
-            this.ReadDTCABSButton.Size = new System.Drawing.Size(61, 23);
-            this.ReadDTCABSButton.TabIndex = 55;
-            this.ReadDTCABSButton.Text = "ABS";
-            this.toolTip1.SetToolTip(this.ReadDTCABSButton, "Antilock Brake System");
-            this.ReadDTCABSButton.UseVisualStyleBackColor = true;
-            this.ReadDTCABSButton.Click += new System.EventHandler(this.ReadDTCABSButton_Click);
+            this.ReadDTCByModuleButton.Enabled = false;
+            this.ReadDTCByModuleButton.Location = new System.Drawing.Point(6, 46);
+            this.ReadDTCByModuleButton.Name = "ReadDTCByModuleButton";
+            this.ReadDTCByModuleButton.Size = new System.Drawing.Size(73, 30);
+            this.ReadDTCByModuleButton.TabIndex = 52;
+            this.ReadDTCByModuleButton.Text = "Read DTC";
+            this.ReadDTCByModuleButton.UseVisualStyleBackColor = true;
             // 
-            // ReadDTCACMButton
+            // ReadAllDTCButton
             // 
-            this.ReadDTCACMButton.Location = new System.Drawing.Point(6, 48);
-            this.ReadDTCACMButton.Name = "ReadDTCACMButton";
-            this.ReadDTCACMButton.Size = new System.Drawing.Size(61, 23);
-            this.ReadDTCACMButton.TabIndex = 54;
-            this.ReadDTCACMButton.Text = "ACM";
-            this.toolTip1.SetToolTip(this.ReadDTCACMButton, "Airbag Control Module");
-            this.ReadDTCACMButton.UseVisualStyleBackColor = true;
-            this.ReadDTCACMButton.Click += new System.EventHandler(this.ReadDTCACMButton_Click);
+            this.ReadAllDTCButton.Location = new System.Drawing.Point(6, 26);
+            this.ReadAllDTCButton.Name = "ReadAllDTCButton";
+            this.ReadAllDTCButton.Size = new System.Drawing.Size(128, 30);
+            this.ReadAllDTCButton.TabIndex = 58;
+            this.ReadAllDTCButton.Text = "Read all DTC";
+            this.ReadAllDTCButton.UseVisualStyleBackColor = true;
             // 
-            // ReadDTCBCMButton
+            // ReadAllDTCGroupbox
             // 
-            this.ReadDTCBCMButton.Location = new System.Drawing.Point(73, 19);
-            this.ReadDTCBCMButton.Name = "ReadDTCBCMButton";
-            this.ReadDTCBCMButton.Size = new System.Drawing.Size(61, 23);
-            this.ReadDTCBCMButton.TabIndex = 53;
-            this.ReadDTCBCMButton.Text = "BCM";
-            this.toolTip1.SetToolTip(this.ReadDTCBCMButton, "Body Control Module");
-            this.ReadDTCBCMButton.UseVisualStyleBackColor = true;
-            this.ReadDTCBCMButton.Click += new System.EventHandler(this.ReadDTCBCMButton_Click);
-            // 
-            // ReadDTCPCMButton
-            // 
-            this.ReadDTCPCMButton.Location = new System.Drawing.Point(6, 19);
-            this.ReadDTCPCMButton.Name = "ReadDTCPCMButton";
-            this.ReadDTCPCMButton.Size = new System.Drawing.Size(61, 23);
-            this.ReadDTCPCMButton.TabIndex = 52;
-            this.ReadDTCPCMButton.Text = "PCM";
-            this.toolTip1.SetToolTip(this.ReadDTCPCMButton, "Powertrain Control Module");
-            this.ReadDTCPCMButton.UseVisualStyleBackColor = true;
-            this.ReadDTCPCMButton.Click += new System.EventHandler(this.ReadDTCPCMButton_Click);
-            // 
-            // SCIBusSpeedGroupbox
-            // 
-            this.SCIBusSpeedGroupbox.Controls.Add(this.sci_bus_hs_button);
-            this.SCIBusSpeedGroupbox.Controls.Add(this.sci_bus_speed_label);
-            this.SCIBusSpeedGroupbox.Location = new System.Drawing.Point(383, 646);
-            this.SCIBusSpeedGroupbox.Name = "SCIBusSpeedGroupbox";
-            this.SCIBusSpeedGroupbox.Size = new System.Drawing.Size(140, 42);
-            this.SCIBusSpeedGroupbox.TabIndex = 56;
-            this.SCIBusSpeedGroupbox.TabStop = false;
-            this.SCIBusSpeedGroupbox.Text = "SCI-bus speed";
+            this.ReadAllDTCGroupbox.Controls.Add(this.ReadAllDTCButton);
+            this.ReadAllDTCGroupbox.Location = new System.Drawing.Point(383, 535);
+            this.ReadAllDTCGroupbox.Name = "ReadAllDTCGroupbox";
+            this.ReadAllDTCGroupbox.Size = new System.Drawing.Size(140, 65);
+            this.ReadAllDTCGroupbox.TabIndex = 56;
+            this.ReadAllDTCGroupbox.TabStop = false;
+            this.ReadAllDTCGroupbox.Text = "Read all DTC";
             // 
             // SensorDataGroupbox
             // 
-            this.SensorDataGroupbox.Controls.Add(this.SensorDataTextbox);
+            this.SensorDataGroupbox.Controls.Add(this.SensorDataTextBox);
             this.SensorDataGroupbox.Location = new System.Drawing.Point(835, 27);
             this.SensorDataGroupbox.Name = "SensorDataGroupbox";
             this.SensorDataGroupbox.Size = new System.Drawing.Size(341, 663);
@@ -969,47 +912,60 @@
             this.SensorDataGroupbox.TabStop = false;
             this.SensorDataGroupbox.Text = "Sensor data";
             // 
-            // SensorDataTextbox
+            // SensorDataTextBox
             // 
-            this.SensorDataTextbox.Font = new System.Drawing.Font("Courier New", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.SensorDataTextbox.Location = new System.Drawing.Point(6, 16);
-            this.SensorDataTextbox.MaxLength = 0;
-            this.SensorDataTextbox.Multiline = true;
-            this.SensorDataTextbox.Name = "SensorDataTextbox";
-            this.SensorDataTextbox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.SensorDataTextbox.Size = new System.Drawing.Size(329, 641);
-            this.SensorDataTextbox.TabIndex = 73;
+            this.SensorDataTextBox.Font = new System.Drawing.Font("Courier New", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.SensorDataTextBox.Location = new System.Drawing.Point(6, 16);
+            this.SensorDataTextBox.MaxLength = 0;
+            this.SensorDataTextBox.Multiline = true;
+            this.SensorDataTextBox.Name = "SensorDataTextBox";
+            this.SensorDataTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.SensorDataTextBox.Size = new System.Drawing.Size(329, 641);
+            this.SensorDataTextBox.TabIndex = 73;
             // 
-            // ETCGroupbox
+            // DTCListGroupbox
             // 
-            this.ETCGroupbox.Location = new System.Drawing.Point(529, 534);
-            this.ETCGroupbox.Name = "ETCGroupbox";
-            this.ETCGroupbox.Size = new System.Drawing.Size(300, 154);
-            this.ETCGroupbox.TabIndex = 52;
-            this.ETCGroupbox.TabStop = false;
-            this.ETCGroupbox.Text = "etc...";
+            this.DTCListGroupbox.Controls.Add(this.DTCListTextBox);
+            this.DTCListGroupbox.Location = new System.Drawing.Point(529, 464);
+            this.DTCListGroupbox.Name = "DTCListGroupbox";
+            this.DTCListGroupbox.Size = new System.Drawing.Size(300, 224);
+            this.DTCListGroupbox.TabIndex = 52;
+            this.DTCListGroupbox.TabStop = false;
+            this.DTCListGroupbox.Text = "Diagnostic Trouble Code (DTC) list";
             // 
-            // SuperCardButton
+            // DTCListTextBox
             // 
-            this.SuperCardButton.Location = new System.Drawing.Point(621, 476);
-            this.SuperCardButton.Name = "SuperCardButton";
-            this.SuperCardButton.Size = new System.Drawing.Size(108, 23);
-            this.SuperCardButton.TabIndex = 67;
-            this.SuperCardButton.Text = "SuperCard reader";
-            this.SuperCardButton.UseVisualStyleBackColor = true;
-            this.SuperCardButton.Click += new System.EventHandler(this.SuperCardButton_Click);
+            this.DTCListTextBox.Font = new System.Drawing.Font("Courier New", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.DTCListTextBox.Location = new System.Drawing.Point(3, 16);
+            this.DTCListTextBox.MaxLength = 0;
+            this.DTCListTextBox.Multiline = true;
+            this.DTCListTextBox.Name = "DTCListTextBox";
+            this.DTCListTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.DTCListTextBox.Size = new System.Drawing.Size(294, 202);
+            this.DTCListTextBox.TabIndex = 70;
+            // 
+            // PCMTCMSelectorComboBox
+            // 
+            this.PCMTCMSelectorComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.PCMTCMSelectorComboBox.FormattingEnabled = true;
+            this.PCMTCMSelectorComboBox.Items.AddRange(new object[] {
+            "PCM",
+            "TCM"});
+            this.PCMTCMSelectorComboBox.Location = new System.Drawing.Point(72, 285);
+            this.PCMTCMSelectorComboBox.Name = "PCMTCMSelectorComboBox";
+            this.PCMTCMSelectorComboBox.Size = new System.Drawing.Size(48, 21);
+            this.PCMTCMSelectorComboBox.TabIndex = 55;
+            this.PCMTCMSelectorComboBox.SelectionChangeCommitted += new System.EventHandler(this.PCMTCMSelectorComboBox_SelectionChangeCommitted);
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1184, 692);
-            this.Controls.Add(this.SuperCardButton);
-            this.Controls.Add(this.PacketGeneratorButton);
-            this.Controls.Add(this.ETCGroupbox);
+            this.Controls.Add(this.DTCListGroupbox);
             this.Controls.Add(this.SensorDataGroupbox);
-            this.Controls.Add(this.SCIBusSpeedGroupbox);
-            this.Controls.Add(this.ReadDTCsGroupbox);
+            this.Controls.Add(this.ReadAllDTCGroupbox);
+            this.Controls.Add(this.ReadDTCGroupbox);
             this.Controls.Add(this.RealTimeDiagnosticsGroupbox);
             this.Controls.Add(this.EEPROMGroupbox);
             this.Controls.Add(this.ControlPanelGroupbox);
@@ -1042,11 +998,12 @@
             this.EEPROMGroupbox.ResumeLayout(false);
             this.EEPROMGroupbox.PerformLayout();
             this.RealTimeDiagnosticsGroupbox.ResumeLayout(false);
-            this.ReadDTCsGroupbox.ResumeLayout(false);
-            this.SCIBusSpeedGroupbox.ResumeLayout(false);
-            this.SCIBusSpeedGroupbox.PerformLayout();
+            this.ReadDTCGroupbox.ResumeLayout(false);
+            this.ReadAllDTCGroupbox.ResumeLayout(false);
             this.SensorDataGroupbox.ResumeLayout(false);
             this.SensorDataGroupbox.PerformLayout();
+            this.DTCListGroupbox.ResumeLayout(false);
+            this.DTCListGroupbox.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1054,17 +1011,15 @@
 
         #endregion
         private System.Windows.Forms.Button ConnectButton;
-        private System.Windows.Forms.Label packet_count_rx_label;
-        private System.Windows.Forms.Label buffer_writelength_label;
-        private System.Windows.Forms.Label buffer_start_label;
-        private System.Windows.Forms.Label buffer_end_label;
-        private System.Windows.Forms.Label buffer_readlength_label;
+        private System.Windows.Forms.Label PacketCountRxLabel;
+        private System.Windows.Forms.Label BufferWritelengthLabel;
+        private System.Windows.Forms.Label BufferStartLabel;
+        private System.Windows.Forms.Label BufferEndLabel;
+        private System.Windows.Forms.Label BufferReadlengthLabel;
         private System.Windows.Forms.Button read_exteeprom_button;
         private System.Windows.Forms.Button read_inteeprom_button;
         private System.Windows.Forms.Button StatusButton;
-        private System.Windows.Forms.TextBox SCIBusSendMsgTextbox;
-        private System.Windows.Forms.Button sci_bus_hs_button;
-        private System.Windows.Forms.Label sci_bus_speed_label;
+        private System.Windows.Forms.TextBox SCIBusSendMsgTextBox;
         private System.Windows.Forms.Button erase_exteeprom_button;
         private System.Windows.Forms.GroupBox PacketLogGroupbox;
         private System.Windows.Forms.MenuStrip menuStrip1;
@@ -1083,7 +1038,7 @@
         private System.Windows.Forms.Button DisconnectButton;
         private System.Windows.Forms.Button ExitButton;
         private System.Windows.Forms.Button SCIBusSendMsgButton;
-        private System.Windows.Forms.TextBox CCDBusSendMsgTextbox;
+        private System.Windows.Forms.TextBox CCDBusSendMsgTextBox;
         private System.Windows.Forms.Button CCDBusSendMsgButton;
         private System.Windows.Forms.GroupBox EEPROMGroupbox;
         private System.Windows.Forms.Button erase_inteeprom_button;
@@ -1095,46 +1050,44 @@
         private System.Windows.Forms.Label label17;
         private System.Windows.Forms.GroupBox RealTimeDiagnosticsGroupbox;
         private System.Windows.Forms.Button real_time_diagnostics_button;
-        private System.Windows.Forms.TextBox PacketSendTextbox;
+        private System.Windows.Forms.TextBox PacketSendTextBox;
         private System.Windows.Forms.Button PacketSendButton;
         private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
-        private System.Windows.Forms.GroupBox ReadDTCsGroupbox;
-        private System.Windows.Forms.Button ReadDTCABSButton;
-        private System.Windows.Forms.Button ReadDTCACMButton;
-        private System.Windows.Forms.Button ReadDTCBCMButton;
-        private System.Windows.Forms.Button ReadDTCPCMButton;
-        private System.Windows.Forms.ToolTip toolTip1;
+        private System.Windows.Forms.GroupBox ReadDTCGroupbox;
+        private System.Windows.Forms.Button ReadDTCByModuleButton;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem1;
         private System.Windows.Forms.Label RXLabel;
         private System.Windows.Forms.Label TXLabel;
-        private System.Windows.Forms.GroupBox SCIBusSpeedGroupbox;
-        private System.Windows.Forms.Button ReadDTCMICButton;
-        private System.Windows.Forms.Button ReadDTCTCMButton;
+        private System.Windows.Forms.GroupBox ReadAllDTCGroupbox;
         private System.Windows.Forms.GroupBox SensorDataGroupbox;
         private System.Windows.Forms.Button RebootScannerButton;
-        private System.Windows.Forms.TextBox PacketTextbox;
+        private System.Windows.Forms.TextBox PacketTextBox;
         private System.Windows.Forms.Button CCDBusMsgFilterClearButton;
         private System.Windows.Forms.Button CCDBusMsgFilterApplyButton;
-        private System.Windows.Forms.TextBox CCDBusMsgFilterTextbox;
+        private System.Windows.Forms.TextBox CCDBusMsgFilterTextBox;
         private System.Windows.Forms.CheckBox CCDBusMsgFilterCheckbox;
         private System.Windows.Forms.Button SCIBusMsgFilterClearButton;
         private System.Windows.Forms.Button SCIBusMsgFilterApplyButton;
-        private System.Windows.Forms.TextBox SCIBusMsgFilterTextbox;
+        private System.Windows.Forms.TextBox SCIBusMsgFilterTextBox;
         private System.Windows.Forms.CheckBox SCIBusMsgFilterCheckbox;
-        private System.Windows.Forms.TextBox command_history_textbox;
-        private System.Windows.Forms.Label packet_count_tx_label;
+        private System.Windows.Forms.TextBox CommandHistoryTextBox;
+        private System.Windows.Forms.Label PacketCountTxLabel;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem toolsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem packetGeneratorToolStripMenuItem;
-        private System.Windows.Forms.TextBox CCDBusMsgTextbox;
-        private System.Windows.Forms.TextBox SCIBusMsgTextbox;
-        private System.Windows.Forms.TextBox SensorDataTextbox;
+        private System.Windows.Forms.TextBox CCDBusMsgTextBox;
+        private System.Windows.Forms.TextBox SCIBusMsgTextBox;
+        private System.Windows.Forms.TextBox SensorDataTextBox;
         private System.Windows.Forms.CheckBox CCDBusMsgStackingCheckbox;
         private System.Windows.Forms.CheckBox SCIBusMsgStackingCheckbox;
-        private System.Windows.Forms.GroupBox ETCGroupbox;
-        private System.Windows.Forms.Button PacketGeneratorButton;
-        private System.Windows.Forms.Button SuperCardButton;
+        private System.Windows.Forms.GroupBox DTCListGroupbox;
+        private System.Windows.Forms.TextBox DTCListTextBox;
+        private System.Windows.Forms.ToolStripMenuItem superCardReaderToolStripMenuItem;
+        private System.Windows.Forms.Button ReadAllDTCButton;
+        private System.Windows.Forms.ComboBox ModuleListComboBox;
+        private System.Windows.Forms.Button ScanModulesButton;
+        private System.Windows.Forms.ComboBox PCMTCMSelectorComboBox;
     }
 }
 
