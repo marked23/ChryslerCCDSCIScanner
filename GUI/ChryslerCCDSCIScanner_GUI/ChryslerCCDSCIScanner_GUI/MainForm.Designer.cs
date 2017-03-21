@@ -69,6 +69,7 @@
             this.CCDBusEnabledCheckbox = new System.Windows.Forms.CheckBox();
             this.CCDBusClearMsgButton = new System.Windows.Forms.Button();
             this.SCIBusMessagesGroupbox = new System.Windows.Forms.GroupBox();
+            this.PCMTCMSelectorComboBox = new System.Windows.Forms.ComboBox();
             this.SCIBusMsgStackingCheckbox = new System.Windows.Forms.CheckBox();
             this.SCIBusMsgTextBox = new System.Windows.Forms.TextBox();
             this.SCIBusMsgFilterClearButton = new System.Windows.Forms.Button();
@@ -105,7 +106,6 @@
             this.SensorDataTextBox = new System.Windows.Forms.TextBox();
             this.DTCListGroupbox = new System.Windows.Forms.GroupBox();
             this.DTCListTextBox = new System.Windows.Forms.TextBox();
-            this.PCMTCMSelectorComboBox = new System.Windows.Forms.ComboBox();
             this.PacketLogGroupbox.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.CCDBusMessagesGroupbox.SuspendLayout();
@@ -428,6 +428,7 @@
             this.CCDBusMsgStackingCheckbox.TabIndex = 69;
             this.CCDBusMsgStackingCheckbox.Text = "Stacking";
             this.CCDBusMsgStackingCheckbox.UseVisualStyleBackColor = true;
+            this.CCDBusMsgStackingCheckbox.Visible = false;
             // 
             // CCDBusMsgTextBox
             // 
@@ -552,6 +553,19 @@
             this.SCIBusMessagesGroupbox.TabStop = false;
             this.SCIBusMessagesGroupbox.Text = "SCI-bus messages";
             // 
+            // PCMTCMSelectorComboBox
+            // 
+            this.PCMTCMSelectorComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.PCMTCMSelectorComboBox.FormattingEnabled = true;
+            this.PCMTCMSelectorComboBox.Items.AddRange(new object[] {
+            "PCM",
+            "TCM"});
+            this.PCMTCMSelectorComboBox.Location = new System.Drawing.Point(72, 285);
+            this.PCMTCMSelectorComboBox.Name = "PCMTCMSelectorComboBox";
+            this.PCMTCMSelectorComboBox.Size = new System.Drawing.Size(48, 21);
+            this.PCMTCMSelectorComboBox.TabIndex = 55;
+            this.PCMTCMSelectorComboBox.SelectionChangeCommitted += new System.EventHandler(this.PCMTCMSelectorComboBox_SelectionChangeCommitted);
+            // 
             // SCIBusMsgStackingCheckbox
             // 
             this.SCIBusMsgStackingCheckbox.AutoSize = true;
@@ -562,6 +576,7 @@
             this.SCIBusMsgStackingCheckbox.TabIndex = 70;
             this.SCIBusMsgStackingCheckbox.Text = "Stacking";
             this.SCIBusMsgStackingCheckbox.UseVisualStyleBackColor = true;
+            this.SCIBusMsgStackingCheckbox.Visible = false;
             // 
             // SCIBusMsgTextBox
             // 
@@ -751,7 +766,7 @@
             this.EEPROMGroupbox.Size = new System.Drawing.Size(365, 82);
             this.EEPROMGroupbox.TabIndex = 48;
             this.EEPROMGroupbox.TabStop = false;
-            this.EEPROMGroupbox.Text = "EEPROM";
+            this.EEPROMGroupbox.Text = "EEPROM (scanner)";
             // 
             // write_exteeprom_button
             // 
@@ -815,7 +830,7 @@
             // label16
             // 
             this.label16.AutoSize = true;
-            this.label16.Location = new System.Drawing.Point(6, 23);
+            this.label16.Location = new System.Drawing.Point(9, 23);
             this.label16.Name = "label16";
             this.label16.Size = new System.Drawing.Size(94, 13);
             this.label16.TabIndex = 49;
@@ -943,19 +958,6 @@
             this.DTCListTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.DTCListTextBox.Size = new System.Drawing.Size(294, 202);
             this.DTCListTextBox.TabIndex = 70;
-            // 
-            // PCMTCMSelectorComboBox
-            // 
-            this.PCMTCMSelectorComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.PCMTCMSelectorComboBox.FormattingEnabled = true;
-            this.PCMTCMSelectorComboBox.Items.AddRange(new object[] {
-            "PCM",
-            "TCM"});
-            this.PCMTCMSelectorComboBox.Location = new System.Drawing.Point(72, 285);
-            this.PCMTCMSelectorComboBox.Name = "PCMTCMSelectorComboBox";
-            this.PCMTCMSelectorComboBox.Size = new System.Drawing.Size(48, 21);
-            this.PCMTCMSelectorComboBox.TabIndex = 55;
-            this.PCMTCMSelectorComboBox.SelectionChangeCommitted += new System.EventHandler(this.PCMTCMSelectorComboBox_SelectionChangeCommitted);
             // 
             // MainForm
             // 

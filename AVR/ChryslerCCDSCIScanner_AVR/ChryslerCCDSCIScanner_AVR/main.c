@@ -2,8 +2,8 @@
 Project:  CHRYSLER CCD/SCI SCANNER
 Author:   László Dániel
 Email:    laszlodaniel@gmail.com
-Date:     2016-10-09
-Revision: V1.30
+Date:     2017-03-21
+Version:  V1.30
 Purpose:  receive and transmit messages from and to the legacy CCD/SCI-network
 Software: Atmel Studio 7.0
 Hardware: ATmega2560 + ATmega8U2 + CDP68HC68S1E + CD4066 + MCP23017
@@ -23,8 +23,8 @@ Many others with little things.
 
 Supported OBD-II pin layout:
 3:  CCD+
-4:  Chassis Ground
-5:  Signal Ground
+4:  Chassis Ground (not used)
+5:  Signal Ground (used)
 6:  SCI Receive  (RX) (PCM)
 7:  SCI Transmit (TX) (PCM, TCM)
 11: CCD-
@@ -32,16 +32,18 @@ Supported OBD-II pin layout:
 16: +12V
 
 Supported cars: all Chrysler vehicles (manual or auto transmission) equipped 
-with CCD- and/or SCI-bus with above pin configuration.
+with CCD- and/or SCI-bus with above pin configuration (typical years between 1989-2004).
 
 The program uses the 2560's hardware UARTs to communicate with both buses:
 - UART0: CCD-bus communication,
 - UART1: SCI-bus communication (exclusive for PCM and TCM),
 - UART2: Packet-based communication between scanner and laptop,
-- UART3: 1-wire communication with DS18B20 temperature sensor.
+- UART3: 1-wire communication with DS18B20 temperature sensor (independent from scanner).
 
-Note: this scanner can not be used to re-flash the PCM and/or TCM,
+Note: this scanner cannot be used to re-flash the PCM and/or TCM,
 it doesn't have the necessary circuitry to achieve that!
+If you figure out a way to do it anyway using this hardware and software I cannot
+be held responsible for the damages.
 ******************************************************************************/
 
 
@@ -83,13 +85,13 @@ it doesn't have the necessary circuitry to achieve that!
           SYSTEM INFO          
 -------------------------------
    MCU: ATmega2560-16AU
- SPEED: 16MHz
+ CLOCK: 16MHz
  FLASH: 256kB
    RAM: 8kB
 EEPROM: 4kB
 -------------------------------
    USB: ATmega8U2-AU
- SPEED: 16MHz
+ CLOCK: 16MHz
  FLASH: 8kB
    RAM: 0.5kB
 EEPROM: 0.5kB
@@ -234,13 +236,12 @@ void wdt_init(void)
 /*************************************************************************
 Function: check_commands()
 Purpose:  check if a command has been received from the laptop.
-Notes:    UART2 is used to send and receive packets.
-          Here are the tasks created/assigned.
+Notes:    UART2 is used to send and receive packets through USB.
 **************************************************************************/
 void check_commands(void)
 {
 	// Proceed only if the packet receive buffer (UART2) contains at least 5 bytes.
-	// Two dummy bytes are always there in the beginning (caused by the ATmega8U2)
+	// Two dummy bytes are always there in the beginning (caused by the ATmega8U2)!!!
 	if (uart2_available_rx() > 4)
 	{
 		// Make some local variables, they will disappear after the function ends
@@ -260,6 +261,8 @@ void check_commands(void)
 		{
 			// If it's not the SYNC byte then get rid of it
 			uart2_getc();
+
+			// Determine if timeout has been reached
 			if (millis_get() - command_timeout_start > command_purge_timeout) command_timeout_reached = true;
 		}
 		command_timeout_reached = false;
@@ -269,7 +272,7 @@ void check_commands(void)
 		// Read 3 bytes (one SYNC and two LENGTH byte).
 		// All UART reads are masked with 0xFF because the ring buffer
 		// contains words (two bytes). MSB contains flags, LSB contains
-		// the actual data byte. The "& 0xFF" mask gets rid of the MSB.
+		// the actual data byte. The "& 0xFF" mask gets rid of the MSB, effectively zeroing them out.
 
 		sync      = uart2_getc() & 0xFF;
 		length_hb = uart2_getc() & 0xFF;
@@ -280,12 +283,13 @@ void check_commands(void)
 
 		// Max packet length is 2048 bytes. 3 bytes are already read and the checksum byte is not read yet.
 		// Can't accept larger packets so if that's the case, the function needs to exit after sending an error packet back to the laptop.
-		if ((bytes_to_read - 1) > 2044)
+		if (bytes_to_read > 2045)
 		{
 			send_packet(from_scanner, to_laptop, ok_error, error_length_invalid_value, (uint8_t*)ok_error, 0);
 			return;
 		}
 
+		// Let's continue...
 		// Calculate the exact size of the payload
 		payload_length = bytes_to_read - 3;
 
@@ -315,7 +319,7 @@ void check_commands(void)
 			// If the payload length is greater than zero then read those bytes too
 			if (payload_length > 0)
 			{
-				// Read all the PAYLOAD bytes (max 2042 (!) bytes)
+				// Read all the PAYLOAD bytes
 				for (uint16_t i = 0; i < payload_length; i++)
 				{
 					cmd_payload[i] = uart2_getc() & 0xFF;
@@ -331,10 +335,7 @@ void check_commands(void)
 
 			// Verify the received command packet by calculating what the checksum byte should be.
 			calculated_checksum = 0;
-			calculated_checksum += length_hb;
-			calculated_checksum += length_lb;
-			calculated_checksum += datacode;
-			calculated_checksum += subdatacode;
+			calculated_checksum = length_hb + length_lb + datacode + subdatacode;
 
 			if (payload_bytes)
 			{
@@ -352,11 +353,12 @@ void check_commands(void)
 			// Here it goes...
 			if ( (sync == SYNC_BYTE) && (calculated_checksum  == checksum) )
 			{
-				// Find out what is the source and the target of the packet by examining the high nibble (4 bits)
+				// If everything is good then continue processing the packet...
+				// Find out what is the source and the target of the packet by examining the DATA CODE byte's high nibble (upper 4 bits)
 				uint8_t source = (datacode >> 6) & 0x03; // keep the upper two bits
 				uint8_t target = (datacode >> 4) & 0x03; // keep the lower two bits
 
-				// Extract DC command value from the low nibble (4 bits)
+				// Extract DC command value from the low nibble (lower 4 bits)
 				uint8_t dc_command = datacode & 0x0F;
 
 				if (source == from_laptop) // 0x00 - Proceed only if the packet is coming from the laptop.
@@ -375,6 +377,23 @@ void check_commands(void)
 							{
 								case reboot: // 0x00 - Reboot scanner.
 								{
+									// Reset bus states to avoid previous communication interference
+									stop_clock_generator();
+									ccd_enabled = false;
+									sci_enabled = false;
+									select_sci_bus_target(NON);
+									while (uart0_available() > 0) uart0_getc(); // Clear CCD-bus buffer
+									while (uart1_available() > 0) uart1_getc(); // Clear SCI-bus buffer
+
+									// Reset message buffers too
+									ccd_bus_bytes_buffer_ptr = 0;
+									ccd_bus_msg_pending = false;
+									ccd_bus_msg_to_send_ptr = 0;
+
+									sci_bus_bytes_buffer_ptr = 0;
+									sci_bus_msg_pending = false;
+									sci_bus_msg_to_send_ptr = 0;
+
 									// Send REBOOT packet back first to acknowledge the scanner has received the command
 									send_packet(from_scanner, to_laptop, reboot, ok, (uint8_t*)ok, 0);
 
@@ -388,10 +407,27 @@ void check_commands(void)
 								}
 								case handshake: // 0x01 - Handshake request.
 								{
-									// Create a local array to save memory in the long run
+									// Reset bus states to avoid previous communication interference
+									stop_clock_generator();
+									ccd_enabled = false;
+									sci_enabled = false;
+									select_sci_bus_target(NON);
+									while (uart0_available() > 0) uart0_getc(); // Clear CCD-bus buffer
+									while (uart1_available() > 0) uart1_getc(); // Clear SCI-bus buffer
+
+									// Reset message buffers too
+									ccd_bus_bytes_buffer_ptr = 0;
+									ccd_bus_msg_pending = false;
+									ccd_bus_msg_to_send_ptr = 0;
+
+									sci_bus_bytes_buffer_ptr = 0;
+									sci_bus_msg_pending = false;
+									sci_bus_msg_to_send_ptr = 0;
+
+									// Create a local array for the handshake bytes to save memory
 									uint8_t handshake_array[21];
 
-									// Read flash memory for pre-stored handshake bytes
+									// Read flash memory for pre-stored handshake bytes into the previously created local array
 									for (uint8_t i = 0; i < 21; i++)
 									{
 										handshake_array[i] = pgm_read_byte(&handshake_progmem[i]);
@@ -400,15 +436,11 @@ void check_commands(void)
 									// Send it back to the laptop
 									send_packet(from_scanner, to_laptop, handshake, ok, handshake_array, 21);
 
-									// Reset tasks
-									stop_clock_generator();
-									select_sci_bus_target(PCM);
-
 									break;
 								}
 								case status: // 0x02 - Scanner status report request
 								{
-									// Gather status data and send it back
+									// Gather status data and send it back... not yet implemented
 									send_packet(from_scanner, to_laptop, status, ok, (uint8_t*)ok, 0);
 									break;
 								}
@@ -447,8 +479,8 @@ void check_commands(void)
 											ccd_bus_msg_to_send_ptr = 0;
 											
 											ccd_enabled = true;
-											uint8_t ack[1] = { 0x00 };
-											start_clock_generator();
+											uint8_t ack[1] = { 0x00 }; // Create a local array with a single zero byte in it
+											start_clock_generator(); // Turn on CCD-bus chip by providing clock source
 											send_packet(from_scanner, to_laptop, settings, enable_ccd_bus, ack, 1); // acknowledge with zero byte
 											break;
 										}

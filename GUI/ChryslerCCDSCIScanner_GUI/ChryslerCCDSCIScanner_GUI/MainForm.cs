@@ -137,12 +137,12 @@ namespace ChryslerCCDSCIScanner_GUI
         }
 
         // This method gets called everytime when something arrives on the COM-port
-        // It searches for valid packets (even if there's multiple packets in one reception) and discards the garbage bytes
+        // It searches for valid packets (even if there are multiple packets in one reception) and discards the garbage bytes
         void PacketReceived(object sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == "PacketReceived")
             {
-                int bytes_to_read = 0;
+                int PacketSize = 0;
                 bool repeat = true;
                 byte[] temp;
 
@@ -156,32 +156,50 @@ namespace ChryslerCCDSCIScanner_GUI
                         // the "Start" address advances automatically when the Pop method is called,
                         // so the while loop looks at the next byte.
                         SerialRxBuffer.Pop();
+
+                        // Update the misc groupbox here before exiting
+                        if (SerialRxBuffer.ReadLength == 0)
+                        {
+                            SerialRxBuffer.Reset();
+                            BufferStartLabel.Text = "Buffer Start: " + SerialRxBuffer.Start;
+                            BufferEndLabel.Text = "Buffer End: " + SerialRxBuffer.End;
+                            BufferReadlengthLabel.Text = "Buffer ReadLength: " + SerialRxBuffer.ReadLength + " byte(s)";
+                            BufferWritelengthLabel.Text = "Buffer WriteLength: " + SerialRxBuffer.WriteLength + " byte(s)";
+                            return;
+                        }
                     }
 
-                    // If all the bytes are consumed then exit from this method (nothing to do anymore, wait for another packet)
-                    if (SerialRxBuffer.ReadLength == 0) return;
+                    // If we're still here chances are there's a packet ahead
+                    // Get the length of the packet
+                    PacketSize = ((SerialRxBuffer.Array[SerialRxBuffer.Start + LENGTH_POS] << 8) | SerialRxBuffer.Array[SerialRxBuffer.Start + LENGTH_POS + 1]) + 4;
 
-                    bytes_to_read = ((SerialRxBuffer.Array[SerialRxBuffer.Start + LENGTH_POS] << 8) | SerialRxBuffer.Array[SerialRxBuffer.Start + LENGTH_POS + 1]) + 4;
-                    if (bytes_to_read > 2042)
+                    // If the size is bigger than 2044 bytes (payload only, + 4 bytes = 2048) then it's most likely garbage data 
+                    if (PacketSize > 2044)
                     {
-                        SerialRxBuffer.Pop(); // Pop this byte so we can search for another packet since this is too big (>2042 bytes)
+                        SerialRxBuffer.Pop(); // Pop this byte so we can search for another packet
                         goto Here; // Jump back to the while loop to repeat
                     }
 
-                    // Copy the circular buffer array to a temporary array
-                    // This is needed because the circular buffer doesn't necessarily start at zero index
-                    temp = new byte[bytes_to_read];
-                    Array.Copy(SerialRxBuffer.Array, SerialRxBuffer.Start, temp, 0, bytes_to_read);
+                    // Copy the data in the circular buffer array to a temporary array
+                    // This is needed because the data doesn't necessarily start at zero index and this is confusing for my dummy methods
+                    temp = new byte[PacketSize];
+                    Array.Copy(SerialRxBuffer.Array, SerialRxBuffer.Start, temp, 0, PacketSize);
 
-                    // Try to convert the remainder bytes into a packet
+                    // Try to convert the data into a packet
                     if (PacketRx.FromBytes(temp))
                     {
                         // If the conversion is OK then remove them from the circular buffer
-                        for (int i = 0; i < bytes_to_read; i++)
+                        for (int i = 0; i < PacketSize; i++)
                         {
                             SerialRxBuffer.Pop();
                         }
                         ProcessData(temp); // Get these bytes processed by another method
+                    }
+                    else
+                    {
+                        // If something goes wrong (checksum error...)
+                        SerialRxBuffer.Pop(); // discard this byte and run the loop again and search for another packet
+                        goto Here;
                     }
 
                     // Don't loop again if there are no bytes left
@@ -203,61 +221,6 @@ namespace ChryslerCCDSCIScanner_GUI
                     BufferReadlengthLabel.Text = "Buffer ReadLength: " + SerialRxBuffer.ReadLength + " byte(s)";
                     BufferWritelengthLabel.Text = "Buffer WriteLength: " + SerialRxBuffer.WriteLength + " byte(s)";
                 }
-            }
-        }
-
-        private bool GetHandshake()
-        {
-            try
-            {
-                Serial.Open(); // the current serial port is previously configured
-                PacketTx.GeneratePacket(PacketManager.from_laptop, PacketManager.to_scanner, PacketManager.handshake, PacketManager.ok, null);
-                WriteSerialData(PacketTx.ToBytes());
-                WritePacketTextBox("TX", "REQUEST HANDSHAKE (" + Serial.PortName + ")", PacketTx.ToBytes());
-
-                timeout = false;
-                TimeoutTimer.Enabled = true;
-                while ((Serial.BytesToRead < 27) && (!timeout))
-                {
-                    // Wait here until all bytes are received (we know that 27 bytes should be received) or timeout occurs.
-                }
-                TimeoutTimer.Enabled = false;
-                if (timeout)
-                {
-                    timeout = false;
-
-                    // Manually save the received bytes from the scanner
-                    int bytes = Serial.BytesToRead;
-                    byte[] data = new byte[bytes];
-                    Serial.Read(data, 0, bytes);
-                    WritePacketTextBox("RX", "TIMEOUT (" + Serial.PortName + ")", null);
-                    Serial.Close();
-                    GC.Collect();
-                    return false;
-                }
-                else
-                {
-                    // Manually save the received bytes from the scanner
-                    byte[] data = new byte[27];
-                    Serial.Read(data, 0, Serial.BytesToRead);
-                    if (Encoding.ASCII.GetString(data, 5, 21) == "CHRYSLERCCDSCISCANNER")
-                    {
-                        ProcessData(data);
-                        return true;
-                    }
-                    else
-                    {
-                        Serial.Close();
-                        return false;
-                    }
-                }
-            }
-            catch
-            {
-                WriteCommandHistory("Can't open " + Serial.PortName + "!");
-                Serial.Close();
-                GC.Collect();
-                return false;
             }
         }
 
@@ -657,14 +620,25 @@ namespace ChryslerCCDSCIScanner_GUI
                 }
                 else
                 {
+                    string temp = "";
+                    char[] charsToTrim = { ',', ' ' };
+                    for (int i = 0; i < ports.Length; i++)
+                    {
+                        temp += ports[i] + ", ";
+                    }
+                    temp = temp.TrimEnd(charsToTrim);
+
+                    WriteCommandHistory("Available COM-ports: " + temp);
+
                     foreach (string port in ports)
                     {
                         Serial = new SerialPortStream(port, 250000, 8, Parity.None, StopBits.One);
+                        WriteCommandHistory("Connecting to " + Serial.PortName + "...");
+
                         // Try 5 times
                         for (int i = 0; i < 5; i++)
                         {
-                            WriteCommandHistory("Connecting...");
-                            //serial = new SerialPortStream(port, 250000, 8, Parity.None, StopBits.One);
+                            
                             if (GetHandshake())
                             {
                                 scanner_connected = true;
@@ -683,14 +657,17 @@ namespace ChryslerCCDSCIScanner_GUI
                             else
                             {
                                 scanner_connected = false;
-                                WriteCommandHistory("No scanner found!");
                                 ConnectButton.Enabled = true;
                                 Serial.Close();
                             }
                         }
 
                         if (scanner_connected) break;
-                        else Serial.Dispose();
+                        else
+                        {
+                            WriteCommandHistory("No scanner found on " + Serial.PortName + "!");
+                            Serial.Dispose();
+                        }
                     }
                 }
 
@@ -700,6 +677,56 @@ namespace ChryslerCCDSCIScanner_GUI
             {
                 ConnectButton.Enabled = true;
                 WriteCommandHistory("Scanner not found!");
+            }
+        }
+
+        private bool GetHandshake()
+        {
+            try
+            {
+                Serial.Open(); // the current serial port is previously configured
+                PacketTx.GeneratePacket(PacketManager.from_laptop, PacketManager.to_scanner, PacketManager.handshake, PacketManager.ok, null);
+                WriteSerialData(PacketTx.ToBytes());
+                WritePacketTextBox("TX", "REQUEST HANDSHAKE (" + Serial.PortName + ")", PacketTx.ToBytes());
+
+                timeout = false;
+                TimeoutTimer.Enabled = true;
+                while ((Serial.BytesToRead < 27) && (!timeout))
+                {
+                    // Wait here until all bytes are received (we know that 27 bytes should be received) or timeout occurs.
+                }
+                TimeoutTimer.Enabled = false;
+                if (timeout)
+                {
+                    timeout = false;
+                    WritePacketTextBox("RX", "TIMEOUT (" + Serial.PortName + ")", null);
+                    Serial.Close();
+                    GC.Collect();
+                    return false;
+                }
+                else
+                {
+                    // Manually save the received bytes from the scanner
+                    byte[] data = new byte[27];
+                    Serial.Read(data, 0, Serial.BytesToRead);
+                    if (Encoding.ASCII.GetString(data, 5, 21) == "CHRYSLERCCDSCISCANNER")
+                    {
+                        ProcessData(data);
+                        return true;
+                    }
+                    else
+                    {
+                        Serial.Close();
+                        return false;
+                    }
+                }
+            }
+            catch
+            {
+                //WriteCommandHistory("Can't open " + Serial.PortName + "!");
+                Serial.Close();
+                GC.Collect();
+                return false;
             }
         }
 
@@ -1089,14 +1116,23 @@ namespace ChryslerCCDSCIScanner_GUI
             if (CCDBusMsgFilterCheckbox.Checked)
             {
                 CCDBusMsgFilterTextBox.Enabled = true;
-                if (CCDBusMsgFilterTextBox.Text != "") CCDBusMsgFilterApplyButton.Enabled = true;
-                if (CCDBusMsgFilterTextBox.Text != "") CCDBusMsgFilterClearButton.Enabled = true;
+                if (CCDBusMsgFilterTextBox.Text != "")
+                {
+                    CCDBusMsgFilterApplyButton.Enabled = true;
+                    CCDBusMsgFilterClearButton.Enabled = true;
+
+                    // Re-activate filtering here 
+                    byte[] temp = Util.GetBytes(CCDBusMsgFilterTextBox.Text);
+                    ccd_filter_bytes = new byte[temp.Length];
+                    Array.Copy(temp, ccd_filter_bytes, temp.Length);
+                }
             }
             else
             {
                 CCDBusMsgFilterTextBox.Enabled = false;
                 CCDBusMsgFilterApplyButton.Enabled = false;
                 CCDBusMsgFilterClearButton.Enabled = false;
+                ccd_filter_bytes = null;
             }
         }
 
@@ -1105,14 +1141,23 @@ namespace ChryslerCCDSCIScanner_GUI
             if (SCIBusMsgFilterCheckbox.Checked)
             {
                 SCIBusMsgFilterTextBox.Enabled = true;
-                if (SCIBusMsgFilterTextBox.Text != "") SCIBusMsgFilterApplyButton.Enabled = true;
-                if (SCIBusMsgFilterTextBox.Text != "") SCIBusMsgFilterClearButton.Enabled = true;
+                if (SCIBusMsgFilterTextBox.Text != "")
+                {
+                    SCIBusMsgFilterApplyButton.Enabled = true;
+                    SCIBusMsgFilterClearButton.Enabled = true;
+
+                    // Re-activate filtering here 
+                    byte[] temp = Util.GetBytes(SCIBusMsgFilterTextBox.Text);
+                    sci_filter_bytes = new byte[temp.Length];
+                    Array.Copy(temp, sci_filter_bytes, temp.Length);
+                }
             }
             else
             {
                 SCIBusMsgFilterTextBox.Enabled = false;
                 SCIBusMsgFilterApplyButton.Enabled = false;
                 SCIBusMsgFilterClearButton.Enabled = false;
+                sci_filter_bytes = null;
             }
         }
 
@@ -1179,13 +1224,15 @@ namespace ChryslerCCDSCIScanner_GUI
 
         private void PCMTCMSelectorComboBox_SelectionChangeCommitted(object sender, EventArgs e)
         {
-            byte[] SelectedSCIbus = new byte[] { (byte)(PCMTCMSelectorComboBox.SelectedIndex + 1) }; // add 1 because of zero based indexing
-            PacketTx.GeneratePacket(PacketManager.from_laptop, PacketManager.to_scanner, PacketManager.settings, PacketManager.enable_sci_bus, SelectedSCIbus);
-            byte[] temp = PacketTx.ToBytes();
-            WriteSerialData(temp);
-            if (SelectedSCIbus[0] == 0x01) WritePacketTextBox("TX", "SETTINGS / SCI-BUS ON (PCM)", temp);
-            else if (SelectedSCIbus[0] == 0x02) WritePacketTextBox("TX", "SETTINGS / SCI-BUS ON (TCM)", temp);
-            
+            if (SCIBusEnabledCheckbox.Checked)
+            {
+                byte[] SelectedSCIbus = new byte[] { (byte)(PCMTCMSelectorComboBox.SelectedIndex + 1) }; // add 1 because of zero based indexing
+                PacketTx.GeneratePacket(PacketManager.from_laptop, PacketManager.to_scanner, PacketManager.settings, PacketManager.enable_sci_bus, SelectedSCIbus);
+                byte[] temp = PacketTx.ToBytes();
+                WriteSerialData(temp);
+                if (SelectedSCIbus[0] == 0x01) WritePacketTextBox("TX", "SETTINGS / SCI-BUS ON (PCM)", temp);
+                else if (SelectedSCIbus[0] == 0x02) WritePacketTextBox("TX", "SETTINGS / SCI-BUS ON (TCM)", temp);
+            }
         }
         
         // Prevent mousewheel scrolling through this combobox
