@@ -159,7 +159,11 @@ namespace ChryslerCCDSCIScanner_GUI
                     }
 
                     // If all the bytes are consumed then exit from this method (nothing to do anymore, wait for another packet)
-                    if (SerialRxBuffer.ReadLength == 0) return;
+                    if (SerialRxBuffer.ReadLength == 0)
+                    {
+                        SerialRxBuffer.Reset();
+                        return;
+                    }
 
                     bytes_to_read = ((SerialRxBuffer.Array[SerialRxBuffer.Start + LENGTH_POS] << 8) | SerialRxBuffer.Array[SerialRxBuffer.Start + LENGTH_POS + 1]) + 4;
                     if (bytes_to_read > 2042)
