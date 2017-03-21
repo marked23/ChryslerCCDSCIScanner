@@ -183,6 +183,12 @@ namespace ChryslerCCDSCIScanner_GUI
                         }
                         ProcessData(temp); // Get these bytes processed by another method
                     }
+                    else
+                    {
+                        // If something goes wrong (checksum error...)
+                        SerialRxBuffer.Pop(); // discard this byte and run the loop again
+                        goto Here;
+                    }
 
                     // Don't loop again if there are no bytes left
                     if (SerialRxBuffer.ReadLength == 0)
