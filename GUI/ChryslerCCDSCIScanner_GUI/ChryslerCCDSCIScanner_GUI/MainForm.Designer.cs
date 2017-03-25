@@ -106,6 +106,8 @@
             this.SensorDataTextBox = new System.Windows.Forms.TextBox();
             this.DTCListGroupbox = new System.Windows.Forms.GroupBox();
             this.DTCListTextBox = new System.Windows.Forms.TextBox();
+            this.SCIBusSpeedLabel = new System.Windows.Forms.Label();
+            this.CCDBusSpeedLabel = new System.Windows.Forms.Label();
             this.PacketLogGroupbox.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.CCDBusMessagesGroupbox.SuspendLayout();
@@ -401,6 +403,7 @@
             // 
             // CCDBusMessagesGroupbox
             // 
+            this.CCDBusMessagesGroupbox.Controls.Add(this.CCDBusSpeedLabel);
             this.CCDBusMessagesGroupbox.Controls.Add(this.CCDBusMsgStackingCheckbox);
             this.CCDBusMessagesGroupbox.Controls.Add(this.CCDBusMsgTextBox);
             this.CCDBusMessagesGroupbox.Controls.Add(this.CCDBusMsgFilterClearButton);
@@ -483,9 +486,9 @@
             this.CCDBusMsgFilterCheckbox.AutoSize = true;
             this.CCDBusMsgFilterCheckbox.Location = new System.Drawing.Point(6, 311);
             this.CCDBusMsgFilterCheckbox.Name = "CCDBusMsgFilterCheckbox";
-            this.CCDBusMsgFilterCheckbox.Size = new System.Drawing.Size(149, 17);
+            this.CCDBusMsgFilterCheckbox.Size = new System.Drawing.Size(135, 17);
             this.CCDBusMsgFilterCheckbox.TabIndex = 54;
-            this.CCDBusMsgFilterCheckbox.Text = "CCD-bus message filtering";
+            this.CCDBusMsgFilterCheckbox.Text = "CCD-bus message filter";
             this.CCDBusMsgFilterCheckbox.UseVisualStyleBackColor = true;
             this.CCDBusMsgFilterCheckbox.CheckedChanged += new System.EventHandler(this.CCDBusMsgFilterCheckbox_CheckedChanged);
             // 
@@ -535,6 +538,7 @@
             // 
             // SCIBusMessagesGroupbox
             // 
+            this.SCIBusMessagesGroupbox.Controls.Add(this.SCIBusSpeedLabel);
             this.SCIBusMessagesGroupbox.Controls.Add(this.PCMTCMSelectorComboBox);
             this.SCIBusMessagesGroupbox.Controls.Add(this.SCIBusMsgStackingCheckbox);
             this.SCIBusMessagesGroupbox.Controls.Add(this.SCIBusMsgTextBox);
@@ -642,9 +646,9 @@
             this.SCIBusMsgFilterCheckbox.AutoSize = true;
             this.SCIBusMsgFilterCheckbox.Location = new System.Drawing.Point(6, 311);
             this.SCIBusMsgFilterCheckbox.Name = "SCIBusMsgFilterCheckbox";
-            this.SCIBusMsgFilterCheckbox.Size = new System.Drawing.Size(144, 17);
+            this.SCIBusMsgFilterCheckbox.Size = new System.Drawing.Size(130, 17);
             this.SCIBusMsgFilterCheckbox.TabIndex = 69;
-            this.SCIBusMsgFilterCheckbox.Text = "SCI-bus message filtering";
+            this.SCIBusMsgFilterCheckbox.Text = "SCI-bus message filter";
             this.SCIBusMsgFilterCheckbox.UseVisualStyleBackColor = true;
             this.SCIBusMsgFilterCheckbox.CheckedChanged += new System.EventHandler(this.SCIBusMsgFilterCheckbox_CheckedChanged);
             // 
@@ -959,6 +963,26 @@
             this.DTCListTextBox.Size = new System.Drawing.Size(294, 202);
             this.DTCListTextBox.TabIndex = 70;
             // 
+            // SCIBusSpeedLabel
+            // 
+            this.SCIBusSpeedLabel.AutoSize = true;
+            this.SCIBusSpeedLabel.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.SCIBusSpeedLabel.Location = new System.Drawing.Point(148, 312);
+            this.SCIBusSpeedLabel.Name = "SCIBusSpeedLabel";
+            this.SCIBusSpeedLabel.Size = new System.Drawing.Size(66, 13);
+            this.SCIBusSpeedLabel.TabIndex = 66;
+            this.SCIBusSpeedLabel.Text = "7812.5 kbps";
+            // 
+            // CCDBusSpeedLabel
+            // 
+            this.CCDBusSpeedLabel.AutoSize = true;
+            this.CCDBusSpeedLabel.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.CCDBusSpeedLabel.Location = new System.Drawing.Point(150, 312);
+            this.CCDBusSpeedLabel.Name = "CCDBusSpeedLabel";
+            this.CCDBusSpeedLabel.Size = new System.Drawing.Size(66, 13);
+            this.CCDBusSpeedLabel.TabIndex = 73;
+            this.CCDBusSpeedLabel.Text = "7812.5 kbps";
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1090,6 +1114,8 @@
         private System.Windows.Forms.ComboBox ModuleListComboBox;
         private System.Windows.Forms.Button ScanModulesButton;
         private System.Windows.Forms.ComboBox PCMTCMSelectorComboBox;
+        private System.Windows.Forms.Label SCIBusSpeedLabel;
+        private System.Windows.Forms.Label CCDBusSpeedLabel;
     }
 }
 

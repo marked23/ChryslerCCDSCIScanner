@@ -40,10 +40,12 @@ namespace ChryslerCCDSCIScanner_GUI
         // SUB-DATA CODE bytes
 
         // DC command 0x03 (Settings)
-        public const byte enable_ccd_bus    = 0x03;
-        public const byte disable_ccd_bus   = 0x04;
-        public const byte enable_sci_bus    = 0x05;
-        public const byte disable_sci_bus   = 0x06;
+        public const byte enable_ccd_bus        = 0x03;
+        public const byte disable_ccd_bus       = 0x04;
+        public const byte enable_sci_bus        = 0x05;
+        public const byte disable_sci_bus       = 0x06;
+        public const byte enable_sci_hi_speed   = 0x13;
+        public const byte disable_sci_hi_speed  = 0x14;
 
         // DC command 0x04 (General request)
         public const byte scanner_firmware_ver  = 0x01;

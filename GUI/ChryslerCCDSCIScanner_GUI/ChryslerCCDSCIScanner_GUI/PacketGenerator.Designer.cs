@@ -45,23 +45,25 @@
             this.DefaultButton = new System.Windows.Forms.Button();
             this.SendCheckBox = new System.Windows.Forms.CheckBox();
             this.BrowseButton = new System.Windows.Forms.Button();
+            this.HintLabel = new System.Windows.Forms.Label();
+            this.HintTextBox = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // OkButton
             // 
-            this.OkButton.Location = new System.Drawing.Point(75, 139);
+            this.OkButton.Location = new System.Drawing.Point(75, 208);
             this.OkButton.Name = "OkButton";
-            this.OkButton.Size = new System.Drawing.Size(85, 23);
+            this.OkButton.Size = new System.Drawing.Size(94, 23);
             this.OkButton.TabIndex = 7;
-            this.OkButton.Text = "OK";
+            this.OkButton.Text = "Paste";
             this.OkButton.UseVisualStyleBackColor = true;
             this.OkButton.Click += new System.EventHandler(this.OkButton_Click);
             // 
             // CloseButton
             // 
-            this.CloseButton.Location = new System.Drawing.Point(265, 139);
+            this.CloseButton.Location = new System.Drawing.Point(275, 208);
             this.CloseButton.Name = "CloseButton";
-            this.CloseButton.Size = new System.Drawing.Size(85, 23);
+            this.CloseButton.Size = new System.Drawing.Size(94, 23);
             this.CloseButton.TabIndex = 9;
             this.CloseButton.Text = "Close";
             this.CloseButton.UseVisualStyleBackColor = true;
@@ -82,13 +84,13 @@
             this.SourceComboBox.FormattingEnabled = true;
             this.SourceComboBox.Items.AddRange(new object[] {
             "($00) Laptop",
-            "($01) Scanner",
-            "($02) CCD-bus",
-            "($03) SCI-bus"});
+            "($01) ---NOT USED---",
+            "($02) ---NOT USED---",
+            "($03) ---NOT USED---"});
             this.SourceComboBox.Location = new System.Drawing.Point(75, 6);
             this.SourceComboBox.MaxDropDownItems = 4;
             this.SourceComboBox.Name = "SourceComboBox";
-            this.SourceComboBox.Size = new System.Drawing.Size(109, 21);
+            this.SourceComboBox.Size = new System.Drawing.Size(118, 21);
             this.SourceComboBox.TabIndex = 0;
             this.SourceComboBox.SelectionChangeCommitted += new System.EventHandler(this.SourceComboBox_SelectionChangeCommitted);
             // 
@@ -97,21 +99,21 @@
             this.TargetComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.TargetComboBox.FormattingEnabled = true;
             this.TargetComboBox.Items.AddRange(new object[] {
-            "($00) Laptop",
+            "($00) ---NOT USED---",
             "($01) Scanner",
             "($02) CCD-bus",
             "($03) SCI-bus"});
-            this.TargetComboBox.Location = new System.Drawing.Point(242, 6);
+            this.TargetComboBox.Location = new System.Drawing.Point(254, 6);
             this.TargetComboBox.MaxDropDownItems = 4;
             this.TargetComboBox.Name = "TargetComboBox";
-            this.TargetComboBox.Size = new System.Drawing.Size(109, 21);
+            this.TargetComboBox.Size = new System.Drawing.Size(118, 21);
             this.TargetComboBox.TabIndex = 1;
             this.TargetComboBox.SelectionChangeCommitted += new System.EventHandler(this.TargetComboBox_SelectionChangeCommitted);
             // 
             // TargetLabel
             // 
             this.TargetLabel.AutoSize = true;
-            this.TargetLabel.Location = new System.Drawing.Point(195, 9);
+            this.TargetLabel.Location = new System.Drawing.Point(207, 9);
             this.TargetLabel.Name = "TargetLabel";
             this.TargetLabel.Size = new System.Drawing.Size(41, 13);
             this.TargetLabel.TabIndex = 0;
@@ -139,9 +141,9 @@
             "($0E) Debug",
             "($0F) OK/ERROR"});
             this.CommandComboBox.Location = new System.Drawing.Point(75, 33);
-            this.CommandComboBox.MaxDropDownItems = 4;
+            this.CommandComboBox.MaxDropDownItems = 16;
             this.CommandComboBox.Name = "CommandComboBox";
-            this.CommandComboBox.Size = new System.Drawing.Size(276, 21);
+            this.CommandComboBox.Size = new System.Drawing.Size(297, 21);
             this.CommandComboBox.TabIndex = 2;
             this.CommandComboBox.SelectionChangeCommitted += new System.EventHandler(this.CommandComboBox_SelectionChangeCommitted);
             // 
@@ -170,7 +172,7 @@
             this.PacketPreviewTextBox.Name = "PacketPreviewTextBox";
             this.PacketPreviewTextBox.ReadOnly = true;
             this.PacketPreviewTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.PacketPreviewTextBox.Size = new System.Drawing.Size(275, 21);
+            this.PacketPreviewTextBox.Size = new System.Drawing.Size(297, 21);
             this.PacketPreviewTextBox.TabIndex = 10;
             // 
             // ModifierComboBox
@@ -180,9 +182,9 @@
             this.ModifierComboBox.Items.AddRange(new object[] {
             "($00) Not available"});
             this.ModifierComboBox.Location = new System.Drawing.Point(75, 60);
-            this.ModifierComboBox.MaxDropDownItems = 4;
+            this.ModifierComboBox.MaxDropDownItems = 16;
             this.ModifierComboBox.Name = "ModifierComboBox";
-            this.ModifierComboBox.Size = new System.Drawing.Size(276, 21);
+            this.ModifierComboBox.Size = new System.Drawing.Size(297, 21);
             this.ModifierComboBox.TabIndex = 3;
             this.ModifierComboBox.SelectionChangeCommitted += new System.EventHandler(this.ModifierComboBox_SelectionChangeCommitted);
             // 
@@ -209,15 +211,15 @@
             this.PayloadTextbox.Font = new System.Drawing.Font("Courier New", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.PayloadTextbox.Location = new System.Drawing.Point(75, 87);
             this.PayloadTextbox.Name = "PayloadTextbox";
-            this.PayloadTextbox.Size = new System.Drawing.Size(195, 21);
+            this.PayloadTextbox.Size = new System.Drawing.Size(216, 21);
             this.PayloadTextbox.TabIndex = 4;
             this.PayloadTextbox.TextChanged += new System.EventHandler(this.PayloadTextbox_TextChanged);
             // 
             // DefaultButton
             // 
-            this.DefaultButton.Location = new System.Drawing.Point(170, 139);
+            this.DefaultButton.Location = new System.Drawing.Point(175, 208);
             this.DefaultButton.Name = "DefaultButton";
-            this.DefaultButton.Size = new System.Drawing.Size(85, 23);
+            this.DefaultButton.Size = new System.Drawing.Size(94, 23);
             this.DefaultButton.TabIndex = 8;
             this.DefaultButton.Text = "Default";
             this.DefaultButton.UseVisualStyleBackColor = true;
@@ -226,28 +228,50 @@
             // SendCheckBox
             // 
             this.SendCheckBox.AutoSize = true;
-            this.SendCheckBox.Location = new System.Drawing.Point(18, 143);
+            this.SendCheckBox.Location = new System.Drawing.Point(18, 212);
             this.SendCheckBox.Name = "SendCheckBox";
             this.SendCheckBox.Size = new System.Drawing.Size(51, 17);
             this.SendCheckBox.TabIndex = 6;
             this.SendCheckBox.Text = "Send";
             this.SendCheckBox.UseVisualStyleBackColor = true;
-            this.SendCheckBox.Click += new System.EventHandler(this.SendCheckBox_Click);
+            this.SendCheckBox.CheckedChanged += new System.EventHandler(this.SendCheckBox_CheckedChanged);
             // 
             // BrowseButton
             // 
-            this.BrowseButton.Location = new System.Drawing.Point(276, 85);
+            this.BrowseButton.Location = new System.Drawing.Point(297, 85);
             this.BrowseButton.Name = "BrowseButton";
             this.BrowseButton.Size = new System.Drawing.Size(75, 23);
             this.BrowseButton.TabIndex = 5;
             this.BrowseButton.Text = "Browse";
             this.BrowseButton.UseVisualStyleBackColor = true;
             // 
+            // HintLabel
+            // 
+            this.HintLabel.AutoSize = true;
+            this.HintLabel.Location = new System.Drawing.Point(41, 143);
+            this.HintLabel.Name = "HintLabel";
+            this.HintLabel.Size = new System.Drawing.Size(29, 13);
+            this.HintLabel.TabIndex = 11;
+            this.HintLabel.Text = "Hint:";
+            // 
+            // HintTextBox
+            // 
+            this.HintTextBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
+            this.HintTextBox.Location = new System.Drawing.Point(75, 139);
+            this.HintTextBox.Multiline = true;
+            this.HintTextBox.Name = "HintTextBox";
+            this.HintTextBox.ReadOnly = true;
+            this.HintTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.HintTextBox.Size = new System.Drawing.Size(297, 63);
+            this.HintTextBox.TabIndex = 12;
+            // 
             // PacketGenerator
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(364, 172);
+            this.ClientSize = new System.Drawing.Size(384, 242);
+            this.Controls.Add(this.HintTextBox);
+            this.Controls.Add(this.HintLabel);
             this.Controls.Add(this.BrowseButton);
             this.Controls.Add(this.SendCheckBox);
             this.Controls.Add(this.DefaultButton);
@@ -291,5 +315,7 @@
         private System.Windows.Forms.Button DefaultButton;
         private System.Windows.Forms.CheckBox SendCheckBox;
         private System.Windows.Forms.Button BrowseButton;
+        private System.Windows.Forms.Label HintLabel;
+        private System.Windows.Forms.TextBox HintTextBox;
     }
 }

@@ -34,8 +34,8 @@ namespace ChryslerCCDSCIScanner_GUI
         //DTC_LookupTable ccdscipkt_lookuptable = new DTC_LookupTable();
 
         // Circular buffer objects (FIFO - First In First Out) for easier data management
-        CircularBuffer<byte> SerialRxBuffer = new CircularBuffer<byte>(4096);
-        CircularBuffer<byte> SerialTxBuffer = new CircularBuffer<byte>(4096);
+        CircularBuffer<byte> SerialRxBuffer;
+        CircularBuffer<byte> SerialTxBuffer;
 
         System.Timers.Timer TimeoutTimer = new System.Timers.Timer();
 
@@ -88,6 +88,8 @@ namespace ChryslerCCDSCIScanner_GUI
             Pr = new PacketReceptor();
             PacketRx = new PacketManager.PacketStructure();
             PacketTx = new PacketManager.PacketStructure();
+            SerialRxBuffer = new CircularBuffer<byte>(4096);
+            SerialTxBuffer = new CircularBuffer<byte>(4096);
 
             Pr.PropertyChanged += new PropertyChangedEventHandler(PacketReceived);
             PCMTCMSelectorComboBox.MouseWheel += new MouseEventHandler(PCMTCMSelectorComboBox_MouseWheel);
@@ -176,7 +178,7 @@ namespace ChryslerCCDSCIScanner_GUI
                     // If the size is bigger than 2044 bytes (payload only, + 4 bytes = 2048) then it's most likely garbage data 
                     if (PacketSize > 2044)
                     {
-                        SerialRxBuffer.Pop(); // Pop this byte so we can search for another packet
+                        if (SerialRxBuffer.ReadLength != 0) SerialRxBuffer.Pop(); // Pop this byte so we can search for another packet, do it safely!
                         goto Here; // Jump back to the while loop to repeat
                     }
 
@@ -191,14 +193,14 @@ namespace ChryslerCCDSCIScanner_GUI
                         // If the conversion is OK then remove them from the circular buffer
                         for (int i = 0; i < PacketSize; i++)
                         {
-                            SerialRxBuffer.Pop();
+                            if (SerialRxBuffer.ReadLength != 0) SerialRxBuffer.Pop();
                         }
                         ProcessData(temp); // Get these bytes processed by another method
                     }
                     else
                     {
                         // If something goes wrong (checksum error...)
-                        SerialRxBuffer.Pop(); // discard this byte and run the loop again and search for another packet
+                        if (SerialRxBuffer.ReadLength != 0) SerialRxBuffer.Pop(); // discard this byte and run the loop again and search for another packet
                         goto Here;
                     }
 
@@ -438,7 +440,7 @@ namespace ChryslerCCDSCIScanner_GUI
                                 case PacketManager.status: // 0x02
                                     {
                                         // Write out to packet textbox
-                                        WritePacketTextBox("RX", "STATUS PACKET", data);
+                                        WritePacketTextBox("RX", "STATUS", data);
                                         WriteCommandHistory("Status packet received!");
 
                                         break;
@@ -470,6 +472,18 @@ namespace ChryslerCCDSCIScanner_GUI
                                                 {
                                                     if (PacketRx.payload[0] == 0x00) WritePacketTextBox("RX", "SETTINGS / OK", data);
                                                     else WritePacketTextBox("RX", "SETTINGS / OK", data);
+                                                    break;
+                                                }
+                                            case PacketManager.enable_sci_hi_speed:
+                                                {
+                                                    WritePacketTextBox("RX", "SETTINGS / OK (SCI-BUS HIGH SPEED ON)", data);
+                                                    SCIBusSpeedLabel.Text = "62500 kbps";
+                                                    break;
+                                                }
+                                            case PacketManager.disable_sci_hi_speed:
+                                                {
+                                                    WritePacketTextBox("RX", "SETTINGS / OK (SCI-BUS HIGH SPEED OFF)", data);
+                                                    SCIBusSpeedLabel.Text = "7812.5 kbps";
                                                     break;
                                                 }
                                             default:
@@ -558,6 +572,8 @@ namespace ChryslerCCDSCIScanner_GUI
                                     }
                                 default:
                                     {
+                                        WritePacketTextBox("RX", "RECEIVED BYTES", data);
+                                        WriteCommandHistory("Unknown bytes received!");
                                         break;
                                     }
                             }
@@ -592,6 +608,8 @@ namespace ChryslerCCDSCIScanner_GUI
                                     }
                                 default:
                                     {
+                                        WritePacketTextBox("RX", "RECEIVED BYTES", data);
+                                        WriteCommandHistory("Unknown bytes received!");
                                         break;
                                     }
                             }
@@ -599,6 +617,8 @@ namespace ChryslerCCDSCIScanner_GUI
                         }
                     default:
                         {
+                            WritePacketTextBox("RX", "RECEIVED BYTES", data);
+                            WriteCommandHistory("Unknown bytes received!");
                             break;
                         }
                 }
@@ -638,7 +658,6 @@ namespace ChryslerCCDSCIScanner_GUI
                         // Try 5 times
                         for (int i = 0; i < 5; i++)
                         {
-                            
                             if (GetHandshake())
                             {
                                 scanner_connected = true;
@@ -758,7 +777,7 @@ namespace ChryslerCCDSCIScanner_GUI
         {
             PacketTx.GeneratePacket(PacketManager.from_laptop, PacketManager.to_scanner, PacketManager.status, PacketManager.ok, null);
             WriteSerialData(PacketTx.ToBytes());
-            WritePacketTextBox("TX", "REQUEST STATUS PACKET", PacketTx.ToBytes());
+            WritePacketTextBox("TX", "REQUEST STATUS", PacketTx.ToBytes());
         }
 
         private void SCIBusHsButton_Click(object sender, EventArgs e)
@@ -1045,6 +1064,9 @@ namespace ChryslerCCDSCIScanner_GUI
                 CCDBusSendMsgTextBox.Enabled = true;
                 CCDEnabled = true;
 
+                if (CCDBusSendMsgTextBox.Text != "") CCDBusSendMsgButton.Enabled = true;
+                if (CCDBusMsgTextBox.Text != "") CCDBusClearMsgButton.Enabled = true;
+
                 PacketTx.GeneratePacket(PacketManager.from_laptop, PacketManager.to_scanner, PacketManager.settings, PacketManager.enable_ccd_bus, null);
                 byte[] temp = PacketTx.ToBytes();
                 WriteSerialData(temp);
@@ -1072,6 +1094,9 @@ namespace ChryslerCCDSCIScanner_GUI
                 SCIBusMsgTextBox.Enabled = true;
                 SCIBusSendMsgTextBox.Enabled = true;
                 SCIEnabled = true;
+
+                if (SCIBusSendMsgTextBox.Text != "") SCIBusSendMsgButton.Enabled = true;
+                if (SCIBusMsgTextBox.Text != "") SCIBusClearMsgButton.Enabled = true;
 
                 byte[] SelectedSCIbus = new byte[] { (byte)(PCMTCMSelectorComboBox.SelectedIndex + 1) }; // add 1 because of zero based indexing
                 PacketTx.GeneratePacket(PacketManager.from_laptop, PacketManager.to_scanner, PacketManager.settings, PacketManager.enable_sci_bus, SelectedSCIbus);
@@ -1196,20 +1221,32 @@ namespace ChryslerCCDSCIScanner_GUI
                     bool done = false;
                     byte[] temp;
                     byte[] file_start_signature = new byte[] { 0x4E, 0x75, 0x26, 0x28, 0x23, 0x29 };
+                    byte[] supercard2_header = new byte[] { 0x63, 0x61, 0x72, 0x64, 0x00, 0x00, 0x73, 0x70, 0x72, 0x32 };
 
-                    // Search for "file start signatures" using the raw byte field inside SimpleBinaryReader
-                    while (!done)
+                    temp = scReader.ReadBytes(ref pos, 10);
+
+                    if (temp == supercard2_header)
                     {
-                        pos = Util.SearchBytes(scReader.rawDB, pos, file_start_signature);
-                        if (pos != -1) // the SearchBytes method returns -1 if there's nothing more to find
+                        // Search for "file start signatures" using the raw byte field inside SimpleBinaryReader
+                        while (!done)
                         {
-                            temp = scReader.ReadBytes(ref pos, 30);
-                            SensorDataTextBox.AppendText(Encoding.ASCII.GetString(temp, 7, 23) + "\n");
+                            pos = Util.SearchBytes(scReader.rawDB, pos, file_start_signature);
+                            if (pos != -1) // the SearchBytes method returns -1 if there's nothing more to find
+                            {
+                                temp = scReader.ReadBytes(ref pos, 30);
+                                SensorDataTextBox.AppendText(Encoding.ASCII.GetString(temp, 7, 23) + "\n");
+                            }
+                            else
+                            {
+                                done = true;
+                            }
                         }
-                        else
-                        {
-                            done = true;
-                        }
+                    }
+                    else
+                    {
+                        SensorDataTextBox.AppendText("The loaded file is not a SuperCard binary!\n");
+                        SensorDataTextBox.AppendText(Encoding.ASCII.GetString(temp, 0, 10) + "\n");
+
                     }
 
                 } // end try

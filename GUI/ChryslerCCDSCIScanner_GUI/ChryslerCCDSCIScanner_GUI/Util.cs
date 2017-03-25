@@ -15,7 +15,9 @@ namespace ChryslerCCDSCIScanner_GUI
 
         public static byte[] GetBytes(string str)
         {
-            string ret = str.Trim().Replace(" ", string.Empty).Replace(",", string.Empty).Replace(";", string.Empty); // remove spaces, commas, semi-colons
+            string ret = str.Trim().Replace(" ", string.Empty).Replace(",", string.Empty).
+                                    Replace(";", string.Empty).Replace("$", string.Empty).
+                                    Replace("0x", string.Empty); // remove spaces, commas, semi-colons
 
             try
             {

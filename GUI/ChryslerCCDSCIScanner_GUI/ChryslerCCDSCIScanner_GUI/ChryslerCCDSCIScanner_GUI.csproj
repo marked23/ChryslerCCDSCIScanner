@@ -79,9 +79,6 @@
       <DependentUpon>AboutForm.cs</DependentUpon>
     </Compile>
     <Compile Include="PacketManager.cs" />
-    <Compile Include="Devices.cs">
-      <SubType>Form</SubType>
-    </Compile>
     <Compile Include="DiagnosticsForm.cs">
       <SubType>Form</SubType>
     </Compile>
