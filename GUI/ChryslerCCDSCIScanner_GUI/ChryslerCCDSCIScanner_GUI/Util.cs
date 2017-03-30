@@ -18,14 +18,13 @@ namespace ChryslerCCDSCIScanner_GUI
             string ret = str.Trim().Replace(" ", string.Empty).Replace(",", string.Empty).
                                     Replace(";", string.Empty).Replace("$", string.Empty).
                                     Replace("0x", string.Empty); // remove spaces, commas, semi-colons
-
             try
             {
                 return Enumerable.Range(0, ret.Length).Where(x => x % 2 == 0).Select(x => Convert.ToByte(ret.Substring(x, 2), 16)).ToArray();
             }
             catch
             {
-                return new byte[] { 0x00 }; // return an array with a single zero byte as an error
+                return new byte[] { }; // return an empty byte-array
             }
         }
 

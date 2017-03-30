@@ -264,6 +264,11 @@ Date        Description
 */
 extern void uart0_init(uint16_t baudrate);
 
+/**
+   @brief   Stop UART communication
+   @return  none
+*/
+extern void uart0_stop(void);
 
 /**
  *  @brief   Get received byte from ringbuffer
@@ -375,6 +380,7 @@ extern void uart0_flush(void);
 
 /** @brief  Initialize USART1 (only available on selected ATmegas) @see uart_init */
 extern void uart1_init(uint16_t baudrate);
+extern void uart1_stop(void);
 /** @brief  Get received byte of USART1 from ringbuffer. (only available on selected ATmega) @see uart_getc */
 extern uint16_t uart1_getc(void);
 /** @brief  Peek at next byte in USART1 ringbuffer */

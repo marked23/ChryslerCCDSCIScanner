@@ -643,6 +643,20 @@ void uart0_init(uint16_t baudrate)
 
 
 /*************************************************************************
+Function: uart0_stop()
+Purpose:  stop UART communication
+Input:    none
+Returns:  none
+**************************************************************************/
+void uart0_stop(void)
+{
+	cbi(UART0_CONTROL, RXCIE0);
+	cbi(UART0_CONTROL, RXEN0);
+	cbi(UART0_CONTROL, TXEN0);
+}
+
+
+/*************************************************************************
 Function: uart0_getc()
 Purpose:  return byte from ringbuffer
 Returns:  lower byte:  received byte from ringbuffer
@@ -897,6 +911,20 @@ void uart1_init(uint16_t baudrate)
 	UCSR1C = (3<<UCSZ10);
 #endif
 } /* uart_init */
+
+
+/*************************************************************************
+Function: uart1_stop()
+Purpose:  stop UART communication
+Input:    none
+Returns:  none
+**************************************************************************/
+void uart1_stop(void)
+{
+	cbi(UART1_CONTROL, RXCIE1);
+	cbi(UART1_CONTROL, RXEN1);
+	cbi(UART1_CONTROL, TXEN1);
+}
 
 
 /*************************************************************************

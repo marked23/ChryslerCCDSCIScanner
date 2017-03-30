@@ -182,6 +182,14 @@ uint8_t ccd_bus_module_num = 0;
 
 uint8_t avr_signature[32];
 
+// Each variable in this array has 8 bit positions. There are 256 possible bit positions in total (8x32=256).
+// Each bit means if a CCD-bus module is available at that address (1) or not (0).
+uint8_t ccd_mod_addr[32];
+uint8_t ccd_addr_offset = 0;
+uint8_t ccd_scan_msg[6];
+bool scan_ccd = false;
+
+
 
 
 /******************************************************************************
@@ -285,7 +293,8 @@ void check_commands(void)
 		// Can't accept larger packets so if that's the case, the function needs to exit after sending an error packet back to the laptop.
 		if (bytes_to_read > 2045)
 		{
-			send_packet(from_scanner, to_laptop, ok_error, error_length_invalid_value, (uint8_t*)ok_error, 0);
+			uint8_t err[1] = { ERR };
+			send_packet(from_scanner, to_laptop, ok_error, error_length_invalid_value, err, 1);
 			return;
 		}
 
@@ -368,7 +377,7 @@ void check_commands(void)
 						case to_laptop: // 0x00 - If the target is the laptop itself then simply return the received packet as is
 						{
 							if (payload_bytes) send_packet(from_laptop, to_laptop, datacode, subdatacode, cmd_payload, payload_length);
-							else send_packet(from_laptop, to_laptop, datacode, subdatacode, (uint8_t*)ok, 0);
+							else send_packet(from_laptop, to_laptop, datacode, subdatacode, (uint8_t*)ok, 0); // this is the only time something is returned without payload
 							break;
 						}
 						case to_scanner: // 0x01 - Scanner is the target.
@@ -377,25 +386,11 @@ void check_commands(void)
 							{
 								case reboot: // 0x00 - Reboot scanner.
 								{
-									// Reset bus states to avoid previous communication interference
-									stop_clock_generator();
-									ccd_enabled = false;
-									sci_enabled = false;
-									select_sci_bus_target(NON);
-									while (uart0_available() > 0) uart0_getc(); // Clear CCD-bus buffer
-									while (uart1_available() > 0) uart1_getc(); // Clear SCI-bus buffer
-
-									// Reset message buffers too
-									ccd_bus_bytes_buffer_ptr = 0;
-									ccd_bus_msg_pending = false;
-									ccd_bus_msg_to_send_ptr = 0;
-
-									sci_bus_bytes_buffer_ptr = 0;
-									sci_bus_msg_pending = false;
-									sci_bus_msg_to_send_ptr = 0;
+									reset_diagnostic_comms();
 
 									// Send REBOOT packet back first to acknowledge the scanner has received the command
-									send_packet(from_scanner, to_laptop, reboot, ok, (uint8_t*)ok, 0);
+									uint8_t ack[1] = { ACK };
+									send_packet(from_scanner, to_laptop, reboot, ok, ack, 1);
 
 									// Wait for 200 milliseconds to finish all operations
 									_delay_ms(200);
@@ -407,41 +402,17 @@ void check_commands(void)
 								}
 								case handshake: // 0x01 - Handshake request.
 								{
-									// Reset bus states to avoid previous communication interference
-									stop_clock_generator();
-									ccd_enabled = false;
-									sci_enabled = false;
-									select_sci_bus_target(NON);
-									while (uart0_available() > 0) uart0_getc(); // Clear CCD-bus buffer
-									while (uart1_available() > 0) uart1_getc(); // Clear SCI-bus buffer
+									reset_diagnostic_comms();
 
-									// Reset message buffers too
-									ccd_bus_bytes_buffer_ptr = 0;
-									ccd_bus_msg_pending = false;
-									ccd_bus_msg_to_send_ptr = 0;
-
-									sci_bus_bytes_buffer_ptr = 0;
-									sci_bus_msg_pending = false;
-									sci_bus_msg_to_send_ptr = 0;
-
-									// Create a local array for the handshake bytes to save memory
-									uint8_t handshake_array[21];
-
-									// Read flash memory for pre-stored handshake bytes into the previously created local array
-									for (uint8_t i = 0; i < 21; i++)
-									{
-										handshake_array[i] = pgm_read_byte(&handshake_progmem[i]);
-									}
-
-									// Send it back to the laptop
+									// The handshake was previously read in the main() before the loop
 									send_packet(from_scanner, to_laptop, handshake, ok, handshake_array, 21);
-
 									break;
 								}
 								case status: // 0x02 - Scanner status report request
 								{
 									// Gather status data and send it back... not yet implemented
-									send_packet(from_scanner, to_laptop, status, ok, (uint8_t*)ok, 0);
+									uint8_t ack[1] = { ACK };
+									send_packet(from_scanner, to_laptop, status, ok, ack, 1); // the payload should contain all information but now it's just an ACK byte (0x00)
 									break;
 								}
 								case settings: // 0x03 - Change scanner settings
@@ -451,58 +422,49 @@ void check_commands(void)
 										case 0x00:
 										{
 											// Sub-data code missing, not enough information is given
-											send_packet(from_scanner, to_laptop, ok_error, error_subdatacode_not_enough_info, (uint8_t*)ok, 0);
+											uint8_t err[1] = { ERR };
+											send_packet(from_scanner, to_laptop, settings, error_subdatacode_not_enough_info, err, 1);
 											break;
 										}
 										case read_settings: // 0x01 - Read scanner settings directly from EEPROM
 										{
-											send_packet(from_scanner, to_laptop, ok_error, ok, (uint8_t*)ok, 0); // acknowledge
+											uint8_t ack[1] = { ACK };
+											send_packet(from_scanner, to_laptop, settings, read_settings, ack, 1); // acknowledge
+
 											dummy_ok = true;
 											interval = 50;
+
 											break;
 										}
 										case write_settings: // 0x02 - Write scanner settings directly to EEPROM (values in PAYLOAD) (warning!)
 										{
-											send_packet(from_scanner, to_laptop, ok_error, ok, (uint8_t*)ok, 0); // acknowledge
+											uint8_t ack[1] = { ACK };
+											send_packet(from_scanner, to_laptop, settings, write_settings, ack, 1); // acknowledge with a zero byte in payload
+
 											dummy_ok = false;
 											interval = 500;
+
 											break;
 										}
 										case enable_ccd_bus: // 0x03 - Enable CCD-bus communication
 										{
-											// First make sure the CCD-buffers are empty
-											while (uart0_available() > 0) uart0_getc();
-
-											// Reset pending message buffer too
-											ccd_bus_bytes_buffer_ptr = 0;
-											ccd_bus_msg_pending = false;
-											ccd_bus_msg_to_send_ptr = 0;
-											
-											ccd_enabled = true;
-											uint8_t ack[1] = { 0x00 }; // Create a local array with a single zero byte in it
-											start_clock_generator(); // Turn on CCD-bus chip by providing clock source
-											send_packet(from_scanner, to_laptop, settings, enable_ccd_bus, ack, 1); // acknowledge with zero byte
+											init_ccd_bus();
+											uint8_t ack[1] = { ACK }; // Create a local array with a single zero byte in it
+											send_packet(from_scanner, to_laptop, settings, enable_ccd_bus, ack, 1); // acknowledge with a zero byte in payload
 											break;
 										}
 										case disable_ccd_bus: // 0x04 - Disable CCD-bus communication
 										{
 											ccd_enabled = false;
-											uint8_t ack[1] = { 0x00 };
 											stop_clock_generator();
-											send_packet(from_scanner, to_laptop, settings, disable_ccd_bus, ack, 1); // acknowledge with zero byte
+
+											uint8_t ack[1] = { ACK };
+											send_packet(from_scanner, to_laptop, settings, disable_ccd_bus, ack, 1); // acknowledge with a zero byte in payload
 											break;
 										}
 										case enable_sci_bus: // 0x05 - Enable SCI-bus communication
 										{
-											// First make sure the SCI-buffers are empty
-											while (uart1_available() > 0) uart1_getc();
-
-											// Reset pending message buffer too
-											sci_bus_bytes_buffer_ptr = 0;
-											sci_bus_msg_pending = false;
-											sci_bus_msg_to_send_ptr = 0;
-											
-											sci_enabled = true;
+											init_sci_bus();
 											select_sci_bus_target(cmd_payload[0]); // 0x01 if PCM, 0x02 if TCM
 											send_packet(from_scanner, to_laptop, settings, enable_sci_bus, cmd_payload, 1); // acknowledge with 1 byte payload, that is the selected bus
 											break;
@@ -516,107 +478,164 @@ void check_commands(void)
 										}
 										case enable_lcd_bl: // 0x07 - Enable LCD backlight (100%)
 										{
+											uint8_t ack[1] = { ACK };
+											send_packet(from_scanner, to_laptop, settings, enable_lcd_bl, ack, 1);
 											break;
 										}
 										case enable_lcd_bl_pwm: // 0x08 - Enable LCD backlight dimming (0-100% PWM value in PAYLOAD)
 										{
+											uint8_t ack[1] = { ACK };
+											send_packet(from_scanner, to_laptop, settings, enable_lcd_bl_pwm, ack, 1);
 											break;
 										}
 										case disable_lcd_bl: // 0x09 - Disable LCD backlight (0%)
 										{
+											uint8_t ack[1] = { ACK };
+											send_packet(from_scanner, to_laptop, settings, disable_lcd_bl, ack, 1);
 											break;
 										}
 										case metric_units: // 0x0A - Use metric units
 										{
+											uint8_t ack[1] = { ACK };
+											send_packet(from_scanner, to_laptop, settings, metric_units, ack, 1);
 											break;
 										}
 										case imperial_units: // 0x0B - Use imperial units
 										{
+											uint8_t ack[1] = { ACK };
+											send_packet(from_scanner, to_laptop, settings, imperial_units, ack, 1);
 											break;
 										}
 										case ext_eeprom_wp_on: // 0x0C - Enable external EEPROM write protection (read only)
 										{
+											uint8_t ack[1] = { ACK };
+											send_packet(from_scanner, to_laptop, settings, ext_eeprom_wp_on, ack, 1);
 											break;
 										}
 										case ext_eeprom_wp_off: // 0x0D - Disable external EEPROM write protection(read/write)
 										{
+											uint8_t ack[1] = { ACK };
+											send_packet(from_scanner, to_laptop, settings, ext_eeprom_wp_off, ack, 1);
 											break;
 										}
 										case set_ccd_interframe_response: // 0x0E - Set CCD-bus interframe response delay (ms in PAYLOAD)
 										{
+											uint8_t ack[1] = { ACK };
+											send_packet(from_scanner, to_laptop, settings, set_ccd_interframe_response, ack, 1);
 											break;
 										}
 										case set_sci_interframe_response: // 0x0F - Set SCI-bus interframe response delay (ms in PAYLOAD)
 										{
+											uint8_t ack[1] = { ACK };
+											send_packet(from_scanner, to_laptop, settings, set_sci_interframe_response, ack, 1);
 											break;
 										}
 										case set_sci_intermsg_response: // 0x10 - Set SCI-bus intermessage response delay (ms in PAYLOAD)
 										{
+											uint8_t ack[1] = { ACK };
+											send_packet(from_scanner, to_laptop, settings, set_sci_intermsg_response, ack, 1);
 											break;
 										}
 										case set_sci_intermsg_request: // 0x11 - Set SCI-bus intermessage request delay (ms in PAYLOAD)
 										{
+											uint8_t ack[1] = { ACK };
+											send_packet(from_scanner, to_laptop, settings, set_sci_intermsg_request, ack, 1);
 											break;
 										}
 										case set_packet_intermsg_response: // 0x12 - Set PACKET intermessage response delay (ms in PAYLOAD)
 										{
+											uint8_t ack[1] = { ACK };
+											send_packet(from_scanner, to_laptop, settings, set_packet_intermsg_response, ack, 1);
 											break;
 										}
 										case enable_sci_bus_high_speed: // 0x13 - Enable SCI-bus high speed mode (62500 baud)
 										{
+											while (uart1_available() > 0) uart1_getc(); // clear buffer before entering high speed mode
+											uart1_init(SCI_HI_SPEED); // 62500 kbps high speed mode
+
+											uint8_t ack[1] = { ACK };
+											send_packet(from_scanner, to_laptop, settings, enable_sci_bus_high_speed, ack, 1); // acknowledge
 											break;
 										}
 										case disable_sci_bus_high_speed: // 0x14 - Disable SCI-bus high speed mode (7812.5 baud)
 										{
+											while (uart1_available() > 0) uart1_getc(); // clear buffer before exiting high speed mode
+											uart1_init(SCI_CCD_LO_SPEED); // 7812.5 kbps default SCI-bus speed
+
+											uint8_t ack[1] = { ACK };
+											send_packet(from_scanner, to_laptop, settings, disable_sci_bus_high_speed, ack, 1); // acknowledge
 											break;
 										}
 										case enable_ccd_bus_filtering: // 0x15 - Enable CCD-bus message filtering (ID bytes in PAYLOAD)
 										{
+											uint8_t ack[1] = { ACK };
+											send_packet(from_scanner, to_laptop, settings, enable_ccd_bus_filtering, ack, 1);
 											break;
 										}
 										case disable_ccd_bus_filtering: // 0x16 - Disable CCD-bus message filtering
 										{
+											uint8_t ack[1] = { ACK };
+											send_packet(from_scanner, to_laptop, settings, disable_ccd_bus_filtering, ack, 1);
 											break;
 										}
 										case enable_sci_bus_filtering: // 0x17 - Enable SCI-bus message filtering (ID bytes in PAYLOAD)
 										{
+											uint8_t ack[1] = { ACK };
+											send_packet(from_scanner, to_laptop, settings, enable_sci_bus_filtering, ack, 1);
 											break;
 										}
 										case disable_sci_bus_filtering: // 0x18 - Disable SCI-bus message filtering
 										{
+											uint8_t ack[1] = { ACK };
+											send_packet(from_scanner, to_laptop, settings, disable_sci_bus_filtering, ack, 1);
 											break;
 										}
 										case set_sci_bus_target: // 0x19 - Set SCI-bus target (PCM, TCM, none in PAYLOAD)
 										{
+											uint8_t ack[1] = { ACK };
+											send_packet(from_scanner, to_laptop, settings, set_sci_bus_target, ack, 1);
 											break;
 										}
 										case enable_buzzer: // 0x1A - Enable buzzer
 										{
+											uint8_t ack[1] = { ACK };
+											send_packet(from_scanner, to_laptop, settings, enable_buzzer, ack, 1);
 											break;
 										}
 										case disable_buzzer: // 0x1B - Disable buzzer
 										{
+											uint8_t ack[1] = { ACK };
+											send_packet(from_scanner, to_laptop, settings, disable_buzzer, ack, 1);
 											break;
 										}
 										case enable_button_hold: // 0x1C - Enable button hold down sensing
 										{
+											uint8_t ack[1] = { ACK };
+											send_packet(from_scanner, to_laptop, settings, enable_button_hold, ack, 1);
 											break;
 										}
 										case disable_button_hold: // 0x1D - Disable button hold down sensing
 										{
+											uint8_t ack[1] = { ACK };
+											send_packet(from_scanner, to_laptop, settings, disable_button_hold, ack, 1);
 											break;
 										}
 										case enable_act_led: // 0x1E - Enable ACT LED (action, blue color)
 										{
+											uint8_t ack[1] = { ACK };
+											send_packet(from_scanner, to_laptop, settings, enable_act_led, ack, 1);
 											break;
 										}
 										case disable_act_led: // 0x1F - Disable ACT LED (action, blue color)
 										{
+											uint8_t ack[1] = { ACK };
+											send_packet(from_scanner, to_laptop, settings, disable_act_led, ack, 1);
 											break;
 										}
 										default: // These values are not used
 										{
-											send_packet(from_scanner, to_laptop, ok_error, error_subdatacode_invalid_value, (uint8_t*)ok, 0);
+											uint8_t err[1] = { ERR };
+											send_packet(from_scanner, to_laptop, settings, error_subdatacode_invalid_value, err, 1);
 											break;
 										}
 									}
@@ -629,31 +648,45 @@ void check_commands(void)
 										case 0x00:
 										{
 											// Sub-data code missing, not enough information is given
-											send_packet(from_scanner, to_laptop, ok_error, error_subdatacode_not_enough_info, (uint8_t*)ok, 0);
+											uint8_t err[1] = { ERR };
+											send_packet(from_scanner, to_laptop, request, error_subdatacode_not_enough_info, err, 1);
 											break;
 										}
 										case scanner_firmware_version: // 0x01 - Scanner firmware version
 										{
+											uint8_t ack[1] = { ACK };
+											send_packet(from_scanner, to_laptop, request, scanner_firmware_version, ack, 1);
 											break;
 										}
 										case read_int_eeprom: // 0x02 - Read internal EEPROM in chunks (size in PAYLOAD)
 										{
+											uint8_t ack[1] = { ACK };
+											send_packet(from_scanner, to_laptop, request, read_int_eeprom, ack, 1);
 											break;
 										}
 										case read_ext_eeprom: // 0x03 - Read external EEPROM in chunks (size in PAYLOAD)
 										{
+											uint8_t ack[1] = { ACK };
+											send_packet(from_scanner, to_laptop, request, read_ext_eeprom, ack, 1);
 											break;
 										}
 										case write_int_eeprom: // 0x04 - Write internal EEPROM in chunks (value(s) in PAYLOAD)
 										{
+											uint8_t ack[1] = { ACK };
+											send_packet(from_scanner, to_laptop, request, write_int_eeprom, ack, 1);
 											break;
 										}
 										case write_ext_eeprom: // 0x05 - Write external EEPROM in chunks (value(s) in PAYLOAD)
 										{
+											uint8_t ack[1] = { ACK };
+											send_packet(from_scanner, to_laptop, request, write_ext_eeprom, ack, 1);
 											break;
 										}
 										case scan_ccd_bus_modules: // 0x06 - Scan CCD-bus modules
 										{
+											// The function has its own send_packet
+											scan_ccd = true;
+											//scan_ccd_bus_mods();
 											break;
 										}
 										case free_ram_value: // 0x07 - Free RAM available
@@ -692,7 +725,8 @@ void check_commands(void)
 										}
 										default: // These values are not used
 										{
-											send_packet(from_scanner, to_laptop, ok_error, error_subdatacode_invalid_value, (uint8_t*)ok, 0);
+											uint8_t err[1] = { ERR };
+											send_packet(from_scanner, to_laptop, request, error_subdatacode_invalid_value, err, 1);
 											break;
 										}
 									}
@@ -700,18 +734,26 @@ void check_commands(void)
 								}
 								case self_diag: // 0x0A - Run self-diagnostics
 								{
+									uint8_t ack[1] = { ACK };
+									send_packet(from_scanner, to_laptop, self_diag, ok, ack, 1); // acknowledge
 									break;
 								}
 								case make_backup: // 0x0B - Create scanner settings backup packet (int. EEPROM dump)
 								{
+									uint8_t ack[1] = { ACK };
+									send_packet(from_scanner, to_laptop, make_backup, ok, ack, 1); // acknowledge
 									break;
 								}
 								case restore_backup: // 0x0C - Restore scanner settings from backup
 								{
+									uint8_t ack[1] = { ACK };
+									send_packet(from_scanner, to_laptop, restore_backup, ok, ack, 1); // acknowledge
 									break;
 								}
 								case restore_default: // 0x0D - Restore default scanner settings (factory reset)
 								{
+									uint8_t ack[1] = { ACK };
+									send_packet(from_scanner, to_laptop, restore_default, ok, ack, 1); // acknowledge
 									break;
 								}
 								case debug: // 0x0E - Debug
@@ -781,12 +823,21 @@ void check_commands(void)
 									{
 										uart2_putc(dummy_packet[i]);
 									}
+
+									uint8_t ack[1] = { ACK };
+									send_packet(from_scanner, to_laptop, debug, ok, ack, 1); // acknowledge
 									break;
 								}
 								case ok_error: // 0x0F - OK/ERROR message
+								{
+									uint8_t ack[1] = { ACK };
+									send_packet(from_scanner, to_laptop, ok_error, ok, ack, 1); // acknowledge
+									break;
+								}
 								default: // These values are not used.
 								{
-									send_packet(from_scanner, to_laptop, ok_error, error_datacode_invalid_dc_command, (uint8_t*)ok, 0);
+									uint8_t err[1] = { ERR };
+									send_packet(from_scanner, to_laptop, ok_error, error_datacode_invalid_dc_command, err, 1);
 									break;
 								}
 							}
@@ -807,19 +858,27 @@ void check_commands(void)
 
 									// Set flag so the main loop knows there's something to do
 									ccd_bus_msg_pending = true;
+
+									uint8_t ack[1] = { ACK };
+									send_packet(from_ccd_bus, to_laptop, send_msg, ok, ack, 1); // acknowledge
 									break;
 								}
 								case send_rep_msg: // 0x07 - Send message(s) repeatedly to the CCD-bus
 								{
+									uint8_t ack[1] = { ACK };
+									send_packet(from_ccd_bus, to_laptop, send_rep_msg, ok, ack, 1); // acknowledge
 									break;
 								}
 								case stop_msg_flow: // 0x08 - Stop message flow to the CCD-bus
 								{
+									uint8_t ack[1] = { ACK };
+									send_packet(from_ccd_bus, to_laptop, stop_msg_flow, ok, ack, 1); // acknowledge
 									break;
 								}
 								default: // These values are not used.
 								{
-									send_packet(from_scanner, to_laptop, ok_error, error_datacode_invalid_dc_command, (uint8_t*)ok, 0);
+									uint8_t err[1] = { ERR };
+									send_packet(from_ccd_bus, to_laptop, ok_error, error_datacode_invalid_dc_command, err, 1);
 									break;
 								}
 							}
@@ -839,20 +898,28 @@ void check_commands(void)
 									sci_bus_msg_to_send_ptr = payload_length;
 
 									// Set flag so the main loop knows there's something to do
-									sci_bus_msg_pending = true;									
+									sci_bus_msg_pending = true;
+
+									uint8_t ack[1] = { ACK };
+									send_packet(from_sci_bus, to_laptop, send_msg, ok, ack, 1); // acknowledge
 									break;
 								}
 								case send_rep_msg: // 0x07 - Send message(s) repeatedly to the SCI-bus
 								{
+									uint8_t ack[1] = { ACK };
+									send_packet(from_sci_bus, to_laptop, send_rep_msg, ok, ack, 1); // acknowledge
 									break;
 								}
 								case stop_msg_flow: // 0x08 - Stop message flow to the SCI-bus
 								{
+									uint8_t ack[1] = { ACK };
+									send_packet(from_sci_bus, to_laptop, send_msg, ok, ack, 1); // acknowledge
 									break;
 								}
 								default: // These values are not used.
 								{
-									send_packet(from_scanner, to_laptop, ok_error, error_datacode_invalid_dc_command, (uint8_t*)ok, 0);
+									uint8_t err[1] = { ERR };
+									send_packet(from_sci_bus, to_laptop, ok_error, error_datacode_invalid_dc_command, err, 1);
 									break;
 								}
 							}
@@ -860,7 +927,8 @@ void check_commands(void)
 						}
 						default: // These values are not used.
 						{
-							send_packet(from_scanner, to_laptop, ok_error, error_datacode_invalid_target, (uint8_t*)ok, 0);
+							uint8_t err[1] = { ERR };
+							send_packet(from_scanner, to_laptop, ok_error, error_datacode_invalid_target, err, 1);
 							break;						
 						}
 					} // switch (target)
@@ -868,19 +936,22 @@ void check_commands(void)
 				else
 				{
 					// Packet is coming from an unknown source
-					send_packet(from_scanner, to_laptop, ok_error, error_packet_unknown_source, (uint8_t*)ok, 0);
+					uint8_t err[1] = { ERR };
+					send_packet(from_scanner, to_laptop, ok_error, error_packet_unknown_source, err, 1);
 				}
 			} // SYNC and CHECKSUM is OK
 			else // CHECKSUM byte and/or SYNC byte error! Something is wrong with this packet
 			{
 				if ( calculated_checksum != checksum )
 				{
-					send_packet(from_scanner, to_laptop, ok_error, error_checksum_invalid_value, (uint8_t*)ok, 0);
+					uint8_t err[1] = { ERR };
+					send_packet(from_scanner, to_laptop, ok_error, error_checksum_invalid_value, err, 1);
 				}
 
 				if ( sync != SYNC_BYTE )
 				{
-					send_packet(from_scanner, to_laptop, ok_error, error_sync_invalid_value, (uint8_t*)ok, 0);
+					uint8_t err[1] = { ERR };
+					send_packet(from_scanner, to_laptop, ok_error, error_sync_invalid_value, err, 1);
 				}
 
 				// Let's see if there's something left behind
@@ -898,7 +969,8 @@ void check_commands(void)
 		else // If we're here then command read timeout occurred and there are most probably junk data in the buffer
 		{
 			// Let them know
-			send_packet(from_scanner, to_laptop, ok_error, error_packet_timeout_occured, (uint8_t*)ok, 0);
+			uint8_t err[1] = { ERR };
+			send_packet(from_scanner, to_laptop, ok_error, error_packet_timeout_occured, err, 1);
 
 			// Let's see if there's something left behind
 			// Find the next SYNC byte (0x33) until there's enough data in the receive buffer or timeout occurs
@@ -914,7 +986,7 @@ void check_commands(void)
 	}
 	else
 	{
-		// TODO: check here if the maximum number of 3 bytes are stayed long enough to consider them junk and get rid of them
+		// TODO: check here if the minimum number of 3 bytes stayed long enough to consider getting rid of them
 	}
 }
 
@@ -1028,7 +1100,6 @@ uint8_t available_buses(void)
 	{
 		sbi(ret, 1);
 		while (uart1_available() > 0) uart1_getc(); // Erase the buffer
-		// Don't care what message was received, the point is that something more was received than a command echo
 	}
 	else
 	{
@@ -1040,12 +1111,285 @@ uint8_t available_buses(void)
 
 
 /*************************************************************************
-Function: scan_ccd_bus_modules()
+Function: scan_ccd_bus_mods()
 Purpose:  discovers all the modules on the CCD-bus.
 **************************************************************************/
 void scan_ccd_bus_mods(void)
 {
+	bool ccd_bus_state;
+	uint8_t ccd_scan_msg[6];
 	
+	// Do it only when the scan hasn't completed yet
+	if (true)
+	{
+		// Save the current state of the CCD-bus (enabled / disabled)
+		ccd_bus_state = ccd_enabled;
+
+		// If the CCD-bus was previously turned off then turn it back on
+		if (!ccd_enabled) ccd_enabled = true;
+
+		// Notify user that scanning has started
+		uint8_t ack[1] = { ACK }; // acknowledge byte
+		send_packet(from_scanner, to_laptop, response, scan_ccd_bus_modules, ack, 1);
+
+		// Zero out all the bits in the array
+		for (uint8_t i = 0; i < 32; i++)
+		{
+			ccd_mod_addr[i] = 0x00;
+		}
+
+		// Cycle through every possible address (0x00-0xFF)
+		for (uint8_t i = 0; ; i++)
+		{
+			//_delay_ms(10);
+			// Magic happens here
+
+			// Assemble a simple diagnostic request message that forces the module to reset and respond with its address
+			ccd_scan_msg[0] = 0xB2;
+			ccd_scan_msg[1] = i;
+			ccd_scan_msg[2] = 0x00;
+			ccd_scan_msg[3] = 0x00;
+			ccd_scan_msg[4] = 0x00;
+			ccd_scan_msg[5] = (0xB2 + i) & 0xFF;
+
+			if (i == 255) break;
+		}
+
+		// Forward found CCD-bus modules to the laptop
+		send_packet(from_scanner, to_laptop, response, scan_ccd_bus_modules, ccd_mod_addr, 32);
+
+		// Restore the saved state of the CCD-bus (enabled / disabled)
+		ccd_enabled = ccd_bus_state;
+	}
+	else
+	{
+		uint8_t err[1] = { ERR }; // error byte
+		send_packet(from_scanner, to_laptop, response, scan_ccd_bus_modules, err, 1);
+	}
+}
+
+
+/*************************************************************************
+Function: init_ccd_bus()
+Purpose:  enables CCD-bus communication and clears buffers
+**************************************************************************/
+void init_ccd_bus()
+{
+	// First make sure the CCD-buffers are empty
+	while (uart0_available() > 0) uart0_getc();
+
+	// Reset pending message buffer too
+	ccd_bus_bytes_buffer_ptr = 0;
+	ccd_bus_msg_to_send_ptr = 0;
+	ccd_bus_msg_pending = false;
+
+	// 7812.5 kbps default (and only) CCD-bus speed
+	uart0_init(SCI_CCD_LO_SPEED);
+
+	// Start 1 MHz clock generator
+	start_clock_generator();
+	ccd_enabled = true;
+}
+
+
+/*************************************************************************
+Function: init_sci_bus()
+Purpose:  enables SCI-bus communication and clears buffers
+**************************************************************************/
+void init_sci_bus()
+{
+	// First make sure the SCI-buffers are empty
+	while (uart1_available() > 0) uart1_getc();
+
+	// Reset pending message buffer too
+	sci_bus_bytes_buffer_ptr = 0;
+	sci_bus_msg_pending = false;
+	sci_bus_msg_to_send_ptr = 0;
+
+	uart1_init(SCI_CCD_LO_SPEED); // 7812.5 kbps default SCI-bus speed
+	sci_enabled = true;
+}
+
+
+/*************************************************************************
+Function: reset_diagnostic_comms()
+Purpose:  resets diagnostic communication as if the scanner was restarted
+**************************************************************************/
+void reset_diagnostic_comms()
+{
+	// Reset bus states to avoid previous communication interference
+	ccd_enabled = false;
+	sci_enabled = false;
+	
+	//uart0_stop();
+	//uart1_stop();
+	while (uart0_available() > 0) uart0_getc(); // Clear CCD-bus buffer
+	while (uart1_available() > 0) uart1_getc(); // Clear SCI-bus buffer
+
+	stop_clock_generator();
+	select_sci_bus_target(NON);
+
+	// Reset message buffers too
+	ccd_bus_bytes_buffer_ptr = 0;
+	ccd_bus_msg_pending = false;
+	ccd_bus_msg_to_send_ptr = 0;
+
+	sci_bus_bytes_buffer_ptr = 0;
+	sci_bus_msg_pending = false;
+	sci_bus_msg_to_send_ptr = 0;
+}
+
+
+/*************************************************************************
+Function: handle_ccd_data()
+Purpose:  handles CCD-bus messages
+**************************************************************************/
+void handle_ccd_data(void)
+{
+	// Check if there are any data bytes in the CCD-ringbuffer
+	if (uart0_available() > 0)
+	{
+		// Peek one byte (don't remove it from the buffer yet)
+		uint16_t dummy_read = uart0_peek();
+
+		// If it's an ID-byte then send the previous bytes to the laptop
+		if ((((dummy_read >> 8) & 0xFF) == (CCD_SOM >> 8)) && (ccd_bus_bytes_buffer_ptr > 0) )
+		{
+			//              where        to         what      ok/error flag     buffer          length
+			send_packet(from_ccd_bus, to_laptop, receive_msg, ok, ccd_bus_bytes_buffer, ccd_bus_bytes_buffer_ptr);
+			ccd_bus_bytes_buffer_ptr = 0; // reset pointer
+
+			// And save this byte as the first one in the buffer
+			ccd_bus_bytes_buffer[ccd_bus_bytes_buffer_ptr] = uart0_getc() & 0xFF;
+			ccd_bus_bytes_buffer_ptr++;
+		}
+		else // get this byte and save to the temporary buffer
+		{
+			ccd_bus_bytes_buffer[ccd_bus_bytes_buffer_ptr] = uart0_getc() & 0xFF;
+			ccd_bus_bytes_buffer_ptr++;
+		}
+	}
+
+	// If there's a message to be sent to the CCD-bus and the bus happens to be idling then send it here and now
+	if (ccd_bus_msg_pending && ccd_idle)
+	{
+		for (uint8_t i = 0; i < ccd_bus_msg_to_send_ptr; i++)
+		{
+			uart0_putc(ccd_bus_msg_to_send[i]);
+		}
+
+		ccd_bus_msg_to_send_ptr = 0; // reset pointer
+		ccd_bus_msg_pending = false; // re-arm
+	}
+
+	//// Scan CCD-bus modules
+	//if (scan_ccd && ccd_idle)
+	//{
+		//ccd_scan_msg[0] = 0xB2;
+		//ccd_scan_msg[1] = ccd_addr_offset; // 0-255
+		//ccd_scan_msg[2] = 0x00;            // reset command
+		//ccd_scan_msg[3] = 0x00;
+		//ccd_scan_msg[4] = 0x00;
+		//ccd_scan_msg[5] = (0xB2 + ccd_addr_offset) & 0xFF;
+//
+		//for (uint8_t i = 0; i < 6; i++)
+		//{
+			//uart0_putc(ccd_scan_msg[i]);
+		//}
+	//}
+			
+	switch (ccd_bus_tasks)
+	{
+		case 0x00: // Check if there's a full message in the receive buffer
+		{
+					
+			break;
+		}
+		case 0x01: // At least one CCD-message is ready to be transmitted through USB
+		{
+
+			break;
+		}
+		default: // Anything else is discarded like it was 0x00
+		{
+					
+			break;
+		}
+	}
+}
+
+
+/*************************************************************************
+Function: handle_sci_data()
+Purpose:  handles SCI-bus messages
+**************************************************************************/
+void handle_sci_data(void)
+{
+	// Check if there are any data bytes in the SCI-ringbuffer
+	if (uart1_available() > 0)
+	{
+		// Check how much bytes do we have
+		uint8_t sci_bytes_available = uart1_available();
+
+		// Save all of them
+		for (uint8_t i = 0; i < sci_bytes_available; i++)
+		{
+			sci_bus_bytes_buffer[sci_bus_bytes_buffer_ptr] = uart1_getc();
+			sci_bus_bytes_buffer_ptr++;
+		}
+
+		// Save the current time
+		last_sci_byte_received = millis_get();
+		sci_bus_active_bytes = true;
+	}
+
+	// If there's no data coming in after a while then consider the previous message (if there is) to be completed
+	// Make sure there's data in the buffer before sending empty packets... been there done that...
+	if ((millis_get() - last_sci_byte_received > SCI_INTERMESSAGE_RESPONSE_DELAY) && (sci_bus_bytes_buffer_ptr > 0) )
+	{
+		send_packet(from_sci_bus, to_laptop, receive_msg, ok, sci_bus_bytes_buffer, sci_bus_bytes_buffer_ptr); // send sci-bus msg
+		sci_bus_bytes_buffer_ptr = 0; // reset pointer
+		sci_bus_active_bytes = false;
+	}
+
+	// This has to be done every time, if TCM is not present, because this variable won't reset on its own
+	// and it won't let send messages to the PCM again.
+	else if ((millis_get() - last_sci_byte_received) > SCI_INTERMESSAGE_RESPONSE_DELAY )
+	{
+		sci_bus_active_bytes = false;
+	}
+
+	// If there's a message to be sent to the SCI-bus then send it here and now
+	// Check if there's activity on the SCI-bus before sending, if there's activity then wait!
+	if (sci_bus_msg_pending && !sci_bus_active_bytes)
+	{
+		for (uint8_t i = 0; i < sci_bus_msg_to_send_ptr; i++)
+		{
+			uart1_putc(sci_bus_msg_to_send[i]);
+		}
+
+		sci_bus_msg_to_send_ptr = 0; // reset pointer
+		sci_bus_msg_pending = false; // re-arm
+		sci_bus_active_bytes = true;
+	}
+			
+	switch (sci_bus_tasks)
+	{
+		case 0x00: // Don't do anything!
+		{
+			break;
+		}
+		case 0x01: // At least one SCI-message is ready to be transmitted through USB
+		{
+
+			break;
+		}
+		default: // Anything else is discarded like it was 0x00
+		{
+					
+			break;
+		}
+	}
 }
 
 
@@ -1054,13 +1398,12 @@ Function: select_sci_bus()
 Purpose:  PCM and TCM share the same SCI-bus, different RX-lines, but same
           TX-line and this function created a route for one module.
 Params:   bus number (see switch statement)
-Returns:  true if success,
-          false if wrong bus number was selected (PCM is selected by default).
+Returns:  none
 Note:     PD4 pin (SCI_BUS_PCM_PIN) selects the PCM (Powertrain Control Module),
           PD5 pin (SCI_BUS_TCM_PIN) selects the TCM (Transmission Control Module).
 		  They can't be HIGH at the same time.
 **************************************************************************/
-bool select_sci_bus_target(uint8_t bus)
+void select_sci_bus_target(uint8_t bus)
 {
     sbi(DDRD, DDD4); // Set PD4 pin to output
     sbi(DDRD, DDD5); // Set PD5 pin to output
@@ -1071,29 +1414,40 @@ bool select_sci_bus_target(uint8_t bus)
 		{
 			cbi(SCI_BUS_PORT, SCI_BUS_PCM_PIN); // Set PD4 LOW
 			cbi(SCI_BUS_PORT, SCI_BUS_TCM_PIN); // Set PD5 LOW
-			return true;
 			break;
 
 		}
 		case 0x01: // PCM selected
 		{
+			// First disable all connection
+			cbi(SCI_BUS_PORT, SCI_BUS_PCM_PIN); // Set PD4 LOW
+			cbi(SCI_BUS_PORT, SCI_BUS_TCM_PIN); // Set PD5 LOW
+			
+			// Then set the appropriate pin
 			sbi(SCI_BUS_PORT, SCI_BUS_PCM_PIN); // Set PD4 HIGH
 			cbi(SCI_BUS_PORT, SCI_BUS_TCM_PIN); // Set PD5 LOW
-			return true;
 			break;
 		}
 		case 0x02: // TCM selected
 		{
+			// First disable all connection
+			cbi(SCI_BUS_PORT, SCI_BUS_PCM_PIN); // Set PD4 LOW
+			cbi(SCI_BUS_PORT, SCI_BUS_TCM_PIN); // Set PD5 LOW
+			
+			// Then set the appropriate pin
 			cbi(SCI_BUS_PORT, SCI_BUS_PCM_PIN); // Set PD4 LOW
 			sbi(SCI_BUS_PORT, SCI_BUS_TCM_PIN); // Set PD5 HIGH
-			return true;
 			break;
 		}
 		default: // PCM is selected automatically
 		{
+			// First disable all connection
+			cbi(SCI_BUS_PORT, SCI_BUS_PCM_PIN); // Set PD4 LOW
+			cbi(SCI_BUS_PORT, SCI_BUS_TCM_PIN); // Set PD5 LOW
+			
+			// Then set the appropriate pin
 			sbi(SCI_BUS_PORT, SCI_BUS_PCM_PIN); // Set PD4 HIGH
 			cbi(SCI_BUS_PORT, SCI_BUS_TCM_PIN); // Set PD5 LOW
-			return false;
 			break;
 		}
 	}
@@ -1185,7 +1539,7 @@ int main(void)
 	LCD_setCursorXY(0, 0); // Put cursor at the top left corner
 	//LCD_drawFullBMP(flanders_bmp); // Draw some picture
 	//LCD_drawFullBMP(chrysler_logo_bmp); // Draw some picture
-	LCD_drawFullBMP(chrysler_keyboard_01);
+	LCD_drawFullBMP(chrysler_logo_bmp);
 
 	// Clear packet buffer in case some garbage appears from nowhere
 	bool command_timeout_reached = false;
@@ -1220,123 +1574,13 @@ int main(void)
 		// Do CCD-bus things here.
 		if (ccd_enabled)
 		{
-			// Check if there are any data bytes in the CCD-ringbuffer
-			if (uart0_available() > 0)
-			{
-				// Peek one byte (don't remove it from the buffer yet)
-				uint16_t dummy_read = uart0_peek();
-
-				// If it's an ID-byte then send the previous bytes to the laptop
-				if (((dummy_read >> 8) & 0xFF) == 0x40)
-				{
-					//              where        to         what      ok/error flag     buffer          length
-					send_packet(from_ccd_bus, to_laptop, receive_msg, ok, ccd_bus_bytes_buffer, ccd_bus_bytes_buffer_ptr);
-					ccd_bus_bytes_buffer_ptr = 0; // reset pointer
-
-					// And save this byte as the first one in the buffer
-					ccd_bus_bytes_buffer[ccd_bus_bytes_buffer_ptr] = uart0_getc() & 0xFF;
-					ccd_bus_bytes_buffer_ptr++;
-				}
-				else // get this byte and save to the temporary buffer
-				{
-					ccd_bus_bytes_buffer[ccd_bus_bytes_buffer_ptr] = uart0_getc() & 0xFF;
-					ccd_bus_bytes_buffer_ptr++;
-				}
-			}
-
-			// If there's a message to be sent to the CCD-bus and the bus happens to be idling then send it here and now
-			if (ccd_bus_msg_pending && ccd_idle)
-			{
-				for (uint8_t i = 0; i < ccd_bus_msg_to_send_ptr; i++)
-				{
-					uart0_putc(ccd_bus_msg_to_send[i]);
-				}
-
-				ccd_bus_msg_to_send_ptr = 0; // reset pointer
-				ccd_bus_msg_pending = false; // re-arm
-			}
-			
-			switch (ccd_bus_tasks)
-			{
-				case 0x00: // Check if there's a full message in the receive buffer
-				{
-					
-					break;
-				}
-				case 0x01: // At least one CCD-message is ready to be transmitted through USB
-				{
-
-					break;
-				}
-				default: // Anything else is discarded like it was 0x00
-				{
-					
-					break;
-				}
-			}
+			handle_ccd_data();
 		}
 
 		// Do SCI-bus things here.
 		if (sci_enabled)
 		{
-			// Check if there are any data bytes in the SCI-ringbuffer
-			if (uart1_available() > 0)
-			{
-				// Check how much bytes do we have
-				uint8_t sci_bytes_available = uart1_available();
-
-				// Save all of them
-				for (uint8_t i = 0; i < sci_bytes_available; i++)
-				{
-					sci_bus_bytes_buffer[sci_bus_bytes_buffer_ptr] = uart1_getc();
-					sci_bus_bytes_buffer_ptr++;
-				}
-
-				// Save the current time
-				last_sci_byte_received = millis_get();
-				sci_bus_active_bytes = true;
-			}
-
-			// If there's no data coming in after a while then consider the previous message to be completed
-			// Make sure there's data in the buffer before sending empty packets... been there done that...
-			if ((millis_get() - last_sci_byte_received > SCI_INTERMESSAGE_RESPONSE_DELAY) && (sci_bus_bytes_buffer_ptr > 0) )
-			{
-				send_packet(from_sci_bus, to_laptop, receive_msg, ok, sci_bus_bytes_buffer, sci_bus_bytes_buffer_ptr); // send sci-bus msg
-				sci_bus_bytes_buffer_ptr = 0; // reset pointer
-				sci_bus_active_bytes = false;
-			}
-
-			// If there's a message to be sent to the SCI-bus then send it here and now
-			// Check if there's activity on the SCI-bus before sending, if there's activity then wait!
-			if (sci_bus_msg_pending && !sci_bus_active_bytes)
-			{
-				for (uint8_t i = 0; i < sci_bus_msg_to_send_ptr; i++)
-				{
-					uart1_putc(sci_bus_msg_to_send[i]);
-				}
-
-				sci_bus_msg_to_send_ptr = 0; // reset pointer
-				sci_bus_msg_pending = false; // re-arm
-				sci_bus_active_bytes = true;
-			}
-			
-			switch (sci_bus_tasks)
-			{
-				case 0x00: // Don't do anything!
-				{
-					break;
-				}
-				case 0x01: // At least one SCI-message is ready to be transmitted through USB
-				{
-
-					break;
-				}
-				default: // Anything else is discarded like it was 0x00
-				{
-					
-					break;
-				}
-			}
+			handle_sci_data();
 		}
 
 		// Do LCD things here.

@@ -6,6 +6,7 @@ namespace ChryslerCCDSCIScanner_GUI
 {
     public class PacketManager
     {
+        // Fundamental constants
         public const byte SYNC_BYTE         = 0x33;
         public const int MAX_PAYLOAD_LENGTH = 2042;
 
@@ -40,12 +41,37 @@ namespace ChryslerCCDSCIScanner_GUI
         // SUB-DATA CODE bytes
 
         // DC command 0x03 (Settings)
-        public const byte enable_ccd_bus        = 0x03;
-        public const byte disable_ccd_bus       = 0x04;
-        public const byte enable_sci_bus        = 0x05;
-        public const byte disable_sci_bus       = 0x06;
-        public const byte enable_sci_hi_speed   = 0x13;
-        public const byte disable_sci_hi_speed  = 0x14;
+        public const byte read_settings     = 0x01;
+        public const byte write_settings    = 0x02;
+        public const byte enable_ccd_bus    = 0x03;
+        public const byte disable_ccd_bus   = 0x04;
+        public const byte enable_sci_bus    = 0x05;
+        public const byte disable_sci_bus   = 0x06;
+        public const byte enable_lcd_bl     = 0x07;
+        public const byte enable_lcd_bl_pwm = 0x08;
+        public const byte disable_lcd_bl    = 0x09;
+        public const byte metric_units      = 0x0A;
+        public const byte imperial_units    = 0x0B;
+        public const byte ext_eeprom_wp_on  = 0x0C;
+        public const byte ext_eeprom_wp_off = 0x0D;
+        public const byte set_ccd_interframe_response   = 0x0E;
+        public const byte set_sci_interframe_response   = 0x0F;
+        public const byte set_sci_intermsg_response     = 0x10;
+        public const byte set_sci_intermsg_request      = 0x11;
+        public const byte set_packet_intermsg_response  = 0x12;
+        public const byte enable_sci_hi_speed           = 0x13;
+        public const byte disable_sci_hi_speed          = 0x14;
+        public const byte enable_ccd_bus_filtering      = 0x15;
+        public const byte disable_ccd_bus_filtering     = 0x16;
+        public const byte enable_sci_bus_filtering      = 0x17;
+        public const byte disable_sci_bus_filtering     = 0x18;
+        public const byte set_sci_bus_target    = 0x19;
+        public const byte enable_buzzer         = 0x1A;
+        public const byte disable_buzzer        = 0x1B;
+        public const byte enable_button_hold    = 0x1C;
+        public const byte disable_button_hold   = 0x1D;
+        public const byte enable_act_led        = 0x1E;
+        public const byte disable_act_led       = 0x1F;
 
         // DC command 0x04 (General request)
         public const byte scanner_firmware_ver  = 0x01;
@@ -85,7 +111,7 @@ namespace ChryslerCCDSCIScanner_GUI
             public byte[] datacode;     // DATA CODE byte     [1]     { 0x__ }
             public byte[] subdatacode;  // SUB-DATA CODE byte [1]     { 0x__ }
             public byte[] payload;      // PAYLOAD bytes      [VAR]   { 0x__, 0x__, 0x__, ..., 0x__ }
-            public byte[] checksum;     // CHECKSUM bytes     [1]     { 0x__ } (LENGTH + DATA CODE + SUB-DATA CODE + PAYLOAD bytes summed and LSB byte taken)
+            public byte[] checksum;     // CHECKSUM bytes     [1]     { 0x__ } (LENGTH + DATA CODE + SUB-DATA CODE + PAYLOAD bytes summed then MSB byte masked out)
 
             // Create a byte-array for serial transmission or other purposes
             // Note: this method tolerates length and checksum byte errors so they can be zeros if you manually send packets
@@ -129,7 +155,7 @@ namespace ChryslerCCDSCIScanner_GUI
                     // Write PAYLOAD bytes if the length is greater than 1
                     if (payload_bytes) stream.Write(payload, 0, payload.Length);
 
-                    // Calculate CHECKSUM-16 value from the LENGTH, DATA CODE, SUB-DATA CODE and PAYLOAD bytes
+                    // Calculate CHECKSUM-8 value from the LENGTH, DATA CODE, SUB-DATA CODE and PAYLOAD bytes
                     // Add the DATA CODE byte and SUB-DATA CODE byte to the temporary CHECKSUM-16 variable
                     calculated_checksum += length[0] + length[1] + datacode[0] + subdatacode[0];
 
@@ -162,7 +188,6 @@ namespace ChryslerCCDSCIScanner_GUI
             public bool FromBytes(byte[] bytes)
             {
                 int payload_length = 0;
-                //int calculated_length = 0;
 
                 // Instantiate a new MemoryStream object inside of a BinaryReader object called "reader", it gets automatically disposed (using...)
                 // The MemoryStream is filled with the input "bytes" array
@@ -189,18 +214,13 @@ namespace ChryslerCCDSCIScanner_GUI
                     subdatacode = reader.ReadBytes(1);
 
                     // Decide if there are PAYLOAD bytes present in the MemoryStream
-                    try
-                    {
-                        payload_length = (length[0] << 8 | length[1]) - 2;
-                        if (payload_length > 2) payload_bytes = true;
-                        else payload_bytes = true;
-                    }
-                    catch { return false; }
+                    payload_length = (length[0] << 8 | length[1]) - 2;
+                    if ( payload_length > 0) payload_bytes = true;
+                    else payload_bytes = false;
 
                     // Continue adding PAYLOAD bytes to the packet if the length is greater than 1
                     if (payload_bytes)
                     {
-                        // Calculate PAYLOAD length
                         try
                         {
                             // Let the PAYLOAD bytes equal to the next coming bytes
@@ -250,8 +270,7 @@ namespace ChryslerCCDSCIScanner_GUI
             // Side note: packets are easier to be generated with the help of this function than with the ToBytes() function alone
             public void GeneratePacket(byte source, byte target, byte dc_command, byte subdatacode_value, byte[] payloadbuff)
             {
-                payload = null; // causes a bug if it's not here
-
+                payload = null; // the structure variable must set to null to avoid bugs
                 sync = new byte[1] { SYNC_BYTE };
 
                 if (payloadbuff != null)
@@ -264,10 +283,10 @@ namespace ChryslerCCDSCIScanner_GUI
                 }
                 else
                 {
-                    length = new byte[2] { 0x00, 0x02 };
+                    length = new byte[2] { 0x00, 0x02 }; // If there's no payload then the length is always 2.
                 }
 
-                datacode = new byte[1] { (byte)((source << 6) | (target << 4) | dc_command) };
+                datacode = new byte[1] { (byte)((source << 6) | (target << 4) | dc_command) }; // Assemble datacode byte using 3 different values
                 subdatacode = new byte[1] { subdatacode_value };
 
                 if (payloadbuff != null)

@@ -53,6 +53,8 @@ namespace ChryslerCCDSCIScanner_GUI
         public bool SCIEnabled = false;
         public bool LogEnabled = true;
 
+        public bool SCIHiSpeed = false;
+
         public bool scanner_connected = false;
         public bool timeout = false;
 
@@ -81,7 +83,7 @@ namespace ChryslerCCDSCIScanner_GUI
             TimeoutTimer.Enabled = false;
 
             ModuleListComboBox.SelectedIndex = 0;
-            PCMTCMSelectorComboBox.SelectedIndex = 0;
+            PCMTCMSelectorComboBox.SelectedIndex = 1;
 
             LogEnabled = PacketLogEnabledCheckbox.Enabled;
 
@@ -151,7 +153,7 @@ namespace ChryslerCCDSCIScanner_GUI
                 while (repeat)
                 {
                     // Find the first byte with value 0x33
-                    Here: // This is a goto label
+                    Here: // This is a goto label, never mind now
                     while ((SerialRxBuffer.Array[SerialRxBuffer.Start] != PacketManager.SYNC_BYTE) && (SerialRxBuffer.ReadLength > 0))
                     {
                         // If the byte at the "Start" of the circular buffer is not 0x33 then remove it,
@@ -173,7 +175,11 @@ namespace ChryslerCCDSCIScanner_GUI
 
                     // If we're still here chances are there's a packet ahead
                     // Get the length of the packet
-                    PacketSize = ((SerialRxBuffer.Array[SerialRxBuffer.Start + LENGTH_POS] << 8) | SerialRxBuffer.Array[SerialRxBuffer.Start + LENGTH_POS + 1]) + 4;
+                    if (SerialRxBuffer.ReadLength > 2)
+                    {
+                        PacketSize = ((SerialRxBuffer.Array[SerialRxBuffer.Start + LENGTH_POS] << 8) | SerialRxBuffer.Array[SerialRxBuffer.Start + LENGTH_POS + 1]) + 4;
+                    }
+                    else { return; } // If there are clearly not enough bytes then don't do anything
 
                     // If the size is bigger than 2044 bytes (payload only, + 4 bytes = 2048) then it's most likely garbage data 
                     if (PacketSize > 2044)
@@ -238,70 +244,73 @@ namespace ChryslerCCDSCIScanner_GUI
 
         public void WritePacketTextBox(string direction, string description, byte[] message)
         {
-            // Get all the lines out as an arry
-            string[] lines = PacketTextBox.Lines;
-
-            // If there are "too much lines" then remove some of them from the beginning
-            if (lines.Length > 50)
+            if (PacketLogEnabledCheckbox.Checked)
             {
-                var newlineslist = lines.ToList();
-                newlineslist.RemoveRange(0, 30);
+                // Get all the lines out as an arry
+                string[] lines = PacketTextBox.Lines;
 
-                // And put back what's left
-                PacketTextBox.Lines = newlineslist.ToArray();
-            }
-
-            // Build the new text separately to avoid heavy textbox flickering
-            StringBuilder temp = new StringBuilder();
-
-            // Add stuff
-            temp.Append(direction + ": " + description + Environment.NewLine);
-
-            if (message != null)
-            {
-                // Add the bytes of the message
-                foreach (byte bytes in message)
+                // If there are "too much lines" then remove some of them from the beginning
+                if (lines.Length > 50)
                 {
-                    temp.Append(Convert.ToString(bytes, 16).PadLeft(2, '0').PadRight(3, ' ').ToUpper());
+                    var newlineslist = lines.ToList();
+                    newlineslist.RemoveRange(0, 30);
+
+                    // And put back what's left
+                    PacketTextBox.Lines = newlineslist.ToArray();
                 }
 
-                // Add two new lines
-                temp.Append(Environment.NewLine + Environment.NewLine);
+                // Build the new text separately to avoid heavy textbox flickering
+                StringBuilder temp = new StringBuilder();
+
+                // Add stuff
+                temp.Append(direction + ": " + description + Environment.NewLine);
+
+                if (message != null)
+                {
+                    // Add the bytes of the message
+                    foreach (byte bytes in message)
+                    {
+                        temp.Append(Convert.ToString(bytes, 16).PadLeft(2, '0').PadRight(3, ' ').ToUpper());
+                    }
+
+                    // Add two new lines
+                    temp.Append(Environment.NewLine + Environment.NewLine);
+                }
+                else
+                {
+                    // Add one new line
+                    temp.Append(Environment.NewLine);
+                }
+
+
+                // Add the built string to the textbox in one go
+                //PacketTextBox.AppendText(newstuff.ToString());
+                PacketTextBox.SelectionStart = PacketTextBox.TextLength;
+                PacketTextBox.SelectedText = temp.ToString();
+
+                // Scroll down to the end of the textbox
+                //PacketTextBox.SelectionStart = PacketTextBox.TextLength;
+                PacketTextBox.ScrollToCaret();
+
+                // Update User Interface
+                if (direction == "RX") packet_count_rx++;
+                if (direction == "TX") packet_count_tx++;
+                PacketCountRxLabel.Text = "Packets received: " + packet_count_rx;
+                PacketCountTxLabel.Text = "Packets sent: " + packet_count_tx;
+
+                // Save data to log files
+                if (!Directory.Exists("LOG")) Directory.CreateDirectory("LOG");
+                File.AppendAllText(TextLogFilename, temp.ToString());
+
+                using (BinaryWriter writer = new BinaryWriter(File.Open(BinaryLogFilename, FileMode.Append)))
+                {
+                    writer.Write(message);
+                    writer.Close();
+                }
+
+                // Discard the temporary string builder
+                temp = null;
             }
-            else 
-            {
-                // Add one new line
-                temp.Append(Environment.NewLine);
-            }
-
-
-            // Add the built string to the textbox in one go
-            //PacketTextBox.AppendText(newstuff.ToString());
-            PacketTextBox.SelectionStart = PacketTextBox.TextLength;
-            PacketTextBox.SelectedText = temp.ToString();
-
-            // Scroll down to the end of the textbox
-            //PacketTextBox.SelectionStart = PacketTextBox.TextLength;
-            PacketTextBox.ScrollToCaret();
-
-            // Update User Interface
-            if (direction == "RX") packet_count_rx++;
-            if (direction == "TX") packet_count_tx++;
-            PacketCountRxLabel.Text = "Packets received: " + packet_count_rx;
-            PacketCountTxLabel.Text = "Packets sent: " + packet_count_tx;
-
-            // Save data to log files
-            if (!Directory.Exists("LOG")) Directory.CreateDirectory("LOG");
-            File.AppendAllText(TextLogFilename, temp.ToString());
-
-            using (BinaryWriter writer = new BinaryWriter(File.Open(BinaryLogFilename, FileMode.Append)))
-            {
-                writer.Write(message);
-                writer.Close();
-            }
-
-            // Discard the temporary string builder
-            temp = null;
         }
 
         public void WriteCCDSCIBusTextBox(TextBox textBox, byte[] message)
@@ -430,6 +439,8 @@ namespace ChryslerCCDSCIScanner_GUI
                                         if (received_handshake == "CHRYSLERCCDSCISCANNER")
                                         {
                                             WriteCommandHistory("Handshake OK: " + received_handshake);
+                                            CCDBusEnabledCheckbox.Checked = false;
+                                            SCIBusEnabledCheckbox.Checked = false;
                                         }
                                         else
                                         {
@@ -449,45 +460,106 @@ namespace ChryslerCCDSCIScanner_GUI
                                     {
                                         switch (subdatacode)
                                         {
+                                            case PacketManager.read_settings:
+                                                {
+                                                    if (PacketRx.payload[0] == 0x00)
+                                                    {
+                                                        WritePacketTextBox("RX", "SETTINGS / OK", data);
+                                                    }
+                                                    else if (PacketRx.payload[0] == 0xFF) WritePacketTextBox("RX", "SETTINGS / ERROR", data);
+                                                    break;
+                                                }
+                                            case PacketManager.write_settings:
+                                                {
+                                                    if (PacketRx.payload[0] == 0x00)
+                                                    {
+                                                        WritePacketTextBox("RX", "SETTINGS / OK", data);
+                                                    }
+                                                    else if (PacketRx.payload[0] == 0xFF) WritePacketTextBox("RX", "SETTINGS / ERROR", data);
+                                                    break;
+                                                }
+                                            // TODO: insert here the other settings responses (for now...)
                                             case PacketManager.enable_ccd_bus:
                                                 {
-                                                    if (PacketRx.payload[0] == 0x00) WritePacketTextBox("RX", "SETTINGS / OK", data);
-                                                    else WritePacketTextBox("RX", "SETTINGS / ERROR", data);
+                                                    if (PacketRx.payload[0] == 0x00)
+                                                    {
+                                                        WritePacketTextBox("RX", "SETTINGS / OK", data);
+                                                        CCDBusEnabledCheckbox.Checked = true;
+                                                        CCDEnabled = true;
+                                                    }
+                                                    else if (PacketRx.payload[0] == 0xFF) WritePacketTextBox("RX", "SETTINGS / ERROR", data);
                                                     break;
                                                 }
                                             case PacketManager.disable_ccd_bus:
                                                 {
-                                                    if (PacketRx.payload[0] == 0x00) WritePacketTextBox("RX", "SETTINGS / OK", data);
+                                                    if (PacketRx.payload[0] == 0x00)
+                                                    {
+                                                        WritePacketTextBox("RX", "SETTINGS / OK", data);
+                                                        CCDBusEnabledCheckbox.Checked = false;
+                                                        CCDEnabled = false;
+                                                    }
                                                     else WritePacketTextBox("RX", "SETTINGS / ERROR", data);
                                                     break;
                                                 }
                                             case PacketManager.enable_sci_bus:
                                                 {
-                                                    if (PacketRx.payload[0] == 0x01) WritePacketTextBox("RX", "SETTINGS / OK", data);
-                                                    else if (PacketRx.payload[0] == 0x02) WritePacketTextBox("RX", "SETTINGS / OK", data);
-                                                    else WritePacketTextBox("RX", "SETTINGS / OK", data);
+                                                    if (PacketRx.payload[0] == 0x01)
+                                                    {
+                                                        WritePacketTextBox("RX", "SETTINGS / OK (PCM)", data);
+                                                        SCIBusEnabledCheckbox.Checked = true; // TODO: disable event firing... somehow
+                                                        PCMTCMSelectorComboBox.SelectedIndex = 1;
+                                                        SCIEnabled = true;
+                                                    }
+                                                    else if (PacketRx.payload[0] == 0x02)
+                                                    {
+                                                        WritePacketTextBox("RX", "SETTINGS / OK (TCM)", data);
+                                                        SCIBusEnabledCheckbox.Checked = true; // TODO: disable event firing... somehow
+                                                        PCMTCMSelectorComboBox.SelectedIndex = 2;
+                                                        SCIEnabled = true;
+                                                    }
+                                                    else if (PacketRx.payload[0] == 0x00)
+                                                    {
+                                                        WritePacketTextBox("RX", "SETTINGS / OK (NON)", data);
+                                                        PCMTCMSelectorComboBox.SelectedIndex = 0;
+                                                        SCIEnabled = true;
+                                                    }
                                                     break;
                                                 }
                                             case PacketManager.disable_sci_bus:
                                                 {
-                                                    if (PacketRx.payload[0] == 0x00) WritePacketTextBox("RX", "SETTINGS / OK", data);
-                                                    else WritePacketTextBox("RX", "SETTINGS / OK", data);
+                                                    if (PacketRx.payload[0] == 0x00)
+                                                    {
+                                                        WritePacketTextBox("RX", "SETTINGS / OK", data);
+                                                        SCIEnabled = false;
+                                                    }
+                                                    else if (PacketRx.payload[0] == 0xFF) WritePacketTextBox("RX", "SETTINGS / ER", data);
                                                     break;
                                                 }
                                             case PacketManager.enable_sci_hi_speed:
                                                 {
-                                                    WritePacketTextBox("RX", "SETTINGS / OK (SCI-BUS HIGH SPEED ON)", data);
-                                                    SCIBusSpeedLabel.Text = "62500 kbps";
+                                                    if (PacketRx.payload[0] == 0x00)
+                                                    {
+                                                        WritePacketTextBox("RX", "SETTINGS / OK (SCI-BUS HIGH SPEED ON)", data);
+                                                        SCIBusSpeedLabel.Text = "62500 kbps";
+                                                        SCIHiSpeed = true;
+                                                    }
+                                                    else if (PacketRx.payload[0] == 0xFF) WritePacketTextBox("RX", "SETTINGS / ER", data);
                                                     break;
                                                 }
                                             case PacketManager.disable_sci_hi_speed:
                                                 {
-                                                    WritePacketTextBox("RX", "SETTINGS / OK (SCI-BUS HIGH SPEED OFF)", data);
-                                                    SCIBusSpeedLabel.Text = "7812.5 kbps";
+                                                    if (PacketRx.payload[0] == 0x00)
+                                                    {
+                                                        WritePacketTextBox("RX", "SETTINGS / OK (SCI-BUS HIGH SPEED OFF)", data);
+                                                        SCIBusSpeedLabel.Text = "7812.5 kbps";
+                                                        SCIHiSpeed = false;
+                                                    }
+                                                    else if (PacketRx.payload[0] == 0xFF) WritePacketTextBox("RX", "SETTINGS / ER", data);
                                                     break;
                                                 }
                                             default:
                                                 {
+                                                    WritePacketTextBox("RX", "SETTINGS / ER", data);
                                                     break;
                                                 }
                                         }
@@ -500,23 +572,51 @@ namespace ChryslerCCDSCIScanner_GUI
                                             case PacketManager.free_ram_available:
                                                 {
                                                     WritePacketTextBox("RX", "FREE RAM", data);
-                                                    WriteCommandHistory("Free RAM value received!");
                                                     break;
                                                 }
                                             case PacketManager.mcu_counter_value:
                                                 {
                                                     WritePacketTextBox("RX", "MCU COUNTER", data);
-                                                    WriteCommandHistory("MCU counter value received!");
+                                                    break;
+                                                }
+                                            case PacketManager.scan_vehicle_modules:
+                                                {
+                                                    if (PacketRx.payload.Length == 1)
+                                                    {
+                                                        if (PacketRx.payload[0] == 0x00)
+                                                        {
+                                                            WritePacketTextBox("RX", "CCD-BUS MODULE SCAN START", data);
+                                                            DTCListTextBox.AppendText("Scanning CCD-bus for modules...\n\n");
+                                                        }
+                                                        else if (PacketRx.payload[0] == 0xFF)
+                                                        {
+                                                            WritePacketTextBox("RX", "CCD-BUS MODULE SCAN ERROR", data);
+                                                            DTCListTextBox.AppendText("Error, scan already done!\n");
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        WritePacketTextBox("RX", "CCD-BUS MODULE SCAN END", data);
+                                                        ScanModulesButton.Enabled = true;
+
+                                                        bool ccd_modules_found = false;
+
+                                                        for (int i = 0; i < 32; i++)
+                                                        {
+                                                            if (PacketRx.payload[i] != 0x00) ccd_modules_found = true;
+                                                        }
+
+                                                        if (!ccd_modules_found) DTCListTextBox.AppendText("No CCD-bus modules found!\n\n");
+
+                                                    }
                                                     break;
                                                 }
                                             default:
                                                 {
+                                                    WritePacketTextBox("RX", "RESPONSE / ER", data);
                                                     break;
                                                 }
                                         }
-                                        // Write out to packet textbox
-
-
                                         break;
                                     }
                                 case PacketManager.ok_error: // 0x0F
@@ -526,7 +626,11 @@ namespace ChryslerCCDSCIScanner_GUI
                                             case PacketManager.ok:
                                                 {
                                                     WritePacketTextBox("RX", "COMMAND OK", data);
-                                                    WriteCommandHistory("Command acknowledged!");
+                                                    break;
+                                                }
+                                            default:
+                                                {
+                                                    WritePacketTextBox("RX", "COMMAND ER", data);
                                                     break;
                                                 }
 
@@ -535,8 +639,7 @@ namespace ChryslerCCDSCIScanner_GUI
                                     }
                                 default:
                                     {
-                                        WritePacketTextBox("RX", "RECEIVED BYTES", data);
-                                        WriteCommandHistory("Unknown bytes received!");
+                                        WritePacketTextBox("RX", "UNKNOWN BYTES", data);
                                         break;
                                     }
                             }
@@ -546,6 +649,13 @@ namespace ChryslerCCDSCIScanner_GUI
                         {
                             switch (dc_command)
                             {
+
+                                case PacketManager.send_msg:
+                                    {
+                                        if (PacketRx.payload[0] == 0x00) WritePacketTextBox("RX", "CCD-BUS MESSAGE RECEIVED", data);
+                                        else if (PacketRx.payload[0] == 0xFF) WritePacketTextBox("RX", "CCD-BUS MESSAGE ERROR", data);
+                                        break;
+                                    }
                                 case PacketManager.receive_msg:
                                     {
                                         WritePacketTextBox("RX", "CCD-BUS MESSAGE", data);
@@ -556,7 +666,14 @@ namespace ChryslerCCDSCIScanner_GUI
                                             // Write only if the ID byte is on the filter list
                                             if (ccd_filter_bytes.Contains(PacketRx.payload[0]))
                                             {
-                                                WriteCCDSCIBusTextBox(CCDBusMsgTextBox, PacketRx.payload);
+                                                try
+                                                {
+                                                    WriteCCDSCIBusTextBox(CCDBusMsgTextBox, PacketRx.payload);
+                                                }
+                                                catch
+                                                {
+
+                                                }
                                             }
                                             else
                                             {
@@ -565,15 +682,21 @@ namespace ChryslerCCDSCIScanner_GUI
                                         }
                                         else // Filtering disabled, show everything
                                         {
-                                            WriteCCDSCIBusTextBox(CCDBusMsgTextBox, PacketRx.payload);
+                                            try
+                                            {
+                                                WriteCCDSCIBusTextBox(CCDBusMsgTextBox, PacketRx.payload);
+                                            }
+                                            catch
+                                            {
+
+                                            }
                                         }
 
                                         break;
                                     }
                                 default:
                                     {
-                                        WritePacketTextBox("RX", "RECEIVED BYTES", data);
-                                        WriteCommandHistory("Unknown bytes received!");
+                                        WritePacketTextBox("RX", "UNKNOWN BYTES", data);
                                         break;
                                     }
                             }
@@ -583,6 +706,12 @@ namespace ChryslerCCDSCIScanner_GUI
                         {
                             switch (dc_command)
                             {
+                                case PacketManager.send_msg:
+                                    {
+                                        if (PacketRx.payload[0] == 0x00) WritePacketTextBox("RX", "SCI-BUS MESSAGE RECEIVED", data);
+                                        else if (PacketRx.payload[0] == 0xFF) WritePacketTextBox("RX", "SCI-BUS MESSAGE ERROR", data);
+                                        break;
+                                    }
                                 case PacketManager.receive_msg:
                                     {
                                         WritePacketTextBox("RX", "SCI-BUS MESSAGE", data);
@@ -592,7 +721,14 @@ namespace ChryslerCCDSCIScanner_GUI
                                         {
                                             if (sci_filter_bytes.Contains(PacketRx.payload[0]))
                                             {
-                                                WriteCCDSCIBusTextBox(SCIBusMsgTextBox, PacketRx.payload);
+                                                try
+                                                {
+                                                    WriteCCDSCIBusTextBox(SCIBusMsgTextBox, PacketRx.payload);
+                                                }
+                                                catch
+                                                {
+
+                                                }
                                             }
                                             else
                                             {
@@ -601,15 +737,21 @@ namespace ChryslerCCDSCIScanner_GUI
                                         }
                                         else // Filtering disabled, show everything
                                         {
-                                            WriteCCDSCIBusTextBox(SCIBusMsgTextBox, PacketRx.payload);
+                                            try
+                                            {
+                                                WriteCCDSCIBusTextBox(SCIBusMsgTextBox, PacketRx.payload);
+                                            }
+                                            catch
+                                            {
+
+                                            }
                                         }
 
                                         break;
                                     }
                                 default:
                                     {
-                                        WritePacketTextBox("RX", "RECEIVED BYTES", data);
-                                        WriteCommandHistory("Unknown bytes received!");
+                                        WritePacketTextBox("RX", "UNKNOWN BYTES", data);
                                         break;
                                     }
                             }
@@ -617,8 +759,7 @@ namespace ChryslerCCDSCIScanner_GUI
                         }
                     default:
                         {
-                            WritePacketTextBox("RX", "RECEIVED BYTES", data);
-                            WriteCommandHistory("Unknown bytes received!");
+                            WritePacketTextBox("RX", "UNKNOWN BYTES", data);
                             break;
                         }
                 }
@@ -670,7 +811,7 @@ namespace ChryslerCCDSCIScanner_GUI
                                 ConnectButton.Enabled = false;
                                 DisconnectButton.Enabled = true;
                                 StatusButton.Enabled = true;
-                                StatusButton.PerformClick();
+                                //StatusButton.PerformClick();
                                 break;
                             }
                             else
@@ -742,7 +883,7 @@ namespace ChryslerCCDSCIScanner_GUI
             }
             catch
             {
-                //WriteCommandHistory("Can't open " + Serial.PortName + "!");
+                WriteCommandHistory("Can't open " + Serial.PortName + "!");
                 Serial.Close();
                 GC.Collect();
                 return false;
@@ -753,23 +894,31 @@ namespace ChryslerCCDSCIScanner_GUI
         {
             if (Serial.IsOpen)
             {
+                CCDBusEnabledCheckbox.Checked = false;
+                CCDBusMsgFilterCheckbox.Checked = false;
+                SCIBusEnabledCheckbox.Checked = false;
+                SCIBusMsgFilterCheckbox.Checked = false;
+
+                ccd_filtering_active = false;
+                sci_filtering_active = false;
+
+                ccd_filter_bytes = null;
+                sci_filter_bytes = null;
+
                 Serial.Close();
                 DisconnectButton.Text = "Disconnect";
-
                 WriteCommandHistory("Scanner disconnected!");
-
                 ComponentsDisabled();
 
                 SerialRxBuffer.Reset();
                 SerialTxBuffer.Reset();
 
-                GC.Collect();
-
                 scanner_connected = false;
-                //scanner_connected = false;
                 ConnectButton.Enabled = true;
                 DisconnectButton.Enabled = false;
                 StatusButton.Enabled = false;
+
+                GC.Collect();
             }
         }
 
@@ -833,7 +982,8 @@ namespace ChryslerCCDSCIScanner_GUI
             if (CCDBusSendMsgTextBox.Text != "")
             {
                 byte[] bytes = Util.GetBytes(CCDBusSendMsgTextBox.Text);
-                if ((bytes.Length > 0) && (bytes[0] != 0x00))
+
+                if (bytes.Length > 0)
                 {
                     PacketTx.GeneratePacket(PacketManager.from_laptop, PacketManager.to_ccd_bus, PacketManager.send_msg, PacketManager.ok, bytes);
                     byte[] temp = PacketTx.ToBytes();
@@ -848,7 +998,8 @@ namespace ChryslerCCDSCIScanner_GUI
             if (SCIBusSendMsgTextBox.Text != "")
             {
                 byte[] bytes = Util.GetBytes(SCIBusSendMsgTextBox.Text);
-                if ((bytes.Length > 0) && (bytes[0] != 0x00))
+
+                if (bytes.Length > 0)
                 {
                     PacketTx.GeneratePacket(PacketManager.from_laptop, PacketManager.to_sci_bus, PacketManager.send_msg, PacketManager.ok, bytes);
                     byte[] temp = PacketTx.ToBytes();
@@ -1093,12 +1244,13 @@ namespace ChryslerCCDSCIScanner_GUI
             {
                 SCIBusMsgTextBox.Enabled = true;
                 SCIBusSendMsgTextBox.Enabled = true;
+                SCIBusHSLSButton.Enabled = true;
                 SCIEnabled = true;
 
                 if (SCIBusSendMsgTextBox.Text != "") SCIBusSendMsgButton.Enabled = true;
                 if (SCIBusMsgTextBox.Text != "") SCIBusClearMsgButton.Enabled = true;
 
-                byte[] SelectedSCIbus = new byte[] { (byte)(PCMTCMSelectorComboBox.SelectedIndex + 1) }; // add 1 because of zero based indexing
+                byte[] SelectedSCIbus = new byte[] { (byte)(PCMTCMSelectorComboBox.SelectedIndex) };
                 PacketTx.GeneratePacket(PacketManager.from_laptop, PacketManager.to_scanner, PacketManager.settings, PacketManager.enable_sci_bus, SelectedSCIbus);
                 byte[] temp = PacketTx.ToBytes();
                 WriteSerialData(temp);
@@ -1111,7 +1263,10 @@ namespace ChryslerCCDSCIScanner_GUI
                 SCIBusSendMsgTextBox.Enabled = false;
                 SCIBusSendMsgButton.Enabled = false;
                 SCIBusClearMsgButton.Enabled = false;
+                SCIBusHSLSButton.Enabled = false;
                 SCIEnabled = false;
+
+                //SCIHiSpeed = false;
 
                 PacketTx.GeneratePacket(PacketManager.from_laptop, PacketManager.to_scanner, PacketManager.settings, PacketManager.disable_sci_bus, new byte[] { 0x00 });
                 byte[] temp = PacketTx.ToBytes();
@@ -1263,7 +1418,9 @@ namespace ChryslerCCDSCIScanner_GUI
         {
             if (SCIBusEnabledCheckbox.Checked)
             {
-                byte[] SelectedSCIbus = new byte[] { (byte)(PCMTCMSelectorComboBox.SelectedIndex + 1) }; // add 1 because of zero based indexing
+                if (SCIHiSpeed) SCIBusHSLSButton.PerformClick(); // in case of High Speed Mode return to normal low speed before changin SCI-bus target
+
+                byte[] SelectedSCIbus = new byte[] { (byte)(PCMTCMSelectorComboBox.SelectedIndex) }; // add 1 because of zero based indexing
                 PacketTx.GeneratePacket(PacketManager.from_laptop, PacketManager.to_scanner, PacketManager.settings, PacketManager.enable_sci_bus, SelectedSCIbus);
                 byte[] temp = PacketTx.ToBytes();
                 WriteSerialData(temp);
@@ -1276,6 +1433,35 @@ namespace ChryslerCCDSCIScanner_GUI
         void PCMTCMSelectorComboBox_MouseWheel(object sender, MouseEventArgs e)
         {
             ((HandledMouseEventArgs)e).Handled = true;
+        }
+
+        private void ScanModulesButton_Click(object sender, EventArgs e)
+        {
+            ScanModulesButton.Enabled = false;
+            PacketTx.GeneratePacket(PacketManager.from_laptop, PacketManager.to_scanner, PacketManager.request, PacketManager.scan_vehicle_modules, null);
+            byte[] temp = PacketTx.ToBytes();
+            WriteSerialData(temp);
+            WritePacketTextBox("TX", "REQUEST / CCD-BUS MODULE LIST", temp);
+        }
+
+        private void SCIBusHSLSButton_Click(object sender, EventArgs e)
+        {
+            if (SCIHiSpeed)
+            {
+                SCIHiSpeed = false;
+                PacketTx.GeneratePacket(PacketManager.from_laptop, PacketManager.to_scanner, PacketManager.settings, PacketManager.disable_sci_hi_speed, null);
+                byte[] temp = PacketTx.ToBytes();
+                WriteSerialData(temp);
+                WritePacketTextBox("TX", "SETTINGS / SCI-BUS HIGH SPEED OFF", temp);
+            }
+            else
+            {
+                SCIHiSpeed = true;
+                PacketTx.GeneratePacket(PacketManager.from_laptop, PacketManager.to_scanner, PacketManager.settings, PacketManager.enable_sci_hi_speed, null);
+                byte[] temp = PacketTx.ToBytes();
+                WriteSerialData(temp);
+                WritePacketTextBox("TX", "SETTINGS / SCI-BUS HIGH SPEED ON", temp);
+            }
         }
     }
 }

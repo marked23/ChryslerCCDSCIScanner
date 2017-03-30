@@ -49,6 +49,9 @@
 #define LCD_BGLIGHT_PORT PORTE
 #define LCD_BGLIGHT_PIN  PORTE3
 
+#define ACK 0x00 // Acknowledge byte
+#define ERR 0xFF // Error byte
+
 
 /******************************************************************************
                            Externally Used Variables                           
@@ -72,7 +75,7 @@ extern void avr8_software_reset(void);
 extern void wdt_init(void) __attribute__((naked)) __attribute__((section(".init3")));
 extern void check_commands(void);
 extern uint16_t free_ram(void);
-extern bool select_sci_bus_target(uint8_t bus);
+extern void select_sci_bus_target(uint8_t bus);
 
 
 #endif /* MAIN_H_ */

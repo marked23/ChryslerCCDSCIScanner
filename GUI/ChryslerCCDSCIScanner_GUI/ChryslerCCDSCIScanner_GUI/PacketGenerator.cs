@@ -241,168 +241,6 @@ namespace ChryslerCCDSCIScanner_GUI
                 payload = null;
             }
 
-            // Drop hints
-            switch (command)
-            {
-                case 0x00:
-                    {
-                        HintTextBox.Text = "The scanner will reboot.";
-                        break;
-                    }
-                case 0x01:
-                    {
-                        HintTextBox.Text = "A handshake request packet will be sent to any USB-connected device to discover if a scanner had been connected.";
-                        break;
-                    }
-                case 0x02:
-                    {
-                        HintTextBox.Text = "Request a status report packet from the scanner.";
-                        break;
-                    }
-                case 0x03:
-                    {
-                        switch (modifier)
-                        {
-                            case 0x00:
-                                {
-                                    HintTextBox.Text = "This modifier is not is use.";
-                                    PayloadTextbox.Enabled = false;
-                                    BrowseButton.Enabled = false;
-                                    break;
-                                }
-                            case 0x01:
-                                {
-                                    HintTextBox.Text = "Save the scanner's internal EEPROM content into a file (scanner_inteeprom_yyyymmddhhmmss.bin).";
-                                    PayloadTextbox.Enabled = false;
-                                    BrowseButton.Enabled = false;
-                                    break;
-                                }
-                            case 0x02:
-                                {
-                                    HintTextBox.Text = "Write the content of the Payload textbox to the scanner's internal EEPROM. You can also load the payload from a .bin file.";
-                                    PayloadTextbox.Enabled = true;
-                                    BrowseButton.Enabled = true;
-                                    break;
-                                }
-                            case 0x03:
-                                {
-                                    HintTextBox.Text = "Enable CCD-bus message collection.";
-                                    PayloadTextbox.Enabled = false;
-                                    BrowseButton.Enabled = false;
-                                    break;
-                                }
-                            case 0x04:
-                                {
-                                    HintTextBox.Text = "Disable CCD-bus message collection.";
-                                    PayloadTextbox.Enabled = false;
-                                    BrowseButton.Enabled = false;
-                                    break;
-                                }
-                            case 0x05:
-                                {
-                                    HintTextBox.Text = "Enable SCI-bus message collection.";
-                                    PayloadTextbox.Enabled = false;
-                                    BrowseButton.Enabled = false;
-                                    break;
-                                }
-                            case 0x06:
-                                {
-                                    HintTextBox.Text = "Disable SCI-bus message collection.";
-                                    PayloadTextbox.Enabled = false;
-                                    BrowseButton.Enabled = false;
-                                    break;
-                                }
-                            case 0x07:
-                                {
-                                    HintTextBox.Text = "Turn on LCD backlight (100%).";
-                                    PayloadTextbox.Enabled = false;
-                                    BrowseButton.Enabled = false;
-                                    break;
-                                }
-                            case 0x08:
-                                {
-                                    HintTextBox.Text = "Turn on LCD backlight to a desired brightness level. Payload contains the brightness level $00 being fully OFF and $64 fully ON.";
-                                    PayloadTextbox.Enabled = true;
-                                    BrowseButton.Enabled = true;
-                                    break;
-                                }
-                            case 0x09:
-                                {
-                                    HintTextBox.Text = "Turn off LCD backlight (0%).";
-                                    PayloadTextbox.Enabled = false;
-                                    BrowseButton.Enabled = false;
-                                    break;
-                                }
-                            default:
-                                {
-                                    HintTextBox.Text = "N/A";
-                                    PayloadTextbox.Enabled = false;
-                                    BrowseButton.Enabled = false;
-                                    break;
-                                }
-                        }
-                        break;
-                    }
-                case 0x04:
-                    {
-                        switch (modifier)
-                        {
-                            case 0x00:
-                                {
-                                    HintTextBox.Text = "This modifier is not is use.";
-                                    PayloadTextbox.Enabled = false;
-                                    BrowseButton.Enabled = false;
-                                    break;
-                                }
-                            case 0x01:
-                                {
-                                    HintTextBox.Text = "Get scanner firmware version.";
-                                    PayloadTextbox.Enabled = false;
-                                    BrowseButton.Enabled = false;
-                                    break;
-                                }
-                            case 0x02:
-                                {
-                                    HintTextBox.Text = "Read scanner's internal EEPROM in chunks into a file (scanner_inteeprom_addr_aaaa-bbbb_yyyymmddhhmmss.bin";
-                                    PayloadTextbox.Enabled = false;
-                                    BrowseButton.Enabled = false;
-                                    break;
-                                }
-                            case 0x03:
-                                {
-                                    HintTextBox.Text = "Read scanner's external EEPROM in chunks into a file (scanner_exteeprom_addr_aaaaa-bbbbb_yyyymmddhhmmss.bin";
-                                    PayloadTextbox.Enabled = false;
-                                    BrowseButton.Enabled = false;
-                                    break;
-                                }
-                            case 0x04:
-                                {
-                                    HintTextBox.Text = "Write the content of the Payload textbox to the scanner's internal EEPROM. The first 2 bytes have to be the starting address. You can also load the payload from a .bin file.";
-                                    PayloadTextbox.Enabled = true;
-                                    BrowseButton.Enabled = true;
-                                    break;
-                                }
-                            case 0x05:
-                                {
-                                    HintTextBox.Text = "Write the content of the Payload textbox to the scanner's external EEPROM. The first 3 bytes have to be the starting address. You can also load the payload from a .bin file.";
-                                    PayloadTextbox.Enabled = true;
-                                    BrowseButton.Enabled = true;
-                                    break;
-                                }
-
-                            default:
-                                {
-                                    break;
-                                }
-                        }
-                        break;
-                    }
-                default:
-                    {
-                        break;
-                    }
-            }
-
             if (payload != null)
             {
                 calculated_length = 2 + payload.Length;
@@ -453,6 +291,190 @@ namespace ChryslerCCDSCIScanner_GUI
             }
 
             PacketPreviewTextBox.Text = newstuff.ToString();
+
+            // Drop hints
+            switch (command)
+            {
+                case 0x00:
+                    {
+                        HintTextBox.Text = "The scanner will reboot.";
+                        PayloadTextbox.Text = "";
+                        break;
+                    }
+                case 0x01:
+                    {
+                        HintTextBox.Text = "A handshake request packet will be sent to any USB-connected device to discover if a scanner had been connected.";
+                        PayloadTextbox.Text = "";
+                        break;
+                    }
+                case 0x02:
+                    {
+                        HintTextBox.Text = "Request a status report packet from the scanner.";
+                        PayloadTextbox.Text = "";
+                        break;
+                    }
+                case 0x03:
+                    {
+                        switch (modifier)
+                        {
+                            case 0x00:
+                                {
+                                    HintTextBox.Text = "This modifier is not is use.";
+                                    PayloadTextbox.Text = "";
+                                    PayloadTextbox.Enabled = false;
+                                    BrowseButton.Enabled = false;
+                                    break;
+                                }
+                            case 0x01:
+                                {
+                                    HintTextBox.Text = "Save the scanner's internal EEPROM content into a file (scanner_inteeprom_yyyymmddhhmmss.bin).";
+                                    PayloadTextbox.Text = "";
+                                    PayloadTextbox.Enabled = false;
+                                    BrowseButton.Enabled = false;
+                                    break;
+                                }
+                            case 0x02:
+                                {
+                                    HintTextBox.Text = "Write the content of the Payload textbox to the scanner's internal EEPROM. You can also load the payload from a .bin file.";
+                                    PayloadTextbox.Enabled = true;
+                                    BrowseButton.Enabled = true;
+                                    break;
+                                }
+                            case 0x03:
+                                {
+                                    HintTextBox.Text = "Enable CCD-bus message collection.";
+                                    PayloadTextbox.Text = "";
+                                    PayloadTextbox.Enabled = false;
+                                    BrowseButton.Enabled = false;
+                                    break;
+                                }
+                            case 0x04:
+                                {
+                                    HintTextBox.Text = "Disable CCD-bus message collection.";
+                                    PayloadTextbox.Enabled = false;
+                                    BrowseButton.Enabled = false;
+                                    break;
+                                }
+                            case 0x05:
+                                {
+                                    HintTextBox.Text = "Enable SCI-bus message collection.";
+                                    PayloadTextbox.Enabled = true;
+                                    BrowseButton.Enabled = false;
+                                    break;
+                                }
+                            case 0x06:
+                                {
+                                    HintTextBox.Text = "Disable SCI-bus message collection.";
+                                    PayloadTextbox.Text = "";
+                                    PayloadTextbox.Enabled = false;
+                                    BrowseButton.Enabled = false;
+                                    break;
+                                }
+                            case 0x07:
+                                {
+                                    HintTextBox.Text = "Turn on LCD backlight (100%).";
+                                    PayloadTextbox.Text = "";
+                                    PayloadTextbox.Enabled = false;
+                                    BrowseButton.Enabled = false;
+                                    break;
+                                }
+                            case 0x08:
+                                {
+                                    HintTextBox.Text = "Turn on LCD backlight to a desired brightness level. Payload contains the brightness level $00 being fully OFF and $64 fully ON.";
+                                    PayloadTextbox.Enabled = true;
+                                    BrowseButton.Enabled = true;
+                                    break;
+                                }
+                            case 0x09:
+                                {
+                                    HintTextBox.Text = "Turn off LCD backlight (0%).";
+                                    PayloadTextbox.Text = "";
+                                    PayloadTextbox.Enabled = false;
+                                    BrowseButton.Enabled = false;
+                                    break;
+                                }
+                            default:
+                                {
+                                    HintTextBox.Text = "N/A";
+                                    PayloadTextbox.Text = "";
+                                    PayloadTextbox.Enabled = false;
+                                    BrowseButton.Enabled = false;
+                                    break;
+                                }
+                        }
+                        break;
+                    }
+                case 0x04:
+                    {
+                        switch (modifier)
+                        {
+                            case 0x00:
+                                {
+                                    HintTextBox.Text = "This modifier is not is use.";
+                                    PayloadTextbox.Text = "";
+                                    PayloadTextbox.Enabled = false;
+                                    BrowseButton.Enabled = false;
+                                    break;
+                                }
+                            case 0x01:
+                                {
+                                    HintTextBox.Text = "Get scanner firmware version.";
+                                    PayloadTextbox.Text = "";
+                                    PayloadTextbox.Enabled = false;
+                                    BrowseButton.Enabled = false;
+                                    break;
+                                }
+                            case 0x02:
+                                {
+                                    HintTextBox.Text = "Read scanner's internal EEPROM in chunks into a file (scanner_inteeprom_addr_aaaa-bbbb_yyyymmddhhmmss.bin";
+                                    PayloadTextbox.Text = "";
+                                    PayloadTextbox.Enabled = false;
+                                    BrowseButton.Enabled = false;
+                                    break;
+                                }
+                            case 0x03:
+                                {
+                                    HintTextBox.Text = "Read scanner's external EEPROM in chunks into a file (scanner_exteeprom_addr_aaaaa-bbbbb_yyyymmddhhmmss.bin";
+                                    PayloadTextbox.Text = "";
+                                    PayloadTextbox.Enabled = false;
+                                    BrowseButton.Enabled = false;
+                                    break;
+                                }
+                            case 0x04:
+                                {
+                                    HintTextBox.Text = "Write the content of the Payload textbox to the scanner's internal EEPROM. The first 2 bytes have to be the starting address. You can also load the payload from a .bin file.";
+                                    PayloadTextbox.Enabled = true;
+                                    BrowseButton.Enabled = true;
+                                    break;
+                                }
+                            case 0x05:
+                                {
+                                    HintTextBox.Text = "Write the content of the Payload textbox to the scanner's external EEPROM. The first 3 bytes have to be the starting address. You can also load the payload from a .bin file.";
+                                    PayloadTextbox.Enabled = true;
+                                    BrowseButton.Enabled = true;
+                                    break;
+                                }
+
+                            default:
+                                {
+                                    HintTextBox.Text = "N/A";
+                                    PayloadTextbox.Text = "";
+                                    PayloadTextbox.Enabled = false;
+                                    BrowseButton.Enabled = false;
+                                    break;
+                                }
+                        }
+                        break;
+                    }
+                default:
+                    {
+                        HintTextBox.Text = "N/A";
+                        PayloadTextbox.Text = "";
+                        PayloadTextbox.Enabled = false;
+                        BrowseButton.Enabled = false;
+                        break;
+                    }
+            }
         }
 
     }

@@ -58,7 +58,7 @@
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.CCDBusMessagesGroupbox = new System.Windows.Forms.GroupBox();
-            this.CCDBusMsgStackingCheckbox = new System.Windows.Forms.CheckBox();
+            this.CCDBusSpeedLabel = new System.Windows.Forms.Label();
             this.CCDBusMsgTextBox = new System.Windows.Forms.TextBox();
             this.CCDBusMsgFilterClearButton = new System.Windows.Forms.Button();
             this.CCDBusMsgFilterApplyButton = new System.Windows.Forms.Button();
@@ -69,8 +69,9 @@
             this.CCDBusEnabledCheckbox = new System.Windows.Forms.CheckBox();
             this.CCDBusClearMsgButton = new System.Windows.Forms.Button();
             this.SCIBusMessagesGroupbox = new System.Windows.Forms.GroupBox();
+            this.SCIBusHSLSButton = new System.Windows.Forms.Button();
+            this.SCIBusSpeedLabel = new System.Windows.Forms.Label();
             this.PCMTCMSelectorComboBox = new System.Windows.Forms.ComboBox();
-            this.SCIBusMsgStackingCheckbox = new System.Windows.Forms.CheckBox();
             this.SCIBusMsgTextBox = new System.Windows.Forms.TextBox();
             this.SCIBusMsgFilterClearButton = new System.Windows.Forms.Button();
             this.SCIBusMsgFilterApplyButton = new System.Windows.Forms.Button();
@@ -106,8 +107,6 @@
             this.SensorDataTextBox = new System.Windows.Forms.TextBox();
             this.DTCListGroupbox = new System.Windows.Forms.GroupBox();
             this.DTCListTextBox = new System.Windows.Forms.TextBox();
-            this.SCIBusSpeedLabel = new System.Windows.Forms.Label();
-            this.CCDBusSpeedLabel = new System.Windows.Forms.Label();
             this.PacketLogGroupbox.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.CCDBusMessagesGroupbox.SuspendLayout();
@@ -404,7 +403,6 @@
             // CCDBusMessagesGroupbox
             // 
             this.CCDBusMessagesGroupbox.Controls.Add(this.CCDBusSpeedLabel);
-            this.CCDBusMessagesGroupbox.Controls.Add(this.CCDBusMsgStackingCheckbox);
             this.CCDBusMessagesGroupbox.Controls.Add(this.CCDBusMsgTextBox);
             this.CCDBusMessagesGroupbox.Controls.Add(this.CCDBusMsgFilterClearButton);
             this.CCDBusMessagesGroupbox.Controls.Add(this.CCDBusMsgFilterApplyButton);
@@ -421,17 +419,15 @@
             this.CCDBusMessagesGroupbox.TabStop = false;
             this.CCDBusMessagesGroupbox.Text = "CCD-bus messages";
             // 
-            // CCDBusMsgStackingCheckbox
+            // CCDBusSpeedLabel
             // 
-            this.CCDBusMsgStackingCheckbox.AutoSize = true;
-            this.CCDBusMsgStackingCheckbox.Enabled = false;
-            this.CCDBusMsgStackingCheckbox.Location = new System.Drawing.Point(146, 406);
-            this.CCDBusMsgStackingCheckbox.Name = "CCDBusMsgStackingCheckbox";
-            this.CCDBusMsgStackingCheckbox.Size = new System.Drawing.Size(68, 17);
-            this.CCDBusMsgStackingCheckbox.TabIndex = 69;
-            this.CCDBusMsgStackingCheckbox.Text = "Stacking";
-            this.CCDBusMsgStackingCheckbox.UseVisualStyleBackColor = true;
-            this.CCDBusMsgStackingCheckbox.Visible = false;
+            this.CCDBusSpeedLabel.AutoSize = true;
+            this.CCDBusSpeedLabel.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.CCDBusSpeedLabel.Location = new System.Drawing.Point(150, 312);
+            this.CCDBusSpeedLabel.Name = "CCDBusSpeedLabel";
+            this.CCDBusSpeedLabel.Size = new System.Drawing.Size(66, 13);
+            this.CCDBusSpeedLabel.TabIndex = 73;
+            this.CCDBusSpeedLabel.Text = "7812.5 kbps";
             // 
             // CCDBusMsgTextBox
             // 
@@ -538,9 +534,9 @@
             // 
             // SCIBusMessagesGroupbox
             // 
+            this.SCIBusMessagesGroupbox.Controls.Add(this.SCIBusHSLSButton);
             this.SCIBusMessagesGroupbox.Controls.Add(this.SCIBusSpeedLabel);
             this.SCIBusMessagesGroupbox.Controls.Add(this.PCMTCMSelectorComboBox);
-            this.SCIBusMessagesGroupbox.Controls.Add(this.SCIBusMsgStackingCheckbox);
             this.SCIBusMessagesGroupbox.Controls.Add(this.SCIBusMsgTextBox);
             this.SCIBusMessagesGroupbox.Controls.Add(this.SCIBusMsgFilterClearButton);
             this.SCIBusMessagesGroupbox.Controls.Add(this.SCIBusMsgFilterApplyButton);
@@ -557,11 +553,33 @@
             this.SCIBusMessagesGroupbox.TabStop = false;
             this.SCIBusMessagesGroupbox.Text = "SCI-bus messages";
             // 
+            // SCIBusHSLSButton
+            // 
+            this.SCIBusHSLSButton.Enabled = false;
+            this.SCIBusHSLSButton.Location = new System.Drawing.Point(153, 402);
+            this.SCIBusHSLSButton.Name = "SCIBusHSLSButton";
+            this.SCIBusHSLSButton.Size = new System.Drawing.Size(60, 23);
+            this.SCIBusHSLSButton.TabIndex = 73;
+            this.SCIBusHSLSButton.Text = "HS/LS";
+            this.SCIBusHSLSButton.UseVisualStyleBackColor = true;
+            this.SCIBusHSLSButton.Click += new System.EventHandler(this.SCIBusHSLSButton_Click);
+            // 
+            // SCIBusSpeedLabel
+            // 
+            this.SCIBusSpeedLabel.AutoSize = true;
+            this.SCIBusSpeedLabel.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.SCIBusSpeedLabel.Location = new System.Drawing.Point(148, 312);
+            this.SCIBusSpeedLabel.Name = "SCIBusSpeedLabel";
+            this.SCIBusSpeedLabel.Size = new System.Drawing.Size(66, 13);
+            this.SCIBusSpeedLabel.TabIndex = 66;
+            this.SCIBusSpeedLabel.Text = "7812.5 kbps";
+            // 
             // PCMTCMSelectorComboBox
             // 
             this.PCMTCMSelectorComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.PCMTCMSelectorComboBox.FormattingEnabled = true;
             this.PCMTCMSelectorComboBox.Items.AddRange(new object[] {
+            "NON",
             "PCM",
             "TCM"});
             this.PCMTCMSelectorComboBox.Location = new System.Drawing.Point(72, 285);
@@ -569,18 +587,6 @@
             this.PCMTCMSelectorComboBox.Size = new System.Drawing.Size(48, 21);
             this.PCMTCMSelectorComboBox.TabIndex = 55;
             this.PCMTCMSelectorComboBox.SelectionChangeCommitted += new System.EventHandler(this.PCMTCMSelectorComboBox_SelectionChangeCommitted);
-            // 
-            // SCIBusMsgStackingCheckbox
-            // 
-            this.SCIBusMsgStackingCheckbox.AutoSize = true;
-            this.SCIBusMsgStackingCheckbox.Enabled = false;
-            this.SCIBusMsgStackingCheckbox.Location = new System.Drawing.Point(146, 406);
-            this.SCIBusMsgStackingCheckbox.Name = "SCIBusMsgStackingCheckbox";
-            this.SCIBusMsgStackingCheckbox.Size = new System.Drawing.Size(68, 17);
-            this.SCIBusMsgStackingCheckbox.TabIndex = 70;
-            this.SCIBusMsgStackingCheckbox.Text = "Stacking";
-            this.SCIBusMsgStackingCheckbox.UseVisualStyleBackColor = true;
-            this.SCIBusMsgStackingCheckbox.Visible = false;
             // 
             // SCIBusMsgTextBox
             // 
@@ -880,6 +886,7 @@
             this.ScanModulesButton.TabIndex = 54;
             this.ScanModulesButton.Text = "Scan";
             this.ScanModulesButton.UseVisualStyleBackColor = true;
+            this.ScanModulesButton.Click += new System.EventHandler(this.ScanModulesButton_Click);
             // 
             // ModuleListComboBox
             // 
@@ -962,26 +969,6 @@
             this.DTCListTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.DTCListTextBox.Size = new System.Drawing.Size(294, 202);
             this.DTCListTextBox.TabIndex = 70;
-            // 
-            // SCIBusSpeedLabel
-            // 
-            this.SCIBusSpeedLabel.AutoSize = true;
-            this.SCIBusSpeedLabel.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.SCIBusSpeedLabel.Location = new System.Drawing.Point(148, 312);
-            this.SCIBusSpeedLabel.Name = "SCIBusSpeedLabel";
-            this.SCIBusSpeedLabel.Size = new System.Drawing.Size(66, 13);
-            this.SCIBusSpeedLabel.TabIndex = 66;
-            this.SCIBusSpeedLabel.Text = "7812.5 kbps";
-            // 
-            // CCDBusSpeedLabel
-            // 
-            this.CCDBusSpeedLabel.AutoSize = true;
-            this.CCDBusSpeedLabel.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.CCDBusSpeedLabel.Location = new System.Drawing.Point(150, 312);
-            this.CCDBusSpeedLabel.Name = "CCDBusSpeedLabel";
-            this.CCDBusSpeedLabel.Size = new System.Drawing.Size(66, 13);
-            this.CCDBusSpeedLabel.TabIndex = 73;
-            this.CCDBusSpeedLabel.Text = "7812.5 kbps";
             // 
             // MainForm
             // 
@@ -1105,8 +1092,6 @@
         private System.Windows.Forms.TextBox CCDBusMsgTextBox;
         private System.Windows.Forms.TextBox SCIBusMsgTextBox;
         private System.Windows.Forms.TextBox SensorDataTextBox;
-        private System.Windows.Forms.CheckBox CCDBusMsgStackingCheckbox;
-        private System.Windows.Forms.CheckBox SCIBusMsgStackingCheckbox;
         private System.Windows.Forms.GroupBox DTCListGroupbox;
         private System.Windows.Forms.TextBox DTCListTextBox;
         private System.Windows.Forms.ToolStripMenuItem superCardReaderToolStripMenuItem;
@@ -1116,6 +1101,7 @@
         private System.Windows.Forms.ComboBox PCMTCMSelectorComboBox;
         private System.Windows.Forms.Label SCIBusSpeedLabel;
         private System.Windows.Forms.Label CCDBusSpeedLabel;
+        private System.Windows.Forms.Button SCIBusHSLSButton;
     }
 }
 
