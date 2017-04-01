@@ -63,6 +63,8 @@ be held responsible for the damages.
 #include <inttypes.h>
 #include <stdint-gcc.h>
 #include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <avr/wdt.h>
 
 // Custom libraries
@@ -182,13 +184,17 @@ uint8_t ccd_bus_module_num = 0;
 
 uint8_t avr_signature[32];
 
-// Each variable in this array has 8 bit positions. There are 256 possible bit positions in total (8x32=256).
-// Each bit means if a CCD-bus module is available at that address (1) or not (0).
 uint8_t ccd_mod_addr[32];
-uint8_t ccd_addr_offset = 0;
+uint8_t ccd_mod_addr_ptr = 0;
+//uint8_t ccd_addr_offset = 0;
 uint8_t ccd_scan_msg[6];
 bool scan_ccd = false;
-
+bool scan_ccd_done = false;
+bool next_ccd_addr = true;
+uint32_t last_ccd_scan_request = 0;
+uint16_t ccd_scan_request_timeout = 200; // ms
+uint8_t ccd_scan_start_addr = 0x00;
+uint8_t ccd_scan_end_addr = 0xFE;
 
 
 
@@ -684,9 +690,29 @@ void check_commands(void)
 										}
 										case scan_ccd_bus_modules: // 0x06 - Scan CCD-bus modules
 										{
-											// The function has its own send_packet
 											scan_ccd = true;
-											//scan_ccd_bus_mods();
+
+											if (payload_length == 2) // start-end addresses in payload, default timeout (200 ms)
+											{
+												ccd_scan_start_addr = cmd_payload[0];
+												ccd_scan_end_addr = cmd_payload[1];
+												ccd_scan_request_timeout = 200;
+											}
+											else if (payload_length == 4) // start-end addresses and timeout in payload
+											{
+												ccd_scan_start_addr = cmd_payload[0];
+												ccd_scan_end_addr = cmd_payload[1];
+												ccd_scan_request_timeout = (cmd_payload[2] << 8) | cmd_payload[3];
+											}
+											else // no payload, default settings
+											{
+												ccd_scan_start_addr = 0x00;
+												ccd_scan_end_addr = 0xFE;
+												ccd_scan_request_timeout = 200;
+											}
+
+											uint8_t ack[1] = { ACK };
+											send_packet(from_scanner, to_laptop, request, scan_ccd_bus_modules, ack, 1);
 											break;
 										}
 										case free_ram_value: // 0x07 - Free RAM available
@@ -1106,6 +1132,9 @@ uint8_t available_buses(void)
 		cbi(ret, 1);
 	}
 
+	// Restore the saved state of the CCD-bus (enabled / disabled)
+	sci_enabled = sci_bus_state;
+
 	return ret;
 }
 
@@ -1116,56 +1145,7 @@ Purpose:  discovers all the modules on the CCD-bus.
 **************************************************************************/
 void scan_ccd_bus_mods(void)
 {
-	bool ccd_bus_state;
-	uint8_t ccd_scan_msg[6];
-	
-	// Do it only when the scan hasn't completed yet
-	if (true)
-	{
-		// Save the current state of the CCD-bus (enabled / disabled)
-		ccd_bus_state = ccd_enabled;
 
-		// If the CCD-bus was previously turned off then turn it back on
-		if (!ccd_enabled) ccd_enabled = true;
-
-		// Notify user that scanning has started
-		uint8_t ack[1] = { ACK }; // acknowledge byte
-		send_packet(from_scanner, to_laptop, response, scan_ccd_bus_modules, ack, 1);
-
-		// Zero out all the bits in the array
-		for (uint8_t i = 0; i < 32; i++)
-		{
-			ccd_mod_addr[i] = 0x00;
-		}
-
-		// Cycle through every possible address (0x00-0xFF)
-		for (uint8_t i = 0; ; i++)
-		{
-			//_delay_ms(10);
-			// Magic happens here
-
-			// Assemble a simple diagnostic request message that forces the module to reset and respond with its address
-			ccd_scan_msg[0] = 0xB2;
-			ccd_scan_msg[1] = i;
-			ccd_scan_msg[2] = 0x00;
-			ccd_scan_msg[3] = 0x00;
-			ccd_scan_msg[4] = 0x00;
-			ccd_scan_msg[5] = (0xB2 + i) & 0xFF;
-
-			if (i == 255) break;
-		}
-
-		// Forward found CCD-bus modules to the laptop
-		send_packet(from_scanner, to_laptop, response, scan_ccd_bus_modules, ccd_mod_addr, 32);
-
-		// Restore the saved state of the CCD-bus (enabled / disabled)
-		ccd_enabled = ccd_bus_state;
-	}
-	else
-	{
-		uint8_t err[1] = { ERR }; // error byte
-		send_packet(from_scanner, to_laptop, response, scan_ccd_bus_modules, err, 1);
-	}
 }
 
 
@@ -1253,8 +1233,51 @@ void handle_ccd_data(void)
 		uint16_t dummy_read = uart0_peek();
 
 		// If it's an ID-byte then send the previous bytes to the laptop
-		if ((((dummy_read >> 8) & 0xFF) == (CCD_SOM >> 8)) && (ccd_bus_bytes_buffer_ptr > 0) )
+		if ((((dummy_read >> 8) & 0xFF) == CCD_SOM) && (ccd_bus_bytes_buffer_ptr > 0) )
 		{
+			// Here we decide if a CCD-bus scan request has received a valid response
+			if (scan_ccd)
+			{
+				// Make sure that the first byte is a diagnostic response byte (0xF2) and the second byte is the current address offset
+				if ((ccd_bus_bytes_buffer[0] == DIAG_RESP) && (ccd_bus_bytes_buffer[1] == ccd_scan_start_addr))
+				{
+					// Save this address in the array at the next available position
+					ccd_mod_addr[ccd_mod_addr_ptr] = ccd_scan_start_addr;
+					ccd_mod_addr_ptr++; // increment next available position
+
+
+					if (ccd_scan_start_addr != ccd_scan_end_addr)
+					{
+						// Prepare the next
+						ccd_scan_start_addr++;   // increment global address by one
+						next_ccd_addr = true; // allow next address to be requested
+					}
+					else
+					{
+						next_ccd_addr = false;
+						scan_ccd_done = true;
+					}
+				}
+				else
+				{
+					// Check here if an address has been waiting too long (timeout)
+					if ((millis_get() - last_ccd_scan_request) > ccd_scan_request_timeout)
+					{
+						if (ccd_scan_start_addr != ccd_scan_end_addr)
+						{
+							// Manually increment address
+							ccd_scan_start_addr++;   // increment global address by one
+							next_ccd_addr = true; // allow next address to be requested
+						}
+						else
+						{
+							next_ccd_addr = false;
+							scan_ccd_done = true;
+						}						
+					}
+				}
+			}
+			
 			//              where        to         what      ok/error flag     buffer          length
 			send_packet(from_ccd_bus, to_laptop, receive_msg, ok, ccd_bus_bytes_buffer, ccd_bus_bytes_buffer_ptr);
 			ccd_bus_bytes_buffer_ptr = 0; // reset pointer
@@ -1263,10 +1286,10 @@ void handle_ccd_data(void)
 			ccd_bus_bytes_buffer[ccd_bus_bytes_buffer_ptr] = uart0_getc() & 0xFF;
 			ccd_bus_bytes_buffer_ptr++;
 		}
-		else // get this byte and save to the temporary buffer
+		else // get this byte and save to the temporary buffer in the next available position
 		{
 			ccd_bus_bytes_buffer[ccd_bus_bytes_buffer_ptr] = uart0_getc() & 0xFF;
-			ccd_bus_bytes_buffer_ptr++;
+			ccd_bus_bytes_buffer_ptr++; // increment position by one
 		}
 	}
 
@@ -1282,21 +1305,37 @@ void handle_ccd_data(void)
 		ccd_bus_msg_pending = false; // re-arm
 	}
 
-	//// Scan CCD-bus modules
-	//if (scan_ccd && ccd_idle)
-	//{
-		//ccd_scan_msg[0] = 0xB2;
-		//ccd_scan_msg[1] = ccd_addr_offset; // 0-255
-		//ccd_scan_msg[2] = 0x00;            // reset command
-		//ccd_scan_msg[3] = 0x00;
-		//ccd_scan_msg[4] = 0x00;
-		//ccd_scan_msg[5] = (0xB2 + ccd_addr_offset) & 0xFF;
-//
-		//for (uint8_t i = 0; i < 6; i++)
-		//{
-			//uart0_putc(ccd_scan_msg[i]);
-		//}
-	//}
+	// Scan CCD-bus modules
+	if (scan_ccd && next_ccd_addr && ccd_idle)
+	{
+		next_ccd_addr = false; // don't execute this again unless a valid response has been received or timeout occurs
+		
+		// Create new request message
+		ccd_scan_msg[0] = DIAG_REQ;							// diagnostic request (0xB2)
+		ccd_scan_msg[1] = ccd_scan_start_addr;					// module address (0-255)
+		ccd_scan_msg[2] = 0x00;								// reset command
+		ccd_scan_msg[3] = 0x00;								// parameter 1
+		ccd_scan_msg[4] = 0x00;								// parameter 2
+		ccd_scan_msg[5] = (DIAG_REQ + ccd_scan_start_addr) & 0xFF;	// checksum
+
+		// Send it to the CCD-bus
+		for (uint8_t i = 0; i < 6; i++)
+		{
+			uart0_putc(ccd_scan_msg[i]);
+		}
+
+		// Save the time
+		last_ccd_scan_request = millis_get();
+	}
+
+	if (scan_ccd_done)
+	{
+		// Send the address list here back to the laptop
+		scan_ccd_done = false; // re-arm
+		scan_ccd = false; // re-arm
+		send_packet(from_scanner, to_laptop, response, scan_ccd_bus_modules, ccd_mod_addr, 32);
+		ccd_mod_addr_ptr = 0;
+	}
 			
 	switch (ccd_bus_tasks)
 	{
@@ -1361,6 +1400,7 @@ void handle_sci_data(void)
 
 	// If there's a message to be sent to the SCI-bus then send it here and now
 	// Check if there's activity on the SCI-bus before sending, if there's activity then wait!
+	// TODO: delay between bytes if the command contains multiple bytes!!!
 	if (sci_bus_msg_pending && !sci_bus_active_bytes)
 	{
 		for (uint8_t i = 0; i < sci_bus_msg_to_send_ptr; i++)
@@ -1451,8 +1491,6 @@ void select_sci_bus_target(uint8_t bus)
 			break;
 		}
 	}
-
-	return false;
 }
 
 

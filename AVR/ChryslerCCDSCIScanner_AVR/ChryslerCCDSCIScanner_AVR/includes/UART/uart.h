@@ -127,8 +127,8 @@ Date        Description
 //#define USART0_LARGE_BUFFER
 
 // SCI-bus messages
-#define UART_RX1_BUFFER_SIZE 64
-#define UART_TX1_BUFFER_SIZE 64
+#define UART_RX1_BUFFER_SIZE 32
+#define UART_TX1_BUFFER_SIZE 32
 //#define USART1_LARGE_BUFFER
 
 // Packets (max 2042 bytes of payload allowed)
@@ -238,10 +238,8 @@ Date        Description
 */
 #define UART_FRAME_ERROR      0x1000              /**< Framing Error by UART       */
 #define UART_OVERRUN_ERROR    0x0800              /**< Overrun condition by UART   */
-#define UART_BUFFER_OVERFLOW  0x0400              /**< receive ringbuffer overflow */
-#define UART_NO_DATA          0x0200              /**< no data available           */
-#define CCD_SOM               0x4000              /**< start of CCD-bus message    */
-#define CCD_EOM	              0x2000              /**< end of CCD-bus message      */
+#define UART_BUFFER_OVERFLOW  0x0400              /**< Receive ringbuffer overflow */
+#define UART_NO_DATA          0x0200              /**< No data available           */
 
 /* Macros, to allow use of legacy names */
 

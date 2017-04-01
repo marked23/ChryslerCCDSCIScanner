@@ -516,14 +516,14 @@ Purpose:  called when the UART has received a character
 	/* if the ccd-bus went idle since the last byte received then this byte is an ID-byte */
 	if (ccd_idle)
 	{
-		lastRxError |= (CCD_SOM >> 8); // add SOM (Start of Message) flag to the high byte
+		lastRxError |= CCD_SOM; // add SOM (Start of Message) flag to the high byte
 		ccd_idle = false; // re-arm idle detection
 		ccd_messages_count++;
 
 		// TODO: mark previous byte as CCD_EOM - end of message
 		if ((UART_RX0_BUFFER_SIZE + UART_RxHead - UART_RxTail) & UART_RX0_BUFFER_MASK)
 		{
-			UART_RxBuf[UART_RxHead & UART_RX0_BUFFER_MASK] |= CCD_EOM;
+			UART_RxBuf[UART_RxHead & UART_RX0_BUFFER_MASK] |= CCD_EOM << 8;
 		}
 	}
         

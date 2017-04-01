@@ -3,6 +3,8 @@
 
 #define SYNC_BYTE 0x33
 #define MAX_PAYLOAD_LENGTH 2042
+#define ACK 0x00				// Acknowledge byte
+#define ERR 0xFF				// Error byte
 
 // DATA CODE byte building blocks
 // Source and Target masks (high nibble (4 bits))
@@ -79,7 +81,6 @@
 #define button_pressed_down				0xFE
 #define button_released					0xFF
 
-
 // DC command 0x0F (OK/ERROR)
 #define ok										0x00
 #define error_sync_invalid_value				0x01
@@ -104,6 +105,6 @@
 #define error_fatal								0xFF
 
 
-extern uint8_t send_packet(uint8_t source, uint8_t target, uint8_t dc_command, uint8_t subdatacode, uint8_t *payloadbuff, uint16_t payloadbufflen);
+extern void send_packet(uint8_t source, uint8_t target, uint8_t dc_command, uint8_t subdatacode, uint8_t *payloadbuff, uint16_t payloadbufflen);
 
 #endif /* PACKET_H_ */
