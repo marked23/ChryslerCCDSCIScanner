@@ -100,7 +100,7 @@ void LCD_clearCirc(uint8_t x1, uint8_t y1, uint8_t radius)
 
 //------------------------------------------------------------------------------
 //Puts a bit map to LCD
-void LCD_drawFullBMP(uint8_t* bitmap)
+void LCD_drawFullBMP(const uint8_t* bitmap)
 {  
   uint8_t page,j;  
   for (page=0;page<LCD_LINES/LCD_PAGE_HEIGHT;page++){      

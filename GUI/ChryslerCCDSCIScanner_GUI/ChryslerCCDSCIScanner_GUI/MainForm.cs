@@ -184,7 +184,7 @@ namespace ChryslerCCDSCIScanner_GUI
                     // If the size is bigger than 2044 bytes (payload only, + 4 bytes = 2048) then it's most likely garbage data 
                     if (PacketSize > 2044)
                     {
-                        if (SerialRxBuffer.ReadLength != 0) SerialRxBuffer.Pop(); // Pop this byte so we can search for another packet, do it safely!
+                        if (SerialRxBuffer.ReadLength != 0) SerialRxBuffer.Pop(); // Pop this byte that lead us here so we can search for another packet.
                         goto Here; // Jump back to the while loop to repeat
                     }
 
@@ -196,7 +196,7 @@ namespace ChryslerCCDSCIScanner_GUI
                     // Try to convert the data into a packet
                     if (PacketRx.FromBytes(temp))
                     {
-                        // If the conversion is OK then remove them from the circular buffer
+                        // If the conversion is OK then remove the bytes from the circular buffer
                         for (int i = 0; i < PacketSize; i++)
                         {
                             if (SerialRxBuffer.ReadLength != 0) SerialRxBuffer.Pop();
@@ -617,6 +617,11 @@ namespace ChryslerCCDSCIScanner_GUI
                                                     break;
                                                 }
                                         }
+                                        break;
+                                    }
+                                case PacketManager.debug: // 0x0E
+                                    {
+                                        WritePacketTextBox("RX", "DEBUG PACKET(S)", data);
                                         break;
                                     }
                                 case PacketManager.ok_error: // 0x0F

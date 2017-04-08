@@ -55,6 +55,7 @@ extern void wdt_init(void) __attribute__((naked)) __attribute__((section(".init3
 extern void check_commands(void);
 extern uint16_t free_ram(void);
 extern void select_sci_bus_target(uint8_t bus);
+extern void reset_diagnostic_comms(void);
 
 
 #endif /* MAIN_H_ */

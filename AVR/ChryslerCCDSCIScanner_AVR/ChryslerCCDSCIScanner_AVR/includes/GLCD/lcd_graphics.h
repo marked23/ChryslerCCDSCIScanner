@@ -40,7 +40,7 @@ void LCD_fillCirc  (uint8_t x1, uint8_t y1, uint8_t radius);
 void LCD_clearCirc (uint8_t x1, uint8_t y1, uint8_t radius);
 void LCD_invertCirc(uint8_t x1, uint8_t y1, uint8_t radius);
 
-void LCD_drawFullBMP(uint8_t* bitmap);
+void LCD_drawFullBMP(const uint8_t* bitmap);
 void LCD_drawBMP(uint8_t* bitmap, uint8_t x, uint8_t y, uint8_t width, uint8_t height);
 void LCD_putgchar(uint8_t c, uint8_t* font);
 void LCD_putgstr(uint8_t* string, uint8_t* font, uint8_t x, uint8_t y);

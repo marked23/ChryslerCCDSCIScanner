@@ -1233,7 +1233,7 @@ void handle_ccd_data(void)
 		uint16_t dummy_read = uart0_peek();
 
 		// If it's an ID-byte then send the previous bytes to the laptop
-		if ((((dummy_read >> 8) & 0xFF) == CCD_SOM) && (ccd_bus_bytes_buffer_ptr > 0) )
+		if ((((dummy_read >> 8) & 0xFF) == CCD_SOM) && (ccd_bus_bytes_buffer_ptr > 0))
 		{
 			// Here we decide if a CCD-bus scan request has received a valid response
 			if (scan_ccd)
@@ -1365,6 +1365,7 @@ Purpose:  handles SCI-bus messages
 void handle_sci_data(void)
 {
 	// Check if there are any data bytes in the SCI-ringbuffer
+	Here: // goto label
 	if (uart1_available() > 0)
 	{
 		// Check how much bytes do we have
@@ -1373,7 +1374,7 @@ void handle_sci_data(void)
 		// Save all of them
 		for (uint8_t i = 0; i < sci_bytes_available; i++)
 		{
-			sci_bus_bytes_buffer[sci_bus_bytes_buffer_ptr] = uart1_getc();
+			sci_bus_bytes_buffer[sci_bus_bytes_buffer_ptr] = uart1_getc() & 0xFF;
 			sci_bus_bytes_buffer_ptr++;
 		}
 
@@ -1384,33 +1385,45 @@ void handle_sci_data(void)
 
 	// If there's no data coming in after a while then consider the previous message (if there is) to be completed
 	// Make sure there's data in the buffer before sending empty packets... been there done that...
-	if ((millis_get() - last_sci_byte_received > SCI_INTERMESSAGE_RESPONSE_DELAY) && (sci_bus_bytes_buffer_ptr > 0) )
+	if ((millis_get() - last_sci_byte_received > SCI_INTERMESSAGE_RESPONSE_DELAY) )
 	{
-		send_packet(from_sci_bus, to_laptop, receive_msg, ok, sci_bus_bytes_buffer, sci_bus_bytes_buffer_ptr); // send sci-bus msg
-		sci_bus_bytes_buffer_ptr = 0; // reset pointer
+		if (sci_bus_bytes_buffer_ptr > 0)
+		{
+			send_packet(from_sci_bus, to_laptop, receive_msg, ok, sci_bus_bytes_buffer, sci_bus_bytes_buffer_ptr); // send sci-bus msg if there is...
+			sci_bus_bytes_buffer_ptr = 0; // reset pointer
+		}
 		sci_bus_active_bytes = false;
 	}
 
-	// This has to be done every time, if TCM is not present, because this variable won't reset on its own
-	// and it won't let send messages to the PCM again.
-	else if ((millis_get() - last_sci_byte_received) > SCI_INTERMESSAGE_RESPONSE_DELAY )
-	{
-		sci_bus_active_bytes = false;
-	}
-
-	// If there's a message to be sent to the SCI-bus then send it here and now
-	// Check if there's activity on the SCI-bus before sending, if there's activity then wait!
-	// TODO: delay between bytes if the command contains multiple bytes!!!
+	// If there's a message to be sent to the SCI-bus then try to send it here and now
+	// Check if there's activity on the SCI-bus before sending!
 	if (sci_bus_msg_pending && !sci_bus_active_bytes)
 	{
+		// Enter for-loop, cycle for every byte to be sent
 		for (uint8_t i = 0; i < sci_bus_msg_to_send_ptr; i++)
 		{
+			// Save the current number of bytes in the receive buffer
+			uint8_t numbytes = uart1_available();
+
+			// Put one/next byte to the SCI-bus
 			uart1_putc(sci_bus_msg_to_send[i]);
+
+			// Wait for answer or timeout
+			bool timeout_reached = false;
+			uint32_t timeout_start = millis_get();
+			while ((numbytes >= uart1_available()) && !timeout_reached)
+			{
+				// Check the timeout condition only, the received byte is stored automatically in the ringbuffer
+				if (millis_get() - timeout_start > SCI_INTERMESSAGE_RESPONSE_DELAY) timeout_reached = true;
+			}
+			timeout_reached = false; // re-arm, don't care if true or false
 		}
 
-		sci_bus_msg_to_send_ptr = 0; // reset pointer
-		sci_bus_msg_pending = false; // re-arm
-		sci_bus_active_bytes = true;
+		last_sci_byte_received = millis_get(); // save the last time a byte was received
+		sci_bus_msg_to_send_ptr = 0; // reset message pointer
+		sci_bus_msg_pending = false; // re-arm msg sending
+		sci_bus_active_bytes = true; // data is being transferred to the scanner...
+		goto Here; // force data processing one time only
 	}
 			
 	switch (sci_bus_tasks)
