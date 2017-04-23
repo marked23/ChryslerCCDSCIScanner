@@ -63,12 +63,57 @@ namespace ChryslerCCDSCIScanner_GUI
         public string DateTimeNow;
         public string TextLogFilename;
         public string BinaryLogFilename;
+        public string CCDLogFilename;
+        public string SCILogFilename;
 
         public byte[] ccd_filter_bytes;
         public bool ccd_filtering_active = false;
 
         public byte[] sci_filter_bytes;
         public bool sci_filtering_active = false;
+
+        public float PCM_AMB_TEMP_VOLTS = 0;        // 14 01
+        public float PCM_O2_VOLTS1 = 0;             // 14 02
+        //
+        public float PCM_COOLANT_TEMP = 0;          // 14 05
+        public float PCM_COOLANT_TEMP_VOLTS = 0;    // 14 06
+        public float PCM_TPS_VOLTS = 0;             // 14 07
+        public float PCM_TPS_MIN_VOLTS = 0;         // 14 08
+        public float PCM_KNOCK_VOLTS = 0;           // 14 09
+        public float PCM_BATTERY_VOLTS = 0;         // 14 0A
+        public float PCM_MAP_VOLTS1 = 0;            // 14 0B
+        public float PCM_TARGET_IAC_POS = 0;        // 14 0C
+        //
+        public float PCM_ADAPT_FUEL_FACT = 0;       // 14 0E
+        public float PCM_BARO_PRESSURE = 0;         // 14 0F
+        public float PCM_RPM1 = 0;                  // 14 10
+        public float PCM_RPM2 = 0;                  // 14 11
+        //
+        public float PCM_KEY_ON_CYCLES_ERROR1 = 0;  // 14 13
+        //
+        public float PCM_SPARK_ADVANCE = 0;         // 14 15
+        public float PCM_CYL1_RETARD = 0;           // 14 16
+        public float PCM_CYL2_RETARD = 0;           // 14 17
+        public float PCM_CYL3_RETARD = 0;           // 14 18
+        public float PCM_CYL4_RETARD = 0;           // 14 19
+        public float PCM_TARGET_BOOST = 0;          // 14 1A
+        public float PCM_CHARGE_TEMP = 0;           // 14 1B
+        public float PCM_CHARGE_TEMP_VOLTS = 0;     // 14 1C
+        public float PCM_CRUISE_TARGET_SPEED = 0;   // 14 1D
+        public float PCM_KEY_ON_CYCLES_ERROR2 = 0;  // 14 1E
+        public float PCM_KEY_ON_CYCLES_ERROR3 = 0;  // 14 1F
+        public float PCM_CRUISE_STATUS = 0;         // 14 20
+        //
+        public float PCM_TARGET_BATT_CHARGE = 0;    // 14 24
+        public float PCM_WASTEGATE_DUTY_CYCLE = 0;  // 14 26
+        public float PCM_THEFT_ALARM_STATUS = 0;    // 14 27
+        //
+        public float PCM_MAP_VOLTS2 = 0;            // 14 40
+        public float PCM_VEHICLE_SPEED = 0;         // 14 41
+        public float PCM_O2_VOLTS2 = 0;             // 14 42
+        //
+        public float PCM_TOTAL_SPARK_RETARD = 0;    // 14 46
+        public float PCM_TOTAL_SPARK_ADVANCE = 0;   // 14 47
 
         // Class constructor
         public MainForm()
@@ -96,10 +141,12 @@ namespace ChryslerCCDSCIScanner_GUI
             Pr.PropertyChanged += new PropertyChangedEventHandler(PacketReceived);
             PCMTCMSelectorComboBox.MouseWheel += new MouseEventHandler(PCMTCMSelectorComboBox_MouseWheel);
 
-            // Create logfile names
+            // Assign logfile names
             DateTimeNow = DateTime.Now.ToString("yyyyMMdd_HHmmss");
             TextLogFilename = @"LOG/scannerlog_" + DateTimeNow + ".txt";
             BinaryLogFilename = @"LOG/scannerlog_" + DateTimeNow + ".bin";
+            CCDLogFilename = @"LOG/ccdlog_" + DateTimeNow + ".txt";
+            SCILogFilename = @"LOG/scilog_" + DateTimeNow + ".txt";
 
             // Welcome
             WriteCommandHistory("Welcome!");
@@ -331,7 +378,7 @@ namespace ChryslerCCDSCIScanner_GUI
             // Build the new text separately to avoid heavy textbox flickering
             StringBuilder newstuff = new StringBuilder();
 
-            // Add the bytes of the message
+            // Add the bytes of the message and convert the numbers into text
             foreach (byte bytes in message)
             {
                 newstuff.Append(Convert.ToString(bytes, 16).PadLeft(2, '0').PadRight(3, ' ').ToUpper());
@@ -346,6 +393,18 @@ namespace ChryslerCCDSCIScanner_GUI
             // Scroll down to the end of the textbox
             textBox.SelectionStart = textBox.TextLength;
             textBox.ScrollToCaret();
+
+            // Save text to log files
+            if (textBox.Name == "CCDBusMsgTextBox")
+            {
+                if (!Directory.Exists("LOG")) Directory.CreateDirectory("LOG");
+                File.AppendAllText(CCDLogFilename, newstuff.ToString());
+            }
+            else if (textBox.Name == "SCIBusMsgTextBox")
+            {
+                if (!Directory.Exists("LOG")) Directory.CreateDirectory("LOG");
+                File.AppendAllText(SCILogFilename, newstuff.ToString());
+            }
 
             // Discard the temporary string builder
             newstuff = null;
@@ -752,6 +811,176 @@ namespace ChryslerCCDSCIScanner_GUI
                                             }
                                         }
 
+                                        // Diagnostic data
+                                        if ((PacketRx.payload[0] == 0x14) && (PacketRx.payload.Length > 1))
+                                        {
+                                            switch (PacketRx.payload[1])
+                                            {
+                                                case 0x01:
+                                                    {
+                                                        if (PacketRx.payload.Length > 2)
+                                                        {
+                                                            PCM_AMB_TEMP_VOLTS = (float)Math.Round(PacketRx.payload[2] * (5F / 255F), 4);
+                                                        }
+                                                        else
+                                                        {
+                                                            PCM_AMB_TEMP_VOLTS = 0;
+                                                        }
+
+                                                        break;
+                                                    }
+                                                case 0x02:
+                                                    {
+                                                        if (PacketRx.payload.Length > 2)
+                                                        {
+                                                            PCM_O2_VOLTS1 = (float)Math.Round(PacketRx.payload[2] * (5F / 255F), 4);
+                                                        }
+                                                        else
+                                                        {
+                                                            PCM_O2_VOLTS1 = 0;
+                                                        }
+                                                        break;
+                                                    }
+                                                case 0x05:
+                                                    {
+                                                        if (PacketRx.payload.Length > 2)
+                                                        {
+                                                            PCM_COOLANT_TEMP = PacketRx.payload[2] - 128; // °C
+                                                        }
+                                                        else
+                                                        {
+                                                            PCM_COOLANT_TEMP = 0;
+                                                        }
+                                                        break;
+                                                    }
+                                                case 0x06:
+                                                    {
+                                                        if (PacketRx.payload.Length > 2)
+                                                        {
+                                                            PCM_COOLANT_TEMP_VOLTS = (float)Math.Round(PacketRx.payload[2] * (5F / 255F), 4);
+                                                        }
+                                                        else
+                                                        {
+                                                            PCM_COOLANT_TEMP_VOLTS = 0;
+                                                        }
+                                                        break;
+                                                    }
+                                                case 0x07:
+                                                    {
+                                                        if (PacketRx.payload.Length > 2)
+                                                        {
+                                                            PCM_TPS_VOLTS = (float)Math.Round(PacketRx.payload[2] * (5F / 255F), 4);
+                                                        }
+                                                        else
+                                                        {
+                                                            PCM_TPS_VOLTS = 0;
+                                                        }
+                                                        break;
+                                                    }
+                                                case 0x08:
+                                                    {
+                                                        if (PacketRx.payload.Length > 2)
+                                                        {
+                                                            PCM_TPS_MIN_VOLTS = (float)Math.Round(PacketRx.payload[2] * (5F / 255F), 4);
+                                                        }
+                                                        else
+                                                        {
+                                                            PCM_TPS_MIN_VOLTS = 0;
+                                                        }
+                                                        break;
+                                                    }
+                                                case 0x09:
+                                                    {
+                                                        if (PacketRx.payload.Length > 2)
+                                                        {
+                                                            PCM_KNOCK_VOLTS = (float)Math.Round(PacketRx.payload[2] * (5F / 255F), 4);
+                                                        }
+                                                        else
+                                                        {
+                                                            PCM_KNOCK_VOLTS = 0;
+                                                        }
+                                                        break;
+                                                    }
+                                                case 0x0A:
+                                                    {
+                                                        if (PacketRx.payload.Length > 2)
+                                                        {
+                                                            PCM_BATTERY_VOLTS = (float)Math.Round(PacketRx.payload[2] / 16F, 4);
+                                                        }
+                                                        else
+                                                        {
+                                                            PCM_BATTERY_VOLTS = 0;
+                                                        }
+                                                        break;
+                                                    }
+                                                case 0x0B:
+                                                    {
+                                                        if (PacketRx.payload.Length > 2)
+                                                        {
+                                                            PCM_MAP_VOLTS1 = (float)Math.Round(PacketRx.payload[2] * (5F / 255F), 4);
+                                                        }
+                                                        else
+                                                        {
+                                                            PCM_MAP_VOLTS1 = 0;
+                                                        }
+                                                        break;
+                                                    }
+                                                case 0x0C:
+                                                    {
+                                                        if (PacketRx.payload.Length > 2)
+                                                        {
+                                                            PCM_TARGET_IAC_POS = PacketRx.payload[2];
+                                                        }
+                                                        else
+                                                        {
+                                                            PCM_TARGET_IAC_POS = 0;
+                                                        }
+                                                        break;
+                                                    }
+
+
+                                                case 0x11:
+                                                    {
+                                                        if (PacketRx.payload.Length > 2)
+                                                        {
+                                                            PCM_RPM1 = PacketRx.payload[2] * 32;
+                                                        }
+                                                        else
+                                                        {
+                                                            PCM_RPM1 = 0;
+                                                        }
+                                                        break;
+                                                    }
+                                                case 0x40:
+                                                    {
+                                                        if (PacketRx.payload.Length > 2)
+                                                        {
+                                                            PCM_MAP_VOLTS2 = (float)Math.Round(PacketRx.payload[2] * (5F / 255F), 4);
+                                                        }
+                                                        else
+                                                        {
+                                                            PCM_MAP_VOLTS2 = 0;
+                                                        }
+                                                        break;
+                                                    }
+                                            }
+
+                                            StringBuilder sensor_data = new StringBuilder();
+                                            sensor_data.Append(" AMB TEMP VOLTS : " + Convert.ToString(PCM_AMB_TEMP_VOLTS) + " V" + Environment.NewLine);
+                                            sensor_data.Append("       O2 VOLTS : " + Convert.ToString(PCM_O2_VOLTS1) + " V" + Environment.NewLine);
+                                            sensor_data.Append("   COOLANT TEMP : " + Convert.ToString(PCM_COOLANT_TEMP) + " °C" + Environment.NewLine);
+                                            sensor_data.Append("CLNT TEMP VOLTS : " + Convert.ToString(PCM_COOLANT_TEMP_VOLTS) + " V" + Environment.NewLine);
+                                            sensor_data.Append("      TPS VOLTS : " + Convert.ToString(PCM_TPS_VOLTS) + " V" + Environment.NewLine);
+                                            sensor_data.Append("  TPS MIN VOLTS : " + Convert.ToString(PCM_TPS_MIN_VOLTS) + " V" + Environment.NewLine);
+                                            sensor_data.Append("    KNOCK VOLTS : " + Convert.ToString(PCM_KNOCK_VOLTS) + " V" + Environment.NewLine);
+                                            sensor_data.Append("  BATTERY VOLTS : " + Convert.ToString(PCM_BATTERY_VOLTS) + " V" + Environment.NewLine);
+                                            sensor_data.Append("   MAP VOLTS #1 : " + Convert.ToString(PCM_MAP_VOLTS1) + " V" + Environment.NewLine);
+                                            sensor_data.Append(" IAC TARGET POS : " + Convert.ToString(PCM_TARGET_IAC_POS) + Environment.NewLine);
+                                            sensor_data.Append("            RPM : " + Convert.ToString(PCM_RPM1) + Environment.NewLine);
+                                            sensor_data.Append("   MAP VOLTS #2 : " + Convert.ToString(PCM_MAP_VOLTS2) + " V" + Environment.NewLine);
+                                            SensorDataTextBox.Text = sensor_data.ToString();
+                                            sensor_data = null;
+                                        }
                                         break;
                                     }
                                 default:

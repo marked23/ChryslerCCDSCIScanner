@@ -170,7 +170,6 @@
             this.PacketPreviewTextBox.Font = new System.Drawing.Font("Courier New", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.PacketPreviewTextBox.Location = new System.Drawing.Point(75, 113);
             this.PacketPreviewTextBox.Name = "PacketPreviewTextBox";
-            this.PacketPreviewTextBox.ReadOnly = true;
             this.PacketPreviewTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.PacketPreviewTextBox.Size = new System.Drawing.Size(297, 21);
             this.PacketPreviewTextBox.TabIndex = 10;
@@ -260,7 +259,6 @@
             this.HintTextBox.Location = new System.Drawing.Point(75, 139);
             this.HintTextBox.Multiline = true;
             this.HintTextBox.Name = "HintTextBox";
-            this.HintTextBox.ReadOnly = true;
             this.HintTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.HintTextBox.Size = new System.Drawing.Size(297, 63);
             this.HintTextBox.TabIndex = 12;

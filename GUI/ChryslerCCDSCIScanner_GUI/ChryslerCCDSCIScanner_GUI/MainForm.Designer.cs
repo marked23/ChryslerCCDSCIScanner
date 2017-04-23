@@ -343,7 +343,7 @@
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Padding = new System.Windows.Forms.Padding(2, 2, 0, 2);
-            this.menuStrip1.Size = new System.Drawing.Size(1184, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(1224, 24);
             this.menuStrip1.TabIndex = 42;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -933,7 +933,7 @@
             this.SensorDataGroupbox.Controls.Add(this.SensorDataTextBox);
             this.SensorDataGroupbox.Location = new System.Drawing.Point(835, 27);
             this.SensorDataGroupbox.Name = "SensorDataGroupbox";
-            this.SensorDataGroupbox.Size = new System.Drawing.Size(341, 663);
+            this.SensorDataGroupbox.Size = new System.Drawing.Size(377, 663);
             this.SensorDataGroupbox.TabIndex = 52;
             this.SensorDataGroupbox.TabStop = false;
             this.SensorDataGroupbox.Text = "Sensor data";
@@ -946,7 +946,7 @@
             this.SensorDataTextBox.Multiline = true;
             this.SensorDataTextBox.Name = "SensorDataTextBox";
             this.SensorDataTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.SensorDataTextBox.Size = new System.Drawing.Size(329, 641);
+            this.SensorDataTextBox.Size = new System.Drawing.Size(365, 641);
             this.SensorDataTextBox.TabIndex = 73;
             // 
             // DTCListGroupbox
@@ -974,7 +974,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1184, 692);
+            this.ClientSize = new System.Drawing.Size(1224, 692);
             this.Controls.Add(this.DTCListGroupbox);
             this.Controls.Add(this.SensorDataGroupbox);
             this.Controls.Add(this.ReadAllDTCGroupbox);

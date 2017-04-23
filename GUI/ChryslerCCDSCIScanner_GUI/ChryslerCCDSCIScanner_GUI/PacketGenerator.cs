@@ -53,12 +53,12 @@ namespace ChryslerCCDSCIScanner_GUI
         {
             if (SendCheckBox.Checked)
             {
-                originalForm.WritePacketTextBox("TX", "CUSTOM PACKET", PacketPreview);
-                originalForm.WriteSerialData(PacketPreview);
+                originalForm.WritePacketTextBox("TX", "CUSTOM PACKET", Util.GetBytes(PacketPreviewTextBox.Text));
+                originalForm.WriteSerialData(Util.GetBytes(PacketPreviewTextBox.Text));
             }
             else
             {
-                originalForm.WriteSendPacketTextBox(PacketPreview);
+                originalForm.WriteSendPacketTextBox(Util.GetBytes(PacketPreviewTextBox.Text));
             }
         }
 
@@ -195,7 +195,23 @@ namespace ChryslerCCDSCIScanner_GUI
                         BrowseButton.Enabled = true;
                         break;
                     }
-                default:
+                    // 0x05 is not necessary
+                case 0x06:
+                    {
+                        PayloadTextbox.Enabled = true;
+                        break;
+                    }
+                case 0x07:
+                    {
+                        PayloadTextbox.Enabled = true;
+                        break;
+                    }
+                case 0x08:
+                    {
+                        PayloadTextbox.Enabled = false;
+                        break;
+                    }
+               default:
                     {
                         break;
                     }
@@ -464,6 +480,27 @@ namespace ChryslerCCDSCIScanner_GUI
                                     break;
                                 }
                         }
+                        break;
+                    }
+                case 0x06:
+                    {
+                        //PayloadTextbox.Text = "";
+                        PayloadTextbox.Enabled = true;
+                        BrowseButton.Enabled = true;
+                        break;
+                    }
+                case 0x07:
+                    {
+                        //PayloadTextbox.Text = "";
+                        PayloadTextbox.Enabled = true;
+                        BrowseButton.Enabled = true;
+                        break;
+                    }
+                case 0x08:
+                    {
+                        PayloadTextbox.Text = "";
+                        PayloadTextbox.Enabled = false;
+                        BrowseButton.Enabled = false;
                         break;
                     }
                 default:
