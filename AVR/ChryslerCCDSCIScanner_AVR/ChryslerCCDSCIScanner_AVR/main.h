@@ -56,6 +56,8 @@ extern void check_commands(void);
 extern uint16_t free_ram(void);
 extern void select_sci_bus_target(uint8_t bus);
 extern void reset_diagnostic_comms(void);
-
+extern void select_sci_pcm(void);
+extern void select_sci_tcm(void);
+extern void select_sci_non(void);
 
 #endif /* MAIN_H_ */

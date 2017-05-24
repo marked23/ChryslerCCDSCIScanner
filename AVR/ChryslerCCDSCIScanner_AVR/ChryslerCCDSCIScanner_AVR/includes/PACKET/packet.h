@@ -81,6 +81,9 @@
 #define button_pressed_down				0xFE
 #define button_released					0xFF
 
+// DC command 0x0E (debug)
+#define high_speed_sci_bus_dump			0x01
+
 // DC command 0x0F (OK/ERROR)
 #define ok										0x00
 #define error_sync_invalid_value				0x01

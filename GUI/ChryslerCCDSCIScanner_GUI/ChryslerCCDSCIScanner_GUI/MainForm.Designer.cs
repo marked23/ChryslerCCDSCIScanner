@@ -82,8 +82,12 @@
             this.command_history_groupbox = new System.Windows.Forms.GroupBox();
             this.CommandHistoryTextBox = new System.Windows.Forms.TextBox();
             this.MiscGroupbox = new System.Windows.Forms.GroupBox();
+            this.CounterLabel = new System.Windows.Forms.Label();
             this.PacketCountTxLabel = new System.Windows.Forms.Label();
             this.RebootScannerButton = new System.Windows.Forms.Button();
+            this.SCIHSModeScanButton = new System.Windows.Forms.Button();
+            this.SCIHSModeLabel = new System.Windows.Forms.Label();
+            this.SCIHSModeComboBox = new System.Windows.Forms.ComboBox();
             this.ControlPanelGroupbox = new System.Windows.Forms.GroupBox();
             this.ExitButton = new System.Windows.Forms.Button();
             this.DisconnectButton = new System.Windows.Forms.Button();
@@ -101,12 +105,16 @@
             this.ScanModulesButton = new System.Windows.Forms.Button();
             this.ModuleListComboBox = new System.Windows.Forms.ComboBox();
             this.ReadDTCByModuleButton = new System.Windows.Forms.Button();
-            this.ReadAllDTCButton = new System.Windows.Forms.Button();
-            this.ReadAllDTCGroupbox = new System.Windows.Forms.GroupBox();
             this.SensorDataGroupbox = new System.Windows.Forms.GroupBox();
-            this.SensorDataTextBox = new System.Windows.Forms.TextBox();
+            this.SensorDataTextbox = new System.Windows.Forms.TextBox();
             this.DTCListGroupbox = new System.Windows.Forms.GroupBox();
-            this.DTCListTextBox = new System.Windows.Forms.TextBox();
+            this.DTCListTextbox = new System.Windows.Forms.TextBox();
+            this.DRBDBExplorerButton = new System.Windows.Forms.Button();
+            this.DRB3ToolsGroupbox = new System.Windows.Forms.GroupBox();
+            this.PCMRAMGroupbox = new System.Windows.Forms.GroupBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.RepeatTextbox = new System.Windows.Forms.TextBox();
+            this.PCMRAMRepeatCheckbox = new System.Windows.Forms.CheckBox();
             this.PacketLogGroupbox.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.CCDBusMessagesGroupbox.SuspendLayout();
@@ -117,9 +125,10 @@
             this.EEPROMGroupbox.SuspendLayout();
             this.RealTimeDiagnosticsGroupbox.SuspendLayout();
             this.ReadDTCGroupbox.SuspendLayout();
-            this.ReadAllDTCGroupbox.SuspendLayout();
             this.SensorDataGroupbox.SuspendLayout();
             this.DTCListGroupbox.SuspendLayout();
+            this.DRB3ToolsGroupbox.SuspendLayout();
+            this.PCMRAMGroupbox.SuspendLayout();
             this.SuspendLayout();
             // 
             // ConnectButton
@@ -692,6 +701,7 @@
             // 
             // MiscGroupbox
             // 
+            this.MiscGroupbox.Controls.Add(this.CounterLabel);
             this.MiscGroupbox.Controls.Add(this.PacketCountTxLabel);
             this.MiscGroupbox.Controls.Add(this.RebootScannerButton);
             this.MiscGroupbox.Controls.Add(this.PacketCountRxLabel);
@@ -705,6 +715,15 @@
             this.MiscGroupbox.TabIndex = 46;
             this.MiscGroupbox.TabStop = false;
             this.MiscGroupbox.Text = "Misc.";
+            // 
+            // CounterLabel
+            // 
+            this.CounterLabel.AutoSize = true;
+            this.CounterLabel.Location = new System.Drawing.Point(181, 117);
+            this.CounterLabel.Name = "CounterLabel";
+            this.CounterLabel.Size = new System.Drawing.Size(13, 13);
+            this.CounterLabel.TabIndex = 25;
+            this.CounterLabel.Text = "0";
             // 
             // PacketCountTxLabel
             // 
@@ -724,6 +743,52 @@
             this.RebootScannerButton.Text = "Reboot scanner";
             this.RebootScannerButton.UseVisualStyleBackColor = true;
             this.RebootScannerButton.Click += new System.EventHandler(this.RebootScannerButton_Click);
+            // 
+            // SCIHSModeScanButton
+            // 
+            this.SCIHSModeScanButton.Location = new System.Drawing.Point(5, 57);
+            this.SCIHSModeScanButton.Name = "SCIHSModeScanButton";
+            this.SCIHSModeScanButton.Size = new System.Drawing.Size(63, 23);
+            this.SCIHSModeScanButton.TabIndex = 76;
+            this.SCIHSModeScanButton.Text = "Scan";
+            this.SCIHSModeScanButton.UseVisualStyleBackColor = true;
+            this.SCIHSModeScanButton.Click += new System.EventHandler(this.SCIHSModeScanButton_Click);
+            // 
+            // SCIHSModeLabel
+            // 
+            this.SCIHSModeLabel.AutoSize = true;
+            this.SCIHSModeLabel.Location = new System.Drawing.Point(3, 16);
+            this.SCIHSModeLabel.Name = "SCIHSModeLabel";
+            this.SCIHSModeLabel.Size = new System.Drawing.Size(37, 13);
+            this.SCIHSModeLabel.TabIndex = 75;
+            this.SCIHSModeLabel.Text = "Mode:";
+            // 
+            // SCIHSModeComboBox
+            // 
+            this.SCIHSModeComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.SCIHSModeComboBox.FormattingEnabled = true;
+            this.SCIHSModeComboBox.Items.AddRange(new object[] {
+            "F0",
+            "F1",
+            "F2",
+            "F3",
+            "F4",
+            "F5",
+            "F6",
+            "F7",
+            "F8",
+            "F9",
+            "FA",
+            "FB",
+            "FC",
+            "FD",
+            "FE",
+            "FF"});
+            this.SCIHSModeComboBox.Location = new System.Drawing.Point(6, 30);
+            this.SCIHSModeComboBox.Name = "SCIHSModeComboBox";
+            this.SCIHSModeComboBox.Size = new System.Drawing.Size(61, 21);
+            this.SCIHSModeComboBox.TabIndex = 74;
+            this.SCIHSModeComboBox.SelectionChangeCommitted += new System.EventHandler(this.SCIHSModeComboBox_SelectionChangeCommitted);
             // 
             // ControlPanelGroupbox
             // 
@@ -849,20 +914,20 @@
             // RealTimeDiagnosticsGroupbox
             // 
             this.RealTimeDiagnosticsGroupbox.Controls.Add(this.real_time_diagnostics_button);
-            this.RealTimeDiagnosticsGroupbox.Location = new System.Drawing.Point(383, 464);
+            this.RealTimeDiagnosticsGroupbox.Location = new System.Drawing.Point(383, 535);
             this.RealTimeDiagnosticsGroupbox.Name = "RealTimeDiagnosticsGroupbox";
-            this.RealTimeDiagnosticsGroupbox.Size = new System.Drawing.Size(140, 65);
+            this.RealTimeDiagnosticsGroupbox.Size = new System.Drawing.Size(141, 65);
             this.RealTimeDiagnosticsGroupbox.TabIndex = 50;
             this.RealTimeDiagnosticsGroupbox.TabStop = false;
             this.RealTimeDiagnosticsGroupbox.Text = "Real Time Diagnostics";
             // 
             // real_time_diagnostics_button
             // 
-            this.real_time_diagnostics_button.Location = new System.Drawing.Point(6, 26);
+            this.real_time_diagnostics_button.Location = new System.Drawing.Point(6, 19);
             this.real_time_diagnostics_button.Name = "real_time_diagnostics_button";
-            this.real_time_diagnostics_button.Size = new System.Drawing.Size(128, 30);
+            this.real_time_diagnostics_button.Size = new System.Drawing.Size(126, 40);
             this.real_time_diagnostics_button.TabIndex = 51;
-            this.real_time_diagnostics_button.Text = "Open";
+            this.real_time_diagnostics_button.Text = "Open in new window";
             this.real_time_diagnostics_button.UseVisualStyleBackColor = true;
             this.real_time_diagnostics_button.Click += new System.EventHandler(this.RealTimeDiagnosticsButton_Click);
             // 
@@ -873,16 +938,16 @@
             this.ReadDTCGroupbox.Controls.Add(this.ReadDTCByModuleButton);
             this.ReadDTCGroupbox.Location = new System.Drawing.Point(383, 606);
             this.ReadDTCGroupbox.Name = "ReadDTCGroupbox";
-            this.ReadDTCGroupbox.Size = new System.Drawing.Size(140, 82);
+            this.ReadDTCGroupbox.Size = new System.Drawing.Size(220, 82);
             this.ReadDTCGroupbox.TabIndex = 51;
             this.ReadDTCGroupbox.TabStop = false;
             this.ReadDTCGroupbox.Text = "Read DTC by modules";
             // 
             // ScanModulesButton
             // 
-            this.ScanModulesButton.Location = new System.Drawing.Point(85, 46);
+            this.ScanModulesButton.Location = new System.Drawing.Point(112, 46);
             this.ScanModulesButton.Name = "ScanModulesButton";
-            this.ScanModulesButton.Size = new System.Drawing.Size(49, 30);
+            this.ScanModulesButton.Size = new System.Drawing.Size(101, 23);
             this.ScanModulesButton.TabIndex = 54;
             this.ScanModulesButton.Text = "Scan";
             this.ScanModulesButton.UseVisualStyleBackColor = true;
@@ -896,7 +961,7 @@
             "Scanning needed"});
             this.ModuleListComboBox.Location = new System.Drawing.Point(6, 18);
             this.ModuleListComboBox.Name = "ModuleListComboBox";
-            this.ModuleListComboBox.Size = new System.Drawing.Size(128, 21);
+            this.ModuleListComboBox.Size = new System.Drawing.Size(207, 21);
             this.ModuleListComboBox.TabIndex = 53;
             // 
             // ReadDTCByModuleButton
@@ -904,80 +969,126 @@
             this.ReadDTCByModuleButton.Enabled = false;
             this.ReadDTCByModuleButton.Location = new System.Drawing.Point(6, 46);
             this.ReadDTCByModuleButton.Name = "ReadDTCByModuleButton";
-            this.ReadDTCByModuleButton.Size = new System.Drawing.Size(73, 30);
+            this.ReadDTCByModuleButton.Size = new System.Drawing.Size(101, 23);
             this.ReadDTCByModuleButton.TabIndex = 52;
             this.ReadDTCByModuleButton.Text = "Read DTC";
             this.ReadDTCByModuleButton.UseVisualStyleBackColor = true;
             // 
-            // ReadAllDTCButton
-            // 
-            this.ReadAllDTCButton.Location = new System.Drawing.Point(6, 26);
-            this.ReadAllDTCButton.Name = "ReadAllDTCButton";
-            this.ReadAllDTCButton.Size = new System.Drawing.Size(128, 30);
-            this.ReadAllDTCButton.TabIndex = 58;
-            this.ReadAllDTCButton.Text = "Read all DTC";
-            this.ReadAllDTCButton.UseVisualStyleBackColor = true;
-            // 
-            // ReadAllDTCGroupbox
-            // 
-            this.ReadAllDTCGroupbox.Controls.Add(this.ReadAllDTCButton);
-            this.ReadAllDTCGroupbox.Location = new System.Drawing.Point(383, 535);
-            this.ReadAllDTCGroupbox.Name = "ReadAllDTCGroupbox";
-            this.ReadAllDTCGroupbox.Size = new System.Drawing.Size(140, 65);
-            this.ReadAllDTCGroupbox.TabIndex = 56;
-            this.ReadAllDTCGroupbox.TabStop = false;
-            this.ReadAllDTCGroupbox.Text = "Read all DTC";
-            // 
             // SensorDataGroupbox
             // 
-            this.SensorDataGroupbox.Controls.Add(this.SensorDataTextBox);
+            this.SensorDataGroupbox.Controls.Add(this.SensorDataTextbox);
             this.SensorDataGroupbox.Location = new System.Drawing.Point(835, 27);
             this.SensorDataGroupbox.Name = "SensorDataGroupbox";
-            this.SensorDataGroupbox.Size = new System.Drawing.Size(377, 663);
+            this.SensorDataGroupbox.Size = new System.Drawing.Size(377, 661);
             this.SensorDataGroupbox.TabIndex = 52;
             this.SensorDataGroupbox.TabStop = false;
             this.SensorDataGroupbox.Text = "Sensor data";
             // 
-            // SensorDataTextBox
+            // SensorDataTextbox
             // 
-            this.SensorDataTextBox.Font = new System.Drawing.Font("Courier New", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.SensorDataTextBox.Location = new System.Drawing.Point(6, 16);
-            this.SensorDataTextBox.MaxLength = 0;
-            this.SensorDataTextBox.Multiline = true;
-            this.SensorDataTextBox.Name = "SensorDataTextBox";
-            this.SensorDataTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.SensorDataTextBox.Size = new System.Drawing.Size(365, 641);
-            this.SensorDataTextBox.TabIndex = 73;
+            this.SensorDataTextbox.Font = new System.Drawing.Font("Courier New", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.SensorDataTextbox.Location = new System.Drawing.Point(3, 16);
+            this.SensorDataTextbox.MaxLength = 0;
+            this.SensorDataTextbox.Multiline = true;
+            this.SensorDataTextbox.Name = "SensorDataTextbox";
+            this.SensorDataTextbox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.SensorDataTextbox.Size = new System.Drawing.Size(371, 639);
+            this.SensorDataTextbox.TabIndex = 73;
             // 
             // DTCListGroupbox
             // 
-            this.DTCListGroupbox.Controls.Add(this.DTCListTextBox);
-            this.DTCListGroupbox.Location = new System.Drawing.Point(529, 464);
+            this.DTCListGroupbox.Controls.Add(this.DTCListTextbox);
+            this.DTCListGroupbox.Location = new System.Drawing.Point(609, 464);
             this.DTCListGroupbox.Name = "DTCListGroupbox";
-            this.DTCListGroupbox.Size = new System.Drawing.Size(300, 224);
+            this.DTCListGroupbox.Size = new System.Drawing.Size(220, 224);
             this.DTCListGroupbox.TabIndex = 52;
             this.DTCListGroupbox.TabStop = false;
             this.DTCListGroupbox.Text = "Diagnostic Trouble Code (DTC) list";
             // 
-            // DTCListTextBox
+            // DTCListTextbox
             // 
-            this.DTCListTextBox.Font = new System.Drawing.Font("Courier New", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.DTCListTextBox.Location = new System.Drawing.Point(3, 16);
-            this.DTCListTextBox.MaxLength = 0;
-            this.DTCListTextBox.Multiline = true;
-            this.DTCListTextBox.Name = "DTCListTextBox";
-            this.DTCListTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.DTCListTextBox.Size = new System.Drawing.Size(294, 202);
-            this.DTCListTextBox.TabIndex = 70;
+            this.DTCListTextbox.Font = new System.Drawing.Font("Courier New", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.DTCListTextbox.Location = new System.Drawing.Point(3, 16);
+            this.DTCListTextbox.MaxLength = 0;
+            this.DTCListTextbox.Multiline = true;
+            this.DTCListTextbox.Name = "DTCListTextbox";
+            this.DTCListTextbox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.DTCListTextbox.Size = new System.Drawing.Size(214, 202);
+            this.DTCListTextbox.TabIndex = 70;
+            // 
+            // DRBDBExplorerButton
+            // 
+            this.DRBDBExplorerButton.Location = new System.Drawing.Point(6, 19);
+            this.DRBDBExplorerButton.Name = "DRBDBExplorerButton";
+            this.DRBDBExplorerButton.Size = new System.Drawing.Size(126, 40);
+            this.DRBDBExplorerButton.TabIndex = 77;
+            this.DRBDBExplorerButton.Text = "DRB-III Database Explorer";
+            this.DRBDBExplorerButton.UseVisualStyleBackColor = true;
+            this.DRBDBExplorerButton.Click += new System.EventHandler(this.DRBDBExplorerButton_Click);
+            // 
+            // DRB3ToolsGroupbox
+            // 
+            this.DRB3ToolsGroupbox.Controls.Add(this.DRBDBExplorerButton);
+            this.DRB3ToolsGroupbox.Location = new System.Drawing.Point(383, 464);
+            this.DRB3ToolsGroupbox.Name = "DRB3ToolsGroupbox";
+            this.DRB3ToolsGroupbox.Size = new System.Drawing.Size(141, 65);
+            this.DRB3ToolsGroupbox.TabIndex = 52;
+            this.DRB3ToolsGroupbox.TabStop = false;
+            this.DRB3ToolsGroupbox.Text = "DRB-III Tools";
+            // 
+            // PCMRAMGroupbox
+            // 
+            this.PCMRAMGroupbox.Controls.Add(this.label1);
+            this.PCMRAMGroupbox.Controls.Add(this.RepeatTextbox);
+            this.PCMRAMGroupbox.Controls.Add(this.PCMRAMRepeatCheckbox);
+            this.PCMRAMGroupbox.Controls.Add(this.SCIHSModeLabel);
+            this.PCMRAMGroupbox.Controls.Add(this.SCIHSModeScanButton);
+            this.PCMRAMGroupbox.Controls.Add(this.SCIHSModeComboBox);
+            this.PCMRAMGroupbox.Location = new System.Drawing.Point(530, 464);
+            this.PCMRAMGroupbox.Name = "PCMRAMGroupbox";
+            this.PCMRAMGroupbox.Size = new System.Drawing.Size(73, 136);
+            this.PCMRAMGroupbox.TabIndex = 52;
+            this.PCMRAMGroupbox.TabStop = false;
+            this.PCMRAMGroupbox.Text = "PCM RAM";
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(54, 109);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(12, 13);
+            this.label1.TabIndex = 25;
+            this.label1.Text = "s";
+            // 
+            // RepeatTextbox
+            // 
+            this.RepeatTextbox.Enabled = false;
+            this.RepeatTextbox.Location = new System.Drawing.Point(5, 106);
+            this.RepeatTextbox.Name = "RepeatTextbox";
+            this.RepeatTextbox.Size = new System.Drawing.Size(46, 20);
+            this.RepeatTextbox.TabIndex = 78;
+            this.RepeatTextbox.Text = "0,1";
+            // 
+            // PCMRAMRepeatCheckbox
+            // 
+            this.PCMRAMRepeatCheckbox.AutoSize = true;
+            this.PCMRAMRepeatCheckbox.Location = new System.Drawing.Point(6, 86);
+            this.PCMRAMRepeatCheckbox.Name = "PCMRAMRepeatCheckbox";
+            this.PCMRAMRepeatCheckbox.Size = new System.Drawing.Size(61, 17);
+            this.PCMRAMRepeatCheckbox.TabIndex = 77;
+            this.PCMRAMRepeatCheckbox.Text = "Repeat";
+            this.PCMRAMRepeatCheckbox.UseVisualStyleBackColor = true;
+            this.PCMRAMRepeatCheckbox.CheckedChanged += new System.EventHandler(this.PCMRAMRepeatCheckbox_CheckedChanged);
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1224, 692);
+            this.Controls.Add(this.PCMRAMGroupbox);
+            this.Controls.Add(this.DRB3ToolsGroupbox);
             this.Controls.Add(this.DTCListGroupbox);
             this.Controls.Add(this.SensorDataGroupbox);
-            this.Controls.Add(this.ReadAllDTCGroupbox);
             this.Controls.Add(this.ReadDTCGroupbox);
             this.Controls.Add(this.RealTimeDiagnosticsGroupbox);
             this.Controls.Add(this.EEPROMGroupbox);
@@ -995,6 +1106,7 @@
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Chrysler CCD/SCI Scanner GUI";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.PacketLogGroupbox.ResumeLayout(false);
             this.PacketLogGroupbox.PerformLayout();
             this.menuStrip1.ResumeLayout(false);
@@ -1012,11 +1124,13 @@
             this.EEPROMGroupbox.PerformLayout();
             this.RealTimeDiagnosticsGroupbox.ResumeLayout(false);
             this.ReadDTCGroupbox.ResumeLayout(false);
-            this.ReadAllDTCGroupbox.ResumeLayout(false);
             this.SensorDataGroupbox.ResumeLayout(false);
             this.SensorDataGroupbox.PerformLayout();
             this.DTCListGroupbox.ResumeLayout(false);
             this.DTCListGroupbox.PerformLayout();
+            this.DRB3ToolsGroupbox.ResumeLayout(false);
+            this.PCMRAMGroupbox.ResumeLayout(false);
+            this.PCMRAMGroupbox.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1055,11 +1169,9 @@
         private System.Windows.Forms.Button CCDBusSendMsgButton;
         private System.Windows.Forms.GroupBox EEPROMGroupbox;
         private System.Windows.Forms.Button erase_inteeprom_button;
-        private System.Windows.Forms.Button save_inteeprom_button;
         private System.Windows.Forms.Label label16;
         private System.Windows.Forms.Button write_inteeprom_button;
         private System.Windows.Forms.Button write_exteeprom_button;
-        private System.Windows.Forms.Button save_exteeprom_button;
         private System.Windows.Forms.Label label17;
         private System.Windows.Forms.GroupBox RealTimeDiagnosticsGroupbox;
         private System.Windows.Forms.Button real_time_diagnostics_button;
@@ -1072,7 +1184,6 @@
         private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem1;
         private System.Windows.Forms.Label RXLabel;
         private System.Windows.Forms.Label TXLabel;
-        private System.Windows.Forms.GroupBox ReadAllDTCGroupbox;
         private System.Windows.Forms.GroupBox SensorDataGroupbox;
         private System.Windows.Forms.Button RebootScannerButton;
         private System.Windows.Forms.TextBox PacketTextBox;
@@ -1091,17 +1202,28 @@
         private System.Windows.Forms.ToolStripMenuItem packetGeneratorToolStripMenuItem;
         private System.Windows.Forms.TextBox CCDBusMsgTextBox;
         private System.Windows.Forms.TextBox SCIBusMsgTextBox;
-        private System.Windows.Forms.TextBox SensorDataTextBox;
+        private System.Windows.Forms.TextBox SensorDataTextbox;
         private System.Windows.Forms.GroupBox DTCListGroupbox;
-        private System.Windows.Forms.TextBox DTCListTextBox;
+        private System.Windows.Forms.TextBox DTCListTextbox;
         private System.Windows.Forms.ToolStripMenuItem superCardReaderToolStripMenuItem;
-        private System.Windows.Forms.Button ReadAllDTCButton;
         private System.Windows.Forms.ComboBox ModuleListComboBox;
         private System.Windows.Forms.Button ScanModulesButton;
         private System.Windows.Forms.ComboBox PCMTCMSelectorComboBox;
         private System.Windows.Forms.Label SCIBusSpeedLabel;
         private System.Windows.Forms.Label CCDBusSpeedLabel;
         private System.Windows.Forms.Button SCIBusHSLSButton;
+        private System.Windows.Forms.ComboBox SCIHSModeComboBox;
+        private System.Windows.Forms.Button SCIHSModeScanButton;
+        private System.Windows.Forms.Label SCIHSModeLabel;
+        private System.Windows.Forms.Button DRBDBExplorerButton;
+        private System.Windows.Forms.GroupBox DRB3ToolsGroupbox;
+        private System.Windows.Forms.GroupBox PCMRAMGroupbox;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.TextBox RepeatTextbox;
+        private System.Windows.Forms.CheckBox PCMRAMRepeatCheckbox;
+        private System.Windows.Forms.Button save_exteeprom_button;
+        private System.Windows.Forms.Button save_inteeprom_button;
+        private System.Windows.Forms.Label CounterLabel;
     }
 }
 

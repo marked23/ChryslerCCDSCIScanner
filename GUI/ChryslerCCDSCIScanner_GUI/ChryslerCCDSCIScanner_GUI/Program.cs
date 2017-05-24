@@ -24,7 +24,7 @@ namespace ChryslerCCDSCIScanner_GUI
                 }
                 else
                 {
-                    MessageBox.Show("An application instance is already running");
+                    MessageBox.Show("An application instance is already running!", "Error", MessageBoxButtons.OK);
                 }
             }
         }

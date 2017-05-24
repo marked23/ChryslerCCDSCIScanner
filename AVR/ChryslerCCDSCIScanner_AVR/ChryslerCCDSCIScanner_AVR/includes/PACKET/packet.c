@@ -3,6 +3,7 @@
 #include <avr/eeprom.h>
 #include <avr/pgmspace.h>
 #include "packet.h"
+#include "uart.h"
 #include "main.h"
 #include "millis.h"
 

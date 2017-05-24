@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ChryslerCCDSCIScanner_GUI</RootNamespace>
     <AssemblyName>ChryslerCCDSCIScanner_GUI</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <NuGetPackageImportStamp>
@@ -50,6 +50,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>Resources\chrysler_icon_64x64.ico</ApplicationIcon>
@@ -61,6 +62,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Management" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -78,6 +80,37 @@
     <Compile Include="AboutForm.Designer.cs">
       <DependentUpon>AboutForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="DRBDBExplorer.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DRBDBExplorer.Designer.cs">
+      <DependentUpon>DRBDBExplorer.cs</DependentUpon>
+    </Compile>
+    <Compile Include="DRBDBReader\DB\Converters\BinaryStateConverter.cs" />
+    <Compile Include="DRBDBReader\DB\Converters\Converter.cs" />
+    <Compile Include="DRBDBReader\DB\Converters\NumericConverter.cs" />
+    <Compile Include="DRBDBReader\DB\Converters\Operator.cs" />
+    <Compile Include="DRBDBReader\DB\Converters\StateConverter.cs" />
+    <Compile Include="DRBDBReader\DB\Converters\UnknownConverter.cs" />
+    <Compile Include="DRBDBReader\DB\Database.cs" />
+    <Compile Include="DRBDBReader\DB\Records\BDSRecord.cs" />
+    <Compile Include="DRBDBReader\DB\Records\DADRecord.cs" />
+    <Compile Include="DRBDBReader\DB\Records\DESRecord.cs" />
+    <Compile Include="DRBDBReader\DB\Records\MenuRecord.cs" />
+    <Compile Include="DRBDBReader\DB\Records\ModuleDataElemRecord.cs" />
+    <Compile Include="DRBDBReader\DB\Records\ModuleRecord.cs" />
+    <Compile Include="DRBDBReader\DB\Records\NCRecord.cs" />
+    <Compile Include="DRBDBReader\DB\Records\NDSRecord.cs" />
+    <Compile Include="DRBDBReader\DB\Records\Record.cs" />
+    <Compile Include="DRBDBReader\DB\Records\RecordUnknownWithString.cs" />
+    <Compile Include="DRBDBReader\DB\Records\SCRecord.cs" />
+    <Compile Include="DRBDBReader\DB\Records\SDSRecord.cs" />
+    <Compile Include="DRBDBReader\DB\Records\ServiceCatRecord.cs" />
+    <Compile Include="DRBDBReader\DB\Records\StateEntryRecord.cs" />
+    <Compile Include="DRBDBReader\DB\Records\StringRecord.cs" />
+    <Compile Include="DRBDBReader\DB\Records\TXRecord.cs" />
+    <Compile Include="DRBDBReader\DB\SimpleBinaryReader.cs" />
+    <Compile Include="DRBDBReader\DB\Table.cs" />
     <Compile Include="PacketManager.cs" />
     <Compile Include="DiagnosticsForm.cs">
       <SubType>Form</SubType>
@@ -100,7 +133,45 @@
     <Compile Include="PacketReceptor.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SimpleBinaryReader.cs" />
+    <Compile Include="RJCP\Datastructures\CircularBuffer.cs" />
+    <Compile Include="RJCP\Datastructures\TimerExpiry.cs" />
+    <Compile Include="RJCP\IO\Ports\GlobalSuppressions.cs" />
+    <Compile Include="RJCP\IO\Ports\HandShake.cs" />
+    <Compile Include="RJCP\IO\Ports\LocalAsyncResult.cs" />
+    <Compile Include="RJCP\IO\Ports\Native\INativeSerial.cs" />
+    <Compile Include="RJCP\IO\Ports\Native\ISerialBufferSerialData.cs" />
+    <Compile Include="RJCP\IO\Ports\Native\ISerialBufferStreamData.cs" />
+    <Compile Include="RJCP\IO\Ports\Native\ReadToCache.cs" />
+    <Compile Include="RJCP\IO\Ports\Native\SerialBuffer.cs" />
+    <Compile Include="RJCP\IO\Ports\Native\UnixNativeSerial.cs" />
+    <Compile Include="RJCP\IO\Ports\Native\Unix\INativeSerialDll.cs" />
+    <Compile Include="RJCP\IO\Ports\Native\Unix\SerialReadWriteEvent.cs" />
+    <Compile Include="RJCP\IO\Ports\Native\Unix\SerialUnix.cs" />
+    <Compile Include="RJCP\IO\Ports\Native\Unix\WaitForModemEvent.cs" />
+    <Compile Include="RJCP\IO\Ports\Native\Windows\CommErrorEventArgs.cs" />
+    <Compile Include="RJCP\IO\Ports\Native\Windows\CommEventArgs.cs" />
+    <Compile Include="RJCP\IO\Ports\Native\Windows\CommModemStatus.cs" />
+    <Compile Include="RJCP\IO\Ports\Native\Windows\CommOverlappedIo.cs" />
+    <Compile Include="RJCP\IO\Ports\Native\Windows\CommProperties.cs" />
+    <Compile Include="RJCP\IO\Ports\Native\Windows\CommState.cs" />
+    <Compile Include="RJCP\IO\Ports\Native\Windows\DtrControl.cs" />
+    <Compile Include="RJCP\IO\Ports\Native\Windows\NativeMethods.cs" />
+    <Compile Include="RJCP\IO\Ports\Native\Windows\RtsControl.cs" />
+    <Compile Include="RJCP\IO\Ports\Native\Windows\SafeNativeMethods.cs" />
+    <Compile Include="RJCP\IO\Ports\Native\Windows\UnsafeNativeMethods.cs" />
+    <Compile Include="RJCP\IO\Ports\Native\Windows\WinError.cs" />
+    <Compile Include="RJCP\IO\Ports\Native\WinNativeSerial.cs" />
+    <Compile Include="RJCP\IO\Ports\Parity.cs" />
+    <Compile Include="RJCP\IO\Ports\PortDescription.cs" />
+    <Compile Include="RJCP\IO\Ports\SerialData.cs" />
+    <Compile Include="RJCP\IO\Ports\SerialDataEventArgs.cs" />
+    <Compile Include="RJCP\IO\Ports\SerialError.cs" />
+    <Compile Include="RJCP\IO\Ports\SerialErrorReceivedEventArgs.cs" />
+    <Compile Include="RJCP\IO\Ports\SerialPinChange.cs" />
+    <Compile Include="RJCP\IO\Ports\SerialPinChangedEventArgs.cs" />
+    <Compile Include="RJCP\IO\Ports\SerialPortStream.cs" />
+    <Compile Include="RJCP\IO\Ports\SerialTrace.cs" />
+    <Compile Include="RJCP\IO\Ports\StopBits.cs" />
     <Compile Include="Util.cs" />
     <EmbeddedResource Include="AboutForm.resx">
       <DependentUpon>AboutForm.cs</DependentUpon>
@@ -108,11 +179,8 @@
     <EmbeddedResource Include="DiagnosticsForm.resx">
       <DependentUpon>DiagnosticsForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="MainForm.en-US.resx">
-      <DependentUpon>MainForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="MainForm.hu-HU.resx">
-      <DependentUpon>MainForm.cs</DependentUpon>
+    <EmbeddedResource Include="DRBDBExplorer.resx">
+      <DependentUpon>DRBDBExplorer.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
@@ -166,12 +234,7 @@
   <ItemGroup>
     <None Include="Resources\chrysler_icon_256x256.ico" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\SerialPortStream-2.x\code\SerialPortStream.csproj">
-      <Project>{cea01148-cd2e-4f29-b455-b557b9b4c6d4}</Project>
-      <Name>SerialPortStream</Name>
-    </ProjectReference>
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

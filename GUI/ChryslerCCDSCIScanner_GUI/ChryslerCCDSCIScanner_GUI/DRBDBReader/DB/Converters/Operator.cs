@@ -1,6 +1,6 @@
 ﻿/*
- * ChryslerCCDSCIScanner_GUI
- * Copyright (C) 2016-2017, László Dániel
+ * DRBDBReader
+ * Copyright (C) 2016-2017, Kyle Repinski
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,24 +15,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-
-namespace ChryslerCCDSCIScanner_GUI
+namespace DRBDBReader.DB.Converters
 {
-    public partial class DiagnosticsForm : Form
-    {
-        public DiagnosticsForm()
-        {
-            InitializeComponent();
-            Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
-        }
-    }
+	public enum Operator : byte
+	{
+		EQUAL = 0x3D,
+		NOT_EQUAL = 0x21,
+		GREATER = 0x3E,
+		LESS = 0x3C,
+		MASK_ZERO = 0x30,
+		MASK_NOT_ZERO = 0x39
+	}
 }

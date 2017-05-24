@@ -1,6 +1,6 @@
 ﻿/*
- * ChryslerCCDSCIScanner_GUI
- * Copyright (C) 2016-2017, László Dániel
+ * DRBDBReader
+ * Copyright (C) 2017, Kyle Repinski
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,24 +15,24 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-
-namespace ChryslerCCDSCIScanner_GUI
+namespace DRBDBReader.DB.Records
 {
-    public partial class DiagnosticsForm : Form
-    {
-        public DiagnosticsForm()
-        {
-            InitializeComponent();
-            Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
-        }
-    }
+	public class SDSRecord : Record
+	{
+		private const byte FIELD_ID = 0;
+		private const byte FIELD_DEFAULT_STR_ID = 1;
+
+		public ushort id;
+
+		public ushort defaultStrId;
+		public string defaultString;
+
+		public SDSRecord( Table table, byte[] record ) : base( table, record )
+		{
+			this.id = (ushort)this.table.readField( this, FIELD_ID );
+
+			this.defaultStrId = (ushort)this.table.readField( this, FIELD_DEFAULT_STR_ID );
+			this.defaultString = ( this.defaultStrId != 0 ? this.table.db.getString( this.defaultStrId ) : "N/A" );
+		}
+	}
 }

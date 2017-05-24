@@ -1,12 +1,30 @@
+/*
+ * ChryslerCCDSCIScanner_AVR
+ * Copyright (C) 2016-2017, László Dániel
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 /******************************************************************************
 Project:  CHRYSLER CCD/SCI SCANNER
 Author:   László Dániel
 Email:    laszlodaniel@gmail.com
 Date:     2017-03-21
 Version:  V1.30
-Purpose:  receive and transmit messages from and to the legacy CCD/SCI-bus
+Purpose:  receive and transmit messages from and to Chrysler's legacy CCD/SCI-bus
 Software: Atmel Studio 7.0
-Hardware: ATmega2560 + ATmega8U2 + CDP68HC68S1E + CD4066 + MCP23017
+Hardware: CHRYSLER CCD/SCI SCANNER V1.30 PCB (ATmega2560 + ATmega8U2 + CDP68HC68S1E + CD4066 + MCP23017)
 License:  GNU General Public License
 
 Based on original program by Juha Niinikoski:
@@ -16,8 +34,7 @@ UART code is based on original library by Andy Gock:
 https://github.com/andygock/avr-uart
 
 They helped me a lot:
-Sergey Tsinin with BCM firmware reverse engineering and sharing general knowledge
-of diagnostic request messages.
+Sergey Tsinin with BCM firmware reverse engineering and sharing general knowledge of diagnostic request messages.
 Kyle Repinski with understanding the DRB-III's database file.
 Many others with little things.
 
@@ -37,7 +54,7 @@ with CCD- and/or SCI-bus with above pin configuration (typical years between 198
 The program uses the 2560's hardware UARTs to communicate with both buses:
 - UART0: CCD-bus communication,
 - UART1: SCI-bus communication (exclusive for PCM and TCM),
-- UART2: Packet-based communication between scanner and laptop,
+- UART2: Packet-based USB communication between scanner and laptop,
 - UART3: 1-wire communication with DS18B20 temperature sensor (independent from scanner).
 
 Note: this scanner cannot be used to re-flash the PCM and/or TCM,
@@ -109,7 +126,6 @@ EEPROM: 24LC512-I/P
    LCD: 128x64 pixels
 DRIVER: KS0107/KS0108
 
-
 */
 
 
@@ -130,14 +146,6 @@ MCP23017 mcp;
 // TODO: implement object oriented source in exteeprom.c/h
 _24LC512 eep;
 
-// Task variables in which every bit position has a different meaning
-//uint16_t volatile sci_bus_tasks = 0x0000;
-//uint16_t volatile ccd_bus_tasks = 0x0000;
-uint16_t lcd_tasks     = 0x0000;
-uint16_t button_tasks  = 0x0000;
-
-uint8_t sci_active_bus = 0x00;
-
 uint32_t previous_millis = 0;
 uint32_t interval = 500;
 
@@ -151,6 +159,7 @@ bool sci_bus_present = false;
 uint8_t command_timeout = 100; // milliseconds
 uint16_t command_purge_timeout = 1000; // milliseconds
 
+// Store handshake in the PROGram MEMory (flash)
 const uint8_t handshake_progmem[] PROGMEM = { 0x43, 0x48, 0x52, 0x59, 0x53, 0x4C, 0x45, 0x52, 0x43, 0x43, 0x44, 0x53, 0x43, 0x49, 0x53, 0x43, 0x41, 0x4E, 0x4E, 0x45, 0x52 };
 //											    "C     H     R     Y     S     L     E     R     C     C     D     S     C     I     S     C     A     N     N     E     R"
 
@@ -201,9 +210,85 @@ bool ccd_bus_msg_rep = false;
 
 bool sci_command_14 = false; // request sensor data from SCI-bus (low speed)
 uint8_t sci_command_14_buffer[4] = { 0x14, 0x00, 0x00, 0x00 }; // Probably 3 bytes are enough...
-//uint8_t sci_command_14_buffer_ptr = 0;
-uint8_t sci_command_14_available[64];		// here are responding addresses/sensors stored, this has to be discovered separately
-uint8_t sci_command_14_available_ptr = 0;	// previous buffer pointer so we know where we are
+
+bool sci_bus_high_speed = false;
+bool sci_hs_mode_f4 = false;
+
+// SCI-bus high speed parameters (Mode F4)
+// Command location(s)
+uint8_t mode_f4_parameters_loc[64]; // max 64 location bytes!
+
+// Command length(s)
+uint8_t mode_f4_parameters_length[64]; // max 64 length bytes!
+
+// Commands each after another (starting with 0xF4)
+uint8_t mode_f4_parameters[128]; // max 128 parameter bytes!
+
+// Pointer value for navigating inside the location, length and parameters arrays
+uint8_t mode_f4_ptr = 0;
+uint8_t mode_f4_ptr_length = 0;
+uint8_t mode_f4_length = 0;
+
+// Mode F4 parameters explained
+/***************************************************************************************************************
+F4 0A 0B	- engine rpm			- scaling: RAW * 0.125 [rpm]
+F4 35 36	- target idle rpm		- scaling: RAW * 0.125 [rpm]
+F4 0C 0D	- speed					- scaling: RAW * 0.0251057664 [km/h]
+F4 0F		- battery voltage		- scaling: RAW * 0.0618 [V]
+F4 3A		- charging voltage		- scaling: RAW * 0.0618 [V]
+F4 12		- tps volts				- scaling: RAW * 0.0196 [V]
+F4 13		- minimum tps volts		- scaling: RAW * 0.0196 [V]
+F4 14		- calculated tps volts	- scaling: RAW * 0.0196 [V]
+F4 17		- map volts				- scaling: RAW * 0.0196 [V]
+F4 DA		- map vacuum			- scaling: RAW * 0.412054294 [kPa]
+F4 1B		- o2 volts				- scaling: RAW * 0.0196 [V]
+F4 27 28	- injector pulsewidth	- scaling: RAW * 0.004 [ms]
+F4 3E		- iac steps				- scaling: RAW * 1
+F4 37		- target iac steps		- scaling: RAW * 1
+F4 2F		- spark advance			- scaling: RAW * 0.5 [°]
+F4 XX (31)	- cylinder 1 retard		- scaling: RAW * 0.5 [°]
+F4 XX (32)	- cylinder 2 retard		- scaling: RAW * 0.5 [°]
+F4 XX (33)	- cylinder 3 retard		- scaling: RAW * 0.5 [°]
+F4 XX (34)	- cylinder 4 retard		- scaling: RAW * 0.5 [°]
+F4 1F		- knock volts			- scaling: RAW * 0.0196 [V]
+F4 30		- overall knock retard	- scaling: RAW * 0.5 [°]
+F4 41		- dis signal			- masking: 0x01: sync history - true: in-sync; false: out-of-sync
+											   0x10: current sync state - true: in-sync; false: out-of-sync
+											   0x20: ckp state - true: present; false: lost
+											   0x40: cmp state - true: present; false: lost
+F4 42		- fuel system status	- masking: 0x01: open loop
+											   0x02: closed loop
+											   0x04: open loop drive
+											   0x08: open loop dtc
+											   0x10: closed loop dtc
+											   0x20: o2 sensor is updating adaptive memory
+											   0x40: closed loop
+											   0x80: ready for closed loop
+F4 4A		- closed loop timer		- scaling: RAW * 0.0535 [min]
+F4 43		- current adaptive cell	- scaling: RAW * 1
+F4 D6		- short-term adaptive	- scaling: RAW * 0.1953 [%]
+F4 D7		- long-term adaptive	- scaling: RAW * 0.1953 [%]
+F4 DE		- fuel level volts		- scaling: RAW * 0.0196 [V]
+F4 XX (E3)	- engine load			- scaling: RAW * 0.3922 [%]
+F4 10		- ambient temp volts	- scaling: RAW * 0.0196 [V]
+F4 11		- ambient temp deg		- scaling: RAW - 128 [°C]
+F4 15		- engine coolant volts	- scaling: RAW * 0.0196 [V]
+F4 16		- engine coolant deg	- scaling: RAW - 128 [°C]
+F4 1D		- intake air temp volts	- scaling: RAW * 0.0196 [V]
+F4 1E		- intake air temp deg	- scaling: RAW - 128 [°C]
+F4 25		- a/c pressure volts	- scaling: RAW * 0.0196 [V]
+F4 26		- a/c pressure			- scaling: RAW * 13.52061848 [kPa]
+F4 19		- barometric pressure	- scaling: RAW * 0.412054294 [kPa]
+F4 73		- limp-in reason		- masking: 0x08: IAT DTC (intake air temperature sensor malfunction)
+											   0x10: TPS DTC (throttle pedal sensor malfunction)
+											   0x20: MAP EL DTC (manifold absolute pressure sensor malfunction)
+											   0x40: MAP VA DTC (manifold absolute pressure sensor malfunction)
+											   0x80: ECT DTC (engine coolant temperature sensor malfunction)
+F4 4B 4C	- time from start/run	- scaling: RAW * 0.0002 [min]
+F4 4D		- runtime at stall		- scaling: RAW * 0.0535 [min]
+F4 3C		- desired relay states	- masking: 0x10: asd relay - true: off; false: on
+F4 7A		- actual relay states	- masking: 0x10: asd relay - true: on; false: off
+***************************************************************************************************************/
 
 
 /******************************************************************************
@@ -213,7 +298,7 @@ uint8_t sci_command_14_available_ptr = 0;	// previous buffer pointer so we know 
 
 /*****************************************************************************
 Function: read_avr_signature()
-Purpose:  read signature bytes
+Purpose:  read signature bytes into a global array
 ******************************************************************************/
 void read_avr_signature(void)
 {
@@ -296,9 +381,8 @@ void check_commands(void)
 
 		// Read 3 bytes (one SYNC and two LENGTH byte).
 		// All UART reads are masked with 0xFF because the ring buffer
-		// contains words (two bytes). MSB contains flags, LSB contains
+		// contains words (two bytes). MSB contains UART flags, LSB contains
 		// the actual data byte. The "& 0xFF" mask gets rid of the MSB, effectively zeroing them out.
-
 		sync      = uart2_getc() & 0xFF;
 		length_hb = uart2_getc() & 0xFF;
 		length_lb = uart2_getc() & 0xFF;
@@ -318,7 +402,7 @@ void check_commands(void)
 		// Calculate the exact size of the payload
 		payload_length = bytes_to_read - 3;
 
-		// Save us some headache
+		// Save us some headache by not letting this variable sink below zero
 		if (payload_length < 0) payload_length = 0;
 
 		// Make some space for the payload bytes
@@ -442,13 +526,13 @@ void check_commands(void)
 										case read_settings: // 0x01 - Read scanner settings directly from EEPROM
 										{
 											send_packet(from_scanner, to_laptop, settings, read_settings, ack, 1); // acknowledge
-											interval = 50;
+											interval = 50; // dummy variable
 											break;
 										}
 										case write_settings: // 0x02 - Write scanner settings directly to EEPROM (values in PAYLOAD) (warning!)
 										{
 											send_packet(from_scanner, to_laptop, settings, write_settings, ack, 1); // acknowledge with a zero byte in payload
-											interval = 500;
+											interval = 500; // dummy variable
 											break;
 										}
 										case enable_ccd_bus: // 0x03 - Enable CCD-bus communication
@@ -468,7 +552,7 @@ void check_commands(void)
 										case enable_sci_bus: // 0x05 - Enable SCI-bus communication
 										{
 											init_sci_bus();
-											select_sci_bus_target(cmd_payload[0]); // 0x01 if PCM, 0x02 if TCM
+											select_sci_bus_target(cmd_payload[0]); // payload contains which module to connect by default: 0x01 if PCM, 0x02 if TCM
 											send_packet(from_scanner, to_laptop, settings, enable_sci_bus, cmd_payload, 1); // acknowledge with 1 byte payload, that is the selected bus
 											break;
 										}
@@ -542,16 +626,16 @@ void check_commands(void)
 										case enable_sci_bus_high_speed: // 0x13 - Enable SCI-bus high speed mode (62500 baud)
 										{
 											while (uart1_available() > 0) uart1_getc(); // clear buffer before entering high speed mode
-											uart1_init(SCI_HI_SPEED); // 62500 kbps high speed mode
-
+											uart1_init(SCI_HI_SPEED); // configure UART1 to 62500 baud speed (62500 kbps high speed mode)
+											sci_bus_high_speed = true; // set flag
 											send_packet(from_scanner, to_laptop, settings, enable_sci_bus_high_speed, ack, 1); // acknowledge
 											break;
 										}
 										case disable_sci_bus_high_speed: // 0x14 - Disable SCI-bus high speed mode (7812.5 baud)
 										{
 											while (uart1_available() > 0) uart1_getc(); // clear buffer before exiting high speed mode
-											uart1_init(SCI_CCD_LO_SPEED); // 7812.5 kbps default SCI-bus speed
-
+											uart1_init(SCI_CCD_LO_SPEED); // configure UART1 to 7812.5 baud speed (7812.5 kbps default SCI-bus speed)
+											sci_bus_high_speed = false; // set flag
 											send_packet(from_scanner, to_laptop, settings, disable_sci_bus_high_speed, ack, 1); // acknowledge
 											break;
 										}
@@ -681,7 +765,7 @@ void check_commands(void)
 										}
 										case free_ram_value: // 0x07 - Free RAM available
 										{
-											// Read the actual free ram value
+											// Read the actual free ram value into this local variable (it exists only in this "case")
 											uint16_t free_ram_available = free_ram();
 
 											// Create a local array of two bytes
@@ -713,6 +797,85 @@ void check_commands(void)
 											send_packet(from_scanner, to_laptop, response, mcu_counter_value, mcu_millis_array, 4);
 											break;
 										}
+										case 0xFB: // debug: high speed sci-bus memory area dump, WARNING: this is not loop-safe, the program will freeze until this "case" is done
+										{
+											// prepare result array
+											uint8_t result[256];
+											bool sci_addr_accepted = false;
+
+											// make sure the address selector command is accepted by the PCM
+											// it has to echo back the address byte ($F2, $F3, $F4...) that is the first payload byte
+											while (!sci_addr_accepted)
+											{
+												// Save the current number of bytes in the receive buffer (most likely 0)
+												uint8_t numbytes = uart1_available();
+
+												// Put the address selector byte to the SCI-bus (first byte of payload section)
+												uart1_putc(cmd_payload[0]);
+
+												// Wait for answer or timeout
+												bool timeout_reached = false;
+												uint32_t timeout_start = millis_get();
+												while ((numbytes >= uart1_available()) && !timeout_reached)
+												{
+													// Check the timeout condition only, the received byte is stored automatically in the ringbuffer
+													if (millis_get() - timeout_start > SCI_INTERMESSAGE_RESPONSE_DELAY) timeout_reached = true;
+												}
+
+												if (timeout_reached)
+												{
+													timeout_reached = false; // re-arm, don't care if true or false
+													break; // exit from this "case" if the SCI-bus won't respond within 3 seconds
+												}
+
+												uint8_t dummy2 = uart1_getc() & 0xFF; // get the echo from the SCI-bus
+												if (dummy2 == cmd_payload[0]) sci_addr_accepted = true; // exit this loop if the proper byte has been received
+											}
+
+											// now cycle through every possible address one time only!
+											// skip the last 16 bytes (they are most likely area selector bytes)
+											for (uint8_t i = 0; i < 0xF0; i++)
+											{
+												// Save the current number of bytes in the receive buffer (most likely 0)
+												uint8_t numbytes = uart1_available();
+
+												// Put one/next byte to the SCI-bus
+												uart1_putc(i);
+
+												// Wait for answer or timeout
+												bool timeout_reached = false;
+												uint32_t timeout_start = millis_get();
+
+												// Unlike CCD-bus, SCI-bus needs a little bit of delay between bytes,
+												// so we check here if the PCM/TCM has echoed the byte back.
+												while ((numbytes >= uart1_available()) && !timeout_reached)
+												{
+													// Check the timeout condition only, the received byte is stored automatically in the ringbuffer
+													if (millis_get() - timeout_start > SCI_INTERMESSAGE_RESPONSE_DELAY) timeout_reached = true;
+												}
+
+												// If the SCI-bus doesn't respond in the given timeframe then save an $FF byte in the array
+												if (timeout_reached)
+												{
+													timeout_reached = false; // re-arm, don't care if true or false
+													result[i] = 0xFF;
+												}
+												else
+												{
+													result[i] = uart1_getc() & 0xFF;
+												}
+											}
+
+											// add the last 16 bytes to the result array
+											for (uint8_t k = 0; k < 16; k++)
+											{
+												result[0xF0 + k] = 0xFF;
+											}
+
+											// send result back to laptop, note that the subdatacode is the actual SCI-bus memory area address
+											send_packet(from_scanner, to_laptop, debug, cmd_payload[0], result, 256);
+											break;
+										}
 										case 0xFC: // enable sci-bus command 14, sensor request
 										{
 											sci_command_14 = true; 
@@ -736,7 +899,6 @@ void check_commands(void)
 
 											// Set flag so the main loop knows there's something to do
 											sci_bus_msg_pending = true;
-											sci_bus_msg_rep = true;
 
 											send_packet(from_sci_bus, to_laptop, send_msg, ok, ack, 1); // acknowledge
 											break;
@@ -841,7 +1003,7 @@ void check_commands(void)
 										uart2_putc(dummy_packet[i]);
 									}
 
-									// Send bytes through packet generator (fail safe)
+									// Send ack byte back
 									send_packet(from_scanner, to_laptop, debug, ok, ack, 1); // acknowledge
 									break;
 								}
@@ -919,12 +1081,87 @@ void check_commands(void)
 								}
 								case send_rep_msg: // 0x07 - Send message(s) repeatedly to the SCI-bus
 								{
-									send_packet(from_sci_bus, to_laptop, send_rep_msg, ok, ack, 1); // acknowledge
+									/**********************************************************************
+									Frame format:
+									33 00 11 37 F4 03 07 00 02 04 02 02 03 F4 1A F4 1B F4 1C 1D 9D 
+
+									$33: SYNC byte
+									$00 $11: LENGTH bytes
+									$37: DATA CODE byte (from laptop, to sci-bus, send repeated messages)
+									$F4: SUB-DATA CODE byte (sci-bus high speed memory area target)
+										$03: length of parameter location and length arrays
+										$07: length of parameters array
+										$00 $02 $04: 3 location bytes 
+										$02 $02 $03: 3 length bytes
+										$F4 $1A: first parameter (starts at relative address 0)
+										$F4 $1B: second parameter (starts at relative address 2)
+										$F4 $1C $1D: third parameter (starts at relative address 4)
+									$9D: CHECKSUM byte
+
+									**********************************************************************/
+									
+									switch (subdatacode)
+									{
+										case 0xF4: // High speed mode memory area
+										{
+											// Read payload for parameter location(s) and command(s) 
+											if (payload_bytes)
+											{
+												// The first byte in the payload refers to the length of the parameter locations and length
+												if (cmd_payload[0] <= 64)
+												{
+													// Add these bytes to two separate array with for-loops
+													for (uint8_t m = 0; m < cmd_payload[0]; m++)
+													{
+														mode_f4_parameters_loc[m] = cmd_payload[2 + m]; // First two bytes have to be ignored
+													}
+
+													for (uint8_t m = 0; m < cmd_payload[0]; m++)
+													{
+														mode_f4_parameters_length[m] = cmd_payload[2 + cmd_payload[0] + m];
+													}
+												}
+
+												// The second byte in the payload refers to the length of the parameter command list
+												if (cmd_payload[1] <= 128)
+												{
+													// Add these bytes to a separate array
+													for (uint8_t n = 0; n < cmd_payload[1]; n++)
+													{
+														mode_f4_parameters[n] = cmd_payload[2 + (2 * cmd_payload[0]) + n]; // First two bytes and the parameter locations and lengths have to be ignored
+													}
+												}
+
+												mode_f4_ptr_length = cmd_payload[0];
+												mode_f4_length = cmd_payload[1];
+												mode_f4_ptr = 0;
+
+												// Set flag so the SCI-bus routine begins execution as soon as possible
+												sci_hs_mode_f4 = true;
+												//send_packet(from_sci_bus, to_laptop, send_rep_msg, ok, ack, 1); // acknowledge
+
+												// Debug: send back these three arrays separately
+												send_packet(from_scanner, to_laptop, send_rep_msg, 0x00, mode_f4_parameters_loc, mode_f4_ptr_length);
+												send_packet(from_scanner, to_laptop, send_rep_msg, 0x01, mode_f4_parameters_length, mode_f4_ptr_length);
+												send_packet(from_scanner, to_laptop, send_rep_msg, 0x02, mode_f4_parameters, mode_f4_length);
+											}
+											break;
+										}
+										default:
+										{
+											break;
+										}
+									}
 									break;
 								}
 								case stop_msg_flow: // 0x08 - Stop message flow to the SCI-bus
 								{
-									sci_bus_msg_rep = false;
+									//sci_bus_msg_rep = false;
+									sci_hs_mode_f4 = false;
+									mode_f4_ptr_length = 0;
+									mode_f4_length = 0;
+									mode_f4_ptr = 0;
+
 									sci_bus_msg_to_send_ptr = 0;
 
 									send_packet(from_sci_bus, to_laptop, send_msg, ok, ack, 1); // acknowledge
@@ -1216,16 +1453,18 @@ Purpose:  handles CCD-bus messages
 **************************************************************************/
 void handle_ccd_data(void)
 {
+	// #1 - Collecting bytes from the CCD-bus:
 	// Check if there are any data bytes in the CCD-ringbuffer
 	if (uart0_available() > 0)
 	{
 		// Peek one byte (don't remove it from the buffer yet)
 		uint16_t dummy_read = uart0_peek();
 
+		// #2 - Detecting end of message condition
 		// If it's an ID-byte then send the previous bytes to the laptop
 		if ((((dummy_read >> 8) & 0xFF) == CCD_SOM) && (ccd_bus_bytes_buffer_ptr > 0))
 		{
-			// Here we decide if a CCD-bus scan request has received a valid response
+			// But before that we decide if a CCD-bus scan request has received a valid response
 			if (scan_ccd)
 			{
 				// Make sure that the first byte is a diagnostic response byte (0xF2) and the second byte is the current address offset
@@ -1268,8 +1507,10 @@ void handle_ccd_data(void)
 				}
 			}
 			
+			// Send CCD-bus message back to the laptop
 			//              where        to         what      ok/error flag     buffer          length
 			send_packet(from_ccd_bus, to_laptop, receive_msg, ok, ccd_bus_bytes_buffer, ccd_bus_bytes_buffer_ptr);
+			//process_ccd_msg();
 			ccd_bus_bytes_buffer_ptr = 0; // reset pointer
 
 			// And save this byte as the first one in the buffer
@@ -1283,6 +1524,7 @@ void handle_ccd_data(void)
 		}
 	}
 
+	// #3 - Sending bytes to the CCD-bus:
 	// If there's a message to be sent to the CCD-bus and the bus happens to be idling then send it here and now
 	if (ccd_bus_msg_pending && ccd_idle)
 	{
@@ -1290,24 +1532,27 @@ void handle_ccd_data(void)
 		{
 			uart0_putc(ccd_bus_msg_to_send[i]);
 			// There's no need to delay between bytes because of the UART hardware's 
-			// inherent delay while loading a byte into its own transmit buffer is enough time.
+			// inherent delay while loading a byte into its own transmit buffer.
 		}
 
 		ccd_bus_msg_to_send_ptr = 0; // reset pointer
 		ccd_bus_msg_pending = false; // re-arm
 	}
 
+	// #4 - Misc functions regarding CCD-bus communication:
 	// Scan CCD-bus modules
+	// Obsolete... you can just send B2 FF 00 00 00 B1 to reset all modules on the CCD-bus 
+	// and force them to send their address to the bus.
 	if (scan_ccd && next_ccd_addr && ccd_idle)
 	{
 		next_ccd_addr = false; // don't execute this again unless a valid response has been received or timeout occurs
 		
 		// Create new request message
-		ccd_scan_msg[0] = DIAG_REQ;							// diagnostic request (0xB2)
-		ccd_scan_msg[1] = ccd_scan_start_addr;					// module address (0-255)
-		ccd_scan_msg[2] = 0x00;								// reset command
-		ccd_scan_msg[3] = 0x00;								// parameter 1
-		ccd_scan_msg[4] = 0x00;								// parameter 2
+		ccd_scan_msg[0] = DIAG_REQ;				// diagnostic request (0xB2)
+		ccd_scan_msg[1] = ccd_scan_start_addr;	// module address (0-255)
+		ccd_scan_msg[2] = 0x00;					// reset command
+		ccd_scan_msg[3] = 0x00;					// parameter 1
+		ccd_scan_msg[4] = 0x00;					// parameter 2
 		ccd_scan_msg[5] = (DIAG_REQ + ccd_scan_start_addr) & 0xFF;	// checksum
 
 		// Send it to the CCD-bus
@@ -1337,6 +1582,7 @@ Purpose:  handles SCI-bus messages
 **************************************************************************/
 void handle_sci_data(void)
 {
+	// #1 - Collecting bytes from the SCI-bus:
 	// Check if there are any data bytes in the SCI-ringbuffer
 	Here: // goto label
 	if (uart1_available() > 0)
@@ -1351,32 +1597,78 @@ void handle_sci_data(void)
 			sci_bus_bytes_buffer_ptr++;
 		}
 
-		// Save the current time
+		// Save the current time so we can measure if the next byte is the start of a new message (timeout)
 		last_sci_byte_received = millis_get();
-		sci_bus_active_bytes = true;
+		sci_bus_active_bytes = true; // set this flag for now and wait
 	}
 
-	// If there's no data coming in after a while then consider the previous message (if there is) to be completed
-	// Make sure there's data in the buffer before sending empty packets... been there done that...
-	if ((millis_get() - last_sci_byte_received > SCI_INTERMESSAGE_RESPONSE_DELAY) )
+	// #2 - Detecting end of message condition with timeout
+	// If there's no data coming in after a while then consider the previous message (if there is) complete
+	// Alternatively send message if length is 16 or greater
+	if ((millis_get() - last_sci_byte_received > SCI_INTERMESSAGE_RESPONSE_DELAY) || sci_bus_bytes_buffer_ptr > 15)
 	{
+		// Make sure there's data in the buffer before sending empty packets...
 		if (sci_bus_bytes_buffer_ptr > 0)
 		{
-			send_packet(from_sci_bus, to_laptop, receive_msg, ok, sci_bus_bytes_buffer, sci_bus_bytes_buffer_ptr); // send sci-bus msg if there is...
-			sci_bus_bytes_buffer_ptr = 0; // reset pointer
+			// This packet has to be labeled specifically to show which parameter's response is in there (in high speed mode the pcm doesn't echo back the ram-address)
+			if (sci_hs_mode_f4)
+			{
+				// construct a custom local array that contains the source parameter and the response
+				// length of the original request
+				uint8_t temp9 = mode_f4_parameters_length[mode_f4_ptr];
+
+				// final packet array should be double of the original size of the request
+				uint8_t temp10 = 2 * temp9;
+
+				// allocate local array (temp11) with the calculated size (temp10)
+				uint8_t temp11[temp10];
+
+				// get the current parameter request location inside the parameters array
+				uint8_t temp12 = mode_f4_parameters_loc[mode_f4_ptr];
+
+				// put the original request at the first half of the temporary array
+				for (uint8_t k = 0; k < mode_f4_parameters_length[mode_f4_ptr]; k++)
+				{
+					// copy all the bytes from the parameters array
+					temp11[k] = mode_f4_parameters[k + temp12];
+				}
+
+				// now copy response data from the sci_bus_bytes_buffer at the second half of the temporary array
+				for (uint8_t p = 0; p < sci_bus_bytes_buffer_ptr; p++)
+				{
+					temp11[temp9 + p] = sci_bus_bytes_buffer[p];
+				}
+				
+				send_packet(from_sci_bus, to_laptop, send_rep_msg, 0xF4, temp11, temp10);
+				sci_bus_bytes_buffer_ptr = 0; // reset sci-bus receive buffer pointer
+
+				if (mode_f4_ptr != mode_f4_ptr_length - 1)
+				{
+					mode_f4_ptr++; // increment location and length pointer at the same time
+				}
+				else
+				{
+					mode_f4_ptr = 0; // at the end reset the pointer to zero and loop again
+				}
+			}
+			else // normal mode here (everything is echoed back + data if available, so we know in one go what this message is all about)
+			{
+				send_packet(from_sci_bus, to_laptop, receive_msg, ok, sci_bus_bytes_buffer, sci_bus_bytes_buffer_ptr);
+				//process_sci_msg();
+				sci_bus_bytes_buffer_ptr = 0;
+			}
 		}
-		sci_bus_active_bytes = false; // clear active bytes flag so we can move on with a new message or something else
+		sci_bus_active_bytes = false; // clear active bytes flag here so we can move on with a new message or something else
 	}
 
-	// If there's a message to be sent to the SCI-bus then try to send it here and now
+	// #3 - Sending bytes to the SCI-bus:
 	// Check if there's activity on the SCI-bus before sending!
-	// Can't run this in parallel with the Command 14
-	if (sci_bus_msg_pending && !sci_command_14 && !sci_bus_active_bytes)
+	if (sci_bus_msg_pending && !sci_command_14 && !sci_hs_mode_f4 && !sci_bus_active_bytes)
 	{
-		// Enter for-loop, cycle for every byte to be sent
+		// Send every byte with a for-loop and wait for echo and data
 		for (uint8_t i = 0; i < sci_bus_msg_to_send_ptr; i++)
 		{
-			// Save the current number of bytes in the receive buffer
+			// Save the current number of bytes in the receive buffer (most likely 0)
 			uint8_t numbytes = uart1_available();
 
 			// Put one/next byte to the SCI-bus
@@ -1388,8 +1680,6 @@ void handle_sci_data(void)
 
 			// Unlike CCD-bus, SCI-bus needs a little bit of delay between bytes,
 			// so we check here if the PCM/TCM has echoed the byte back.
-			// We can't just bang the SCI-bus with bytes without checking the echo.
-			// TODO: there's no echo while in high speed mode!!!
 			while ((numbytes >= uart1_available()) && !timeout_reached)
 			{
 				// Check the timeout condition only, the received byte is stored automatically in the ringbuffer
@@ -1398,21 +1688,16 @@ void handle_sci_data(void)
 			timeout_reached = false; // re-arm, don't care if true or false
 		}
 
-		if (!sci_bus_msg_rep) // If the message repeat is disabled then stop sending bytes to the SCI-bus
-		{
-			sci_bus_msg_to_send_ptr = 0; // reset message pointer
-			sci_bus_msg_pending = false; // re-arm msg sending
-		}
-		
+		sci_bus_msg_pending = false; // re-arm pending msg
+
 		last_sci_byte_received = millis_get(); // save the last time a byte was received
 		sci_bus_active_bytes = true; // data is being transferred to the scanner...
 		goto Here; // force data processing one time only
 	}
 
-	// Get low speed sensor data from SCI-bus
+	// #4 - Get low speed sensor data from SCI-bus
 	// Enter only if there's no active byte on the bus and there's no message to be sent
-	// This branch stops only if the "sci_command_14" is set to false externally by an USB packet.
-	if (sci_command_14 && !sci_bus_active_bytes && !sci_bus_msg_pending)
+	if (sci_command_14 && !sci_bus_active_bytes && !sci_bus_msg_pending && !sci_bus_high_speed)
 	{
 		// Enter for-loop, cycle for every byte to be sent
 		for (uint8_t i = 0; i < 1; i++)
@@ -1453,13 +1738,50 @@ void handle_sci_data(void)
 			sci_command_14_buffer[1] = 0x00; // reset command parameter to zero and start again...
 		}
 	}
+
+	// #5 - Get high speed data from SCI-bus
+	// Mode F4
+	// Conditions: bus in high speed mode, mode f4 flag, no active bytes on the bus, no messages pending in the transmit buffer
+	if (sci_bus_high_speed && sci_hs_mode_f4 && !sci_bus_active_bytes && !sci_bus_msg_pending)
+	{
+		// Send every byte with a for-loop and wait for echo and data
+		for (uint8_t i = 0; i < mode_f4_parameters_length[mode_f4_ptr]; i++)
+		{
+			// Save the current number of bytes in the receive buffer (most likely 0)
+			uint8_t numbytes = uart1_available();
+
+			// Current location lookup routine (start address)
+			uint8_t temp8 = mode_f4_parameters_loc[mode_f4_ptr];
+
+			// Put one/next byte to the SCI-bus // array inside array... arrayception
+			uart1_putc(mode_f4_parameters[temp8 + i]);
+
+			// Wait for answer or timeout
+			bool timeout_reached = false;
+			uint32_t timeout_start = millis_get();
+
+			// Unlike CCD-bus, SCI-bus needs a little bit of delay between bytes,
+			// so we check here if the PCM/TCM has echoed the byte back.
+			while ((numbytes >= uart1_available()) && !timeout_reached)
+			{
+				// Check the timeout condition only, the received byte is stored automatically in the ringbuffer
+				if (millis_get() - timeout_start > SCI_INTERMESSAGE_RESPONSE_DELAY) timeout_reached = true;
+			}
+			timeout_reached = false; // re-arm, don't care if true or false
+		}
+		
+		last_sci_byte_received = millis_get(); // save the last time a byte was received
+		sci_bus_active_bytes = true; // data is being transferred to the scanner...
+		goto Here; // force data processing one time only
+	}
 }
 
 
 /*************************************************************************
 Function: select_sci_bus()
 Purpose:  PCM and TCM share the same SCI-bus, different RX-lines, but same
-          TX-line and this function created a route for one module.
+          TX-line. This function decides which module to talk to.
+		  There's an electronic switch on the PCB to do this (CD4066N).
 Params:   bus number (see switch statement)
 Returns:  none
 Note:     PD4 pin (SCI_BUS_PCM_PIN) selects the PCM (Powertrain Control Module),
@@ -1496,7 +1818,7 @@ void select_sci_bus_target(uint8_t bus)
 			select_sci_tcm();
 			break;
 		}
-		default: // PCM is selected automatically
+		default: // PCM is selected if error
 		{
 			// First disable all SCI-bus connection
 			select_sci_non();
@@ -1544,11 +1866,12 @@ void init_interrupt()
 ISR(INT4_vect)
 {
 	// Set flag so the next received byte can be identified as SOM (Start of Message byte)
+	// This flag must be cleared as soon as possible
 	ccd_idle = true;
 }
 
 
-// CCD-bus active byte detector on INT5 pin
+// CCD-bus active byte detector on INT5 pin (not in use... yet)
 ISR(INT5_vect)
 {
 	// Set flag
@@ -1585,27 +1908,20 @@ int main(void)
 	//mcp23017_init(&mcp, 0);
 
 	// Configure I/O ports.
-	sbi(DDRE, DDE3);						// Data Direction Register E, set Data Direction on Port E pin 3 to 1 => output
+	sbi(DDRE, DDE3);						// PORTE D3 output
+	sbi(DDRD, DDD6);						// PORTD D6 output
+	sbi(DDRD, DDD7);						// PORTD D7 output
 	sbi(LCD_BGLIGHT_PORT, LCD_BGLIGHT_PIN);	// Set LCD backlight (ON)
-	sbi(DDRD, DDD6);						// Data Direction Register D, set Data Direction on PORT D pin 6 to 1 => output
-	cbi(BUZZER_PORT, BUZZER_PIN);			// Clear BUZZER (OFF)
-	sbi(DDRD, DDD7);						// Data Direction Register D, set Data Direction on PORT D pin 7 to 1 => output
-	cbi(ACT_LED_PORT, ACT_LED_PIN);			// Clear Activity LED (blue) (OFF)
+	cbi(BUZZER_PORT, BUZZER_PIN);			// Clear buzzer (OFF)
+	cbi(ACT_LED_PORT, ACT_LED_PIN);			// Clear activity LED (blue) (OFF)
 
 	select_sci_bus_target(NON);				// Default SCI-bus target is none.
-	
-	// Read scanner settings from internal EEPROM.
-	// ...
-
-	// Make changes according to saved settings.
-	// ...
-	//start_clock_generator(); // CCD-bus ON!
 
 	// Enable serial communication.
 	uart0_init(SCI_CCD_LO_SPEED);	// CCD-bus default (and only) speed is 7812.5 baud
 	uart1_init(SCI_CCD_LO_SPEED);	// SCI-bus default speed is 7812.5 baud
 	uart2_init(3);					// USB communication takes place at 250000 baud speed
-//	uart3_init(3);					// DS18B20 custom UART protocol
+	//uart3_init(3);					// DS18B20 custom UART protocol
 
 	// Enable LCD.
 	LCD_init(); // Init
@@ -1613,16 +1929,16 @@ int main(void)
 	LCD_setCursorXY(0, 0); // Put cursor at the top left corner
 	//LCD_drawFullBMP(flanders_bmp); // Draw some picture
 	//LCD_drawFullBMP(chrysler_logo_bmp); // Draw some picture
-	//LCD_drawFullBMP(chrysler_logo_bmp);
+	//LCD_drawFullBMP(chrysler_keyboard_01);
 	LCD_drawFullBMP(doge_wow);
 
-	// Clear packet buffer in case some garbage appears from nowhere
+	// Clear USB packet buffer in case some garbage appears from nowhere
 	bool command_timeout_reached = false;
 	uint32_t command_timeout_start = millis_get();
 	while ((uart2_available_rx() > 0) && !command_timeout_reached)
 	{
-		uart2_getc();
-		if (millis_get() - command_timeout_start > command_purge_timeout) command_timeout_reached = true;
+		uart2_getc(); // read one byte into oblivion
+		if (millis_get() - command_timeout_start > command_purge_timeout) command_timeout_reached = true; // check if it takes too much time
 	}
 	command_timeout_reached = false;
 				
@@ -1653,17 +1969,19 @@ int main(void)
 		if (sci_enabled) { handle_sci_data(); }
 
 		// Do LCD things here.
-		if (lcd_enabled) { }
+		if (lcd_enabled) { /* coming soon...*/ }
 
-		// Do button things here (process button presses).
-		if (button_pressed) { }
+		// Do button things here.
+		if (button_pressed) { /* coming soon...*/ }
 
-		// Blink activity LED to show everything is okay
-		uint32_t current_millis = millis_get();
+		// Blink activity LED to show looping is OK and didn't freeze somewhere.
+		uint32_t current_millis = millis_get(); // check current time
+
+		// Check if enough time has elapsed (interval) to invert LED state
 		if (current_millis - previous_millis >= interval)
 		{
-			previous_millis = current_millis;
-			ibi(ACT_LED_PORT, ACT_LED_PIN);
+			previous_millis = current_millis; // save current time
+			ibi(ACT_LED_PORT, ACT_LED_PIN); // invert LED state (on-off-on-off...)
 		}
     }
 
