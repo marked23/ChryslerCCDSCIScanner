@@ -23,6 +23,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -45,7 +46,10 @@ namespace ChryslerCCDSCIScanner_GUI
         {
             InitializeComponent();
             checkDB();
-            CreateNodes();
+            if (DBTreeView.Nodes.Count == 0)
+            {
+                CreateNodes();
+            }
         }
 
         private void checkDB()
@@ -58,47 +62,31 @@ namespace ChryslerCCDSCIScanner_GUI
 
         private void CreateNodes()
         {
-            //checkDB();
-            //TreeNode[] ModuleListTreeNode = new TreeNode[] { };
-            //int pointer = 0;
-            
-            //for (ushort k = 0x0000; k < 0x2000; k++)
-            //{
+            DBTreeView.BeginUpdate();
+            TreeNode moduleRoot = new TreeNode("Modules");
+            //TreeNode txRoot = new TreeNode("TxRecords");
 
-            //        string temp = db.getModule(k);
-            //        if (temp != null)
-            //        {
-            //            ModuleListTreeNode[pointer] = new TreeNode(temp);
-            //            pointer++;
-            //        }
+            for (ushort k = 0x0000; k < 0x2000; k++)
+            {
+
+                var moduleRecord = db.GetModuleRecord(k);
+                if (moduleRecord != null)
+                {
+                    string key = $"{moduleRecord.id:X4}";
+                    string text = $"{key} - {moduleRecord.scname,-30} - {moduleRecord.name}";
+                    moduleRoot.Nodes.Add(key, text);
+                }
                 
 
-            //}
 
-            //TreeNode abc = new TreeNode("Module list", ModuleListTreeNode);
-            //TreeNode abc = new TreeNode(pointer.ToString());
-            //DBTreeView.Nodes.Add(abc);
+            }
 
-            TreeNode treeNode1 = new TreeNode("CCD");
-            TreeNode treeNode2 = new TreeNode("SCI");
-            TreeNode treeNode3 = new TreeNode("J1850");
-            TreeNode treeNode4 = new TreeNode("ISO");
-            TreeNode treeNode5 = new TreeNode("Multimeter");
-            TreeNode treeNode6 = new TreeNode("J2190");
-            TreeNode treeNode7 = new TreeNode("Module list", new TreeNode[]
-            {
-                treeNode1,
-                treeNode2,
-                treeNode3,
-                treeNode4,
-                treeNode5,
-                treeNode6
-            });
-
-            DBTreeView.Nodes.Add(treeNode7);
-
-            DBTreeView.SelectedNode = treeNode7;
+            DBTreeView.Nodes.Add(moduleRoot);
+            //DBTreeView.Nodes.Add(txRoot);
+            DBTreeView.EndUpdate();
+            DBTreeView.SelectedNode = moduleRoot;
             DBTreeView.SelectedNode.Expand();
+
         }
 
         private void DRBDBExplorer_FormClosing(object sender, FormClosingEventArgs e)
@@ -109,7 +97,37 @@ namespace ChryslerCCDSCIScanner_GUI
 
         private void DBTreeView_AfterSelect(object sender, TreeViewEventArgs e)
         {
-            label1.Text = DBTreeView.SelectedNode.ToString();
+            string key = DBTreeView.SelectedNode.Name;
+            ushort selectedKey;
+            if (ushort.TryParse(key, System.Globalization.NumberStyles.HexNumber, CultureInfo.InvariantCulture , out selectedKey))
+            {
+                StringBuilder txDescription = new StringBuilder();
+                var moduleRecord = db.GetModuleRecord(selectedKey);
+                foreach (var txRecord in moduleRecord.dataelements)
+                {
+
+                    var converter =  txRecord.converter;
+                    txDescription.AppendLine($"{txRecord.name,-30} {converter.type}");
+                    
+                    if (converter.type == Converter.Types.BINARY_STATE)
+                    {
+                        foreach (var entry in ((StateConverter)converter).entries)
+                        {
+                            txDescription.AppendLine($"   {entry.Key,20} {entry.Value}");
+                        }
+                    }
+                }
+                textBox1.Text = txDescription.ToString();
+
+
+            }
+            else
+            {
+                // Do nothing
+            }
+            
         }
+
+
     }
 }

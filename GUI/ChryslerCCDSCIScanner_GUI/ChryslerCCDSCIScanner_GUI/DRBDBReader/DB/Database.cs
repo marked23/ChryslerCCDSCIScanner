@@ -363,5 +363,11 @@ namespace DRBDBReader.DB
 
 			return modrec.name + "; sc: " + modrec.scname;
 		}
-	}
+
+        public ModuleRecord GetModuleRecord(ushort id)
+        {
+            var moduleTable = this.tables[TABLE_MODULE];
+            return (ModuleRecord)moduleTable.getRecord(id);
+        }
+    }
 }

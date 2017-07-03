@@ -29,45 +29,74 @@
         private void InitializeComponent()
         {
             this.DBTreeView = new System.Windows.Forms.TreeView();
-            this.label1 = new System.Windows.Forms.Label();
+            this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+            this.textBox1 = new System.Windows.Forms.TextBox();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
+            this.splitContainer1.Panel1.SuspendLayout();
+            this.splitContainer1.Panel2.SuspendLayout();
+            this.splitContainer1.SuspendLayout();
             this.SuspendLayout();
             // 
             // DBTreeView
             // 
+            this.DBTreeView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.DBTreeView.Font = new System.Drawing.Font("Courier New", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.DBTreeView.Location = new System.Drawing.Point(12, 12);
+            this.DBTreeView.Location = new System.Drawing.Point(0, 0);
             this.DBTreeView.Name = "DBTreeView";
-            this.DBTreeView.Size = new System.Drawing.Size(450, 331);
+            this.DBTreeView.Size = new System.Drawing.Size(670, 194);
             this.DBTreeView.TabIndex = 0;
             this.DBTreeView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.DBTreeView_AfterSelect);
             // 
-            // label1
+            // splitContainer1
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(120, 378);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(13, 13);
-            this.label1.TabIndex = 1;
-            this.label1.Text = "0";
+            this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitContainer1.Location = new System.Drawing.Point(0, 0);
+            this.splitContainer1.Name = "splitContainer1";
+            this.splitContainer1.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            // 
+            // splitContainer1.Panel1
+            // 
+            this.splitContainer1.Panel1.Controls.Add(this.DBTreeView);
+            // 
+            // splitContainer1.Panel2
+            // 
+            this.splitContainer1.Panel2.Controls.Add(this.textBox1);
+            this.splitContainer1.Size = new System.Drawing.Size(670, 387);
+            this.splitContainer1.SplitterDistance = 194;
+            this.splitContainer1.SplitterWidth = 6;
+            this.splitContainer1.TabIndex = 0;
+            // 
+            // textBox1
+            // 
+            this.textBox1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.textBox1.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.textBox1.Location = new System.Drawing.Point(0, 0);
+            this.textBox1.Multiline = true;
+            this.textBox1.Name = "textBox1";
+            this.textBox1.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            this.textBox1.Size = new System.Drawing.Size(670, 187);
+            this.textBox1.TabIndex = 0;
+            this.textBox1.WordWrap = false;
             // 
             // DRBDBExplorer
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(504, 521);
-            this.Controls.Add(this.label1);
-            this.Controls.Add(this.DBTreeView);
+            this.ClientSize = new System.Drawing.Size(670, 387);
+            this.Controls.Add(this.splitContainer1);
             this.Name = "DRBDBExplorer";
-            this.Text = "DRB-III Database Explorer";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.DRBDBExplorer_FormClosing);
+            this.splitContainer1.Panel1.ResumeLayout(false);
+            this.splitContainer1.Panel2.ResumeLayout(false);
+            this.splitContainer1.Panel2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
+            this.splitContainer1.ResumeLayout(false);
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 
         #endregion
 
         private System.Windows.Forms.TreeView DBTreeView;
-        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.SplitContainer splitContainer1;
+        
     }
 }
